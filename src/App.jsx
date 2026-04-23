@@ -10,16 +10,16 @@ const CLOUDINARY_UPLOAD_PRESET = 'zandra60_unsigned';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── Paleta Playbill Vintage ───────────────────────────────────
-const V = {
-  paper: '#f4e8d0',
-  sepia: '#c9b896',
-  ink: '#2b1810',
-  burgundy: '#6b1f26',
-  gold: '#d4a574',
-  cream: '#fdf9f1',
-  border: '#8b6f47',
-  shadow: 'rgba(43,24,16,0.25)',
+// ── Paleta Gold Foil ──────────────────────────────────────────
+const F = {
+  deepBlack: '#0d0c0a',
+  richBlack: '#1a1612',
+  pureGold: '#d4af37',
+  lightGold: '#f4e4c1',
+  champagne: '#f7e7ce',
+  ivory: '#fffff0',
+  bronze: '#cd7f32',
+  shadow: 'rgba(212,175,55,0.4)',
 };
 
 const EVENTO = {
@@ -33,68 +33,71 @@ const EVENTO = {
   cupo: 80,
 };
 
-// ── Estilos Playbill ──────────────────────────────────────────
+// ── Estilos Gold Foil ─────────────────────────────────────────
 const S = {
-  page: { minHeight:'100vh', background:`radial-gradient(ellipse at top,${V.sepia},#a89372)`, color:V.ink, fontFamily:"'Libre Baskerville','Georgia',serif", position:'relative' },
-  marquee: { fontFamily:"'Abril Fatface','Georgia',serif", color:V.burgundy, letterSpacing:'0.08em', lineHeight:0.9, textTransform:'uppercase' },
-  serif: { fontFamily:"'Libre Baskerville','Georgia',serif", fontStyle:'italic', color:V.ink },
-  label: { fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.65rem', letterSpacing:'0.25em', color:V.border, textTransform:'uppercase', fontWeight:700 },
-  body: { fontSize:'1rem', lineHeight:1.65, color:V.ink, fontFamily:"'Libre Baskerville','Georgia',serif" },
-  ticket: { background:V.paper, border:`3px solid ${V.ink}`, borderRadius:'4px', padding:'32px', boxShadow:`0 8px 24px ${V.shadow}, inset 0 0 0 1px rgba(255,255,255,0.5)`, position:'relative' },
-  input: { width:'100%', background:V.cream, border:`2px solid ${V.border}`, color:V.ink, padding:'12px 14px', fontSize:'1rem', fontFamily:"'Libre Baskerville','Georgia',serif", outline:'none', boxSizing:'border-box', borderRadius:'2px' },
-  btn: { display:'inline-block', border:`3px solid ${V.burgundy}`, padding:'14px 32px', fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.7rem', letterSpacing:'0.25em', color:V.burgundy, textTransform:'uppercase', background:'transparent', cursor:'pointer', transition:'all 0.25s', textDecoration:'none', fontWeight:700 },
-  btnFill: { background:V.burgundy, color:V.cream, boxShadow:`0 4px 12px rgba(107,31,38,0.3)` },
+  page: { minHeight:'100vh', background:`radial-gradient(ellipse at center, ${F.richBlack} 0%, ${F.deepBlack} 100%)`, color:F.ivory, fontFamily:"'Cormorant Garamond','Georgia',serif", position:'relative' },
+  goldText: { background:`linear-gradient(135deg, ${F.bronze} 0%, ${F.pureGold} 25%, ${F.lightGold} 50%, ${F.pureGold} 75%, ${F.bronze} 100%)`, WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent', backgroundSize:'200% auto', fontFamily:"'Cinzel','Georgia',serif" },
+  embossed: { textShadow:`1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(255,255,255,0.1), 0 0 30px ${F.shadow}` },
+  ornate: { fontFamily:"'Cinzel Decorative','Georgia',serif", letterSpacing:'0.15em', textTransform:'uppercase' },
+  serif: { fontFamily:"'Cormorant Garamond','Georgia',serif", fontStyle:'italic' },
+  label: { fontFamily:"'Cinzel','Georgia',serif", fontSize:'0.65rem', letterSpacing:'0.3em', color:F.pureGold, textTransform:'uppercase', fontWeight:400 },
+  body: { fontSize:'1.05rem', lineHeight:1.8, color:F.champagne, fontFamily:"'Cormorant Garamond','Georgia',serif" },
+  card: { background:`linear-gradient(145deg, rgba(26,22,18,0.9), rgba(13,12,10,0.95))`, border:`2px solid ${F.pureGold}`, borderRadius:'8px', padding:'36px', boxShadow:`0 0 60px ${F.shadow}, inset 0 0 40px rgba(0,0,0,0.5)`, position:'relative' },
+  input: { width:'100%', background:'rgba(255,255,255,0.03)', border:`2px solid ${F.bronze}`, color:F.champagne, padding:'14px 18px', fontSize:'1.05rem', fontFamily:"'Cormorant Garamond','Georgia',serif", outline:'none', boxSizing:'border-box', borderRadius:'4px' },
+  btn: { display:'inline-block', border:`2px solid ${F.pureGold}`, padding:'16px 40px', fontFamily:"'Cinzel','Georgia',serif", fontSize:'0.7rem', letterSpacing:'0.25em', color:F.pureGold, textTransform:'uppercase', background:'transparent', cursor:'pointer', transition:'all 0.4s', textDecoration:'none', position:'relative', overflow:'hidden' },
+  btnFill: { background:`linear-gradient(135deg, ${F.bronze}, ${F.pureGold})`, color:F.deepBlack, borderColor:F.pureGold, boxShadow:`0 0 30px ${F.shadow}` },
 };
 
-// ── Borde Perforado ───────────────────────────────────────────
-function PerforatedEdge({ side }) {
-  const holes = Array.from({ length: 20 }, (_, i) => i);
-  const isVertical = side === 'left' || side === 'right';
-  
-  const style = {
-    position: 'absolute',
-    [side]: '-6px',
-    [isVertical ? 'top' : 'left']: 0,
-    [isVertical ? 'height' : 'width']: '100%',
-    [isVertical ? 'width' : 'height']: '12px',
-    display: 'flex',
-    flexDirection: isVertical ? 'column' : 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-  };
+// ── Borde Ornamentado ─────────────────────────────────────────
+function OrnateBorder() {
+  const corners = [
+    { t:'-2px', l:'-2px', r:'0deg' },
+    { t:'-2px', r:'-2px', r:'90deg' },
+    { b:'-2px', r:'-2px', r:'180deg' },
+    { b:'-2px', l:'-2px', r:'270deg' },
+  ];
 
   return (
-    <div style={style}>
-      {holes.map(i => (
-        <div key={i} style={{ width:'6px', height:'6px', borderRadius:'50%', background:V.sepia, border:`1px solid ${V.border}` }} />
+    <>
+      {corners.map((c, i) => (
+        <svg key={i} style={{ position:'absolute', ...c, width:'80px', height:'80px', transform:`rotate(${c.r})`, opacity:0.9 }} viewBox="0 0 100 100">
+          <path d="M0,0 L0,40 Q0,0 40,0 L0,0 M20,20 Q20,15 25,15 L35,15 Q40,15 40,20" 
+            fill="none" stroke={F.pureGold} strokeWidth="2" />
+          <circle cx="10" cy="10" r="3" fill={F.pureGold} />
+          <path d="M0,20 Q5,20 10,15 M20,0 Q20,5 15,10" stroke={F.pureGold} strokeWidth="1.5" fill="none" />
+        </svg>
       ))}
-    </div>
+      <div style={{ position:'absolute', top:'-2px', left:'50%', transform:'translateX(-50%)', width:'200px', height:'40px', background:`radial-gradient(ellipse, ${F.pureGold} 0%, transparent 70%)`, opacity:0.3 }} />
+      <div style={{ position:'absolute', bottom:'-2px', left:'50%', transform:'translateX(-50%)', width:'200px', height:'40px', background:`radial-gradient(ellipse, ${F.pureGold} 0%, transparent 70%)`, opacity:0.3 }} />
+    </>
   );
 }
 
-// ── Líneas Decorativas ────────────────────────────────────────
-function DecoLine() {
+// ── Línea Decorativa ──────────────────────────────────────────
+function GoldDivider() {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:'8px', margin:'16px 0' }}>
-      <div style={{ flex:1, height:'2px', background:`linear-gradient(90deg,transparent,${V.burgundy},transparent)` }} />
-      <div style={{ width:'8px', height:'8px', background:V.burgundy, transform:'rotate(45deg)' }} />
-      <div style={{ flex:1, height:'2px', background:`linear-gradient(90deg,transparent,${V.burgundy},transparent)` }} />
+    <div style={{ display:'flex', alignItems:'center', gap:'16px', margin:'24px 0' }}>
+      <div style={{ flex:1, height:'1px', background:`linear-gradient(90deg,transparent,${F.pureGold},transparent)`, boxShadow:`0 0 8px ${F.shadow}` }} />
+      <div style={{ width:'12px', height:'12px', background:F.pureGold, transform:'rotate(45deg)', boxShadow:`0 0 12px ${F.shadow}` }} />
+      <div style={{ width:'6px', height:'6px', background:F.pureGold, borderRadius:'50%', boxShadow:`0 0 8px ${F.shadow}` }} />
+      <div style={{ width:'12px', height:'12px', background:F.pureGold, transform:'rotate(45deg)', boxShadow:`0 0 12px ${F.shadow}` }} />
+      <div style={{ flex:1, height:'1px', background:`linear-gradient(90deg,transparent,${F.pureGold},transparent)`, boxShadow:`0 0 8px ${F.shadow}` }} />
     </div>
   );
 }
 
 // ── Nav ───────────────────────────────────────────────────────
 function Nav({ navigate, current }) {
-  const links = [{ k:'landing', l:'PLAYBILL' }, { k:'detalles', l:'PROGRAMA' }, { k:'rsvp', l:'RESERVAR' }];
+  const links = [{ k:'landing', l:'Invitación' }, { k:'detalles', l:'Detalles' }, { k:'rsvp', l:'Confirmar' }];
   return (
-    <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:V.burgundy, borderBottom:`4px double ${V.gold}`, display:'flex', alignItems:'center', boxShadow:`0 4px 12px ${V.shadow}` }}>
+    <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:`linear-gradient(180deg, rgba(13,12,10,0.98) 0%, rgba(13,12,10,0.95) 100%)`, backdropFilter:'blur(12px)', borderBottom:`1px solid ${F.pureGold}`, display:'flex', alignItems:'center', boxShadow:`0 4px 20px rgba(0,0,0,0.8)` }}>
       {links.map(l => (
-        <button key={l.k} onClick={() => navigate(l.k)} style={{ background:'none', border:'none', cursor:'pointer', padding:'16px 24px', fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.65rem', letterSpacing:'0.22em', fontWeight:700, textTransform:'uppercase', color: current===l.k ? V.gold : V.cream, borderBottom: current===l.k ? `3px solid ${V.gold}` : '3px solid transparent', transition:'all 0.25s' }}>
+        <button key={l.k} onClick={() => navigate(l.k)} style={{ background:'none', border:'none', cursor:'pointer', padding:'18px 28px', fontFamily:"'Cinzel','Georgia',serif", fontSize:'0.65rem', letterSpacing:'0.25em', textTransform:'uppercase', color: current===l.k ? F.pureGold : F.champagne, borderBottom: current===l.k ? `3px solid ${F.pureGold}` : '3px solid transparent', transition:'all 0.3s', textShadow: current===l.k ? `0 0 20px ${F.shadow}` : 'none' }}>
           {l.l}
         </button>
       ))}
-      <button onClick={() => navigate('admin')} style={{ background:'none', border:'none', cursor:'pointer', padding:'16px 18px', fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.55rem', letterSpacing:'0.2em', color:'rgba(255,255,255,0.3)', marginLeft:'auto', fontWeight:700 }}>
-        ADMIN
+      <button onClick={() => navigate('admin')} style={{ background:'none', border:'none', cursor:'pointer', padding:'18px 20px', fontFamily:"'Cinzel','Georgia',serif", fontSize:'0.55rem', letterSpacing:'0.2em', color:'rgba(212,175,55,0.3)', marginLeft:'auto' }}>
+        Admin
       </button>
     </nav>
   );
@@ -104,127 +107,201 @@ function Btn({ onClick, filled, children, style={}, disabled=false }) {
   const [hover, setHover] = useState(false);
   return (
     <button onClick={onClick} disabled={disabled} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ ...S.btn, ...(filled ? S.btnFill : {}), ...style, opacity: disabled ? 0.5 : 1, transform: hover && !disabled ? 'translateY(-2px)' : 'none', boxShadow: hover && !disabled ? `0 6px 16px ${V.shadow}` : (filled ? S.btnFill.boxShadow : 'none') }}>
-      {children}
+      style={{ ...S.btn, ...(filled ? S.btnFill : {}), ...style, opacity: disabled ? 0.4 : 1, transform: hover && !disabled ? 'translateY(-2px) scale(1.02)' : 'none', boxShadow: hover && !disabled ? `0 8px 30px ${F.shadow}` : (filled ? S.btnFill.boxShadow : 'none') }}>
+      <span style={{ position:'relative', zIndex:1 }}>{children}</span>
+      {hover && !disabled && (
+        <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, transparent, ${F.pureGold}, transparent)`, opacity:0.2, pointerEvents:'none' }} />
+      )}
     </button>
   );
 }
 
-// ── Campo de formulario (movido fuera del componente) ─────────
+// ── Campo de formulario (movido fuera) ────────────────────────
 const Campo = ({ k, value, onChange, label, tipo='text', placeholder='', error }) => (
-  <div style={{ marginBottom:'18px' }}>
+  <div style={{ marginBottom:'20px' }}>
     <label style={S.label}>{label}</label>
     <input type={tipo} value={value} placeholder={placeholder} onChange={onChange}
-      style={{ ...S.input, borderColor: error ? V.burgundy : V.border, borderWidth: error ? '3px' : '2px' }} />
-    {error && <p style={{ color:V.burgundy, fontSize:'0.78rem', marginTop:'4px', fontStyle:'italic', fontWeight:600 }}>{error}</p>}
+      style={{ ...S.input, borderColor: error ? '#c0392b' : F.bronze, borderWidth: error ? '3px' : '2px', boxShadow: error ? '0 0 20px rgba(192,57,43,0.3)' : 'none' }} />
+    {error && <p style={{ color:'#e74c3c', fontSize:'0.82rem', marginTop:'6px', fontStyle:'italic', fontWeight:600 }}>{error}</p>}
   </div>
 );
 
-// ── PÁGINA 1: PLAYBILL ────────────────────────────────────────
+// ── PÁGINA 1: INVITACIÓN ──────────────────────────────────────
 function Invitacion({ navigate }) {
-  return (
-    <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'40px 20px' }}>
-      {/* Patrón de fondo */}
-      <div style={{ position:'absolute', inset:0, opacity:0.05, backgroundImage:`repeating-linear-gradient(45deg, ${V.ink} 0px, ${V.ink} 2px, transparent 2px, transparent 12px)`, pointerEvents:'none' }} />
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H, bubbles = [], raf;
+    
+    const resize = () => { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const rnd = (a,b) => Math.random()*(b-a)+a;
+    
+    class Bubble {
+      constructor(init) {
+        this.x = rnd(0, W);
+        this.y = init ? rnd(0, H) : H + rnd(0, 50);
+        this.r = rnd(2, 6);
+        this.vy = -rnd(0.5, 1.5);
+        this.vx = rnd(-0.3, 0.3);
+        this.a = rnd(0.3, 0.7);
+        this.wobble = rnd(0, Math.PI * 2);
+        this.wobbleSpeed = rnd(0.02, 0.05);
+      }
       
-      <div style={{ ...S.ticket, width:'min(680px,95vw)', margin:'0 auto', position:'relative', overflow:'visible' }}>
-        <PerforatedEdge side="left" />
-        <PerforatedEdge side="right" />
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.a;
         
-        {/* Sello de admisión */}
-        <div style={{ position:'absolute', top:'24px', right:'24px', width:'80px', height:'80px', borderRadius:'50%', border:`4px double ${V.burgundy}`, display:'flex', alignItems:'center', justifyContent:'center', background:V.cream, transform:'rotate(12deg)' }}>
-          <div style={{ textAlign:'center' }}>
-            <div style={{ ...S.label, fontSize:'0.5rem', marginBottom:'2px' }}>ADMIT</div>
-            <div style={{ ...S.marquee, fontSize:'1.8rem', lineHeight:1 }}>ONE</div>
-            <div style={{ ...S.label, fontSize:'0.45rem', marginTop:'2px' }}>+1 GUEST</div>
+        const gradient = ctx.createRadialGradient(this.x - this.r/3, this.y - this.r/3, 0, this.x, this.y, this.r);
+        gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
+        gradient.addColorStop(0.4, 'rgba(212,175,55,0.4)');
+        gradient.addColorStop(1, 'rgba(212,175,55,0.1)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = 'rgba(212,175,55,0.6)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+      
+      update() {
+        this.wobble += this.wobbleSpeed;
+        this.y += this.vy;
+        this.x += this.vx + Math.sin(this.wobble) * 0.5;
+        
+        if (this.y + this.r < 0) {
+          this.y = H + rnd(20, 50);
+          this.x = rnd(0, W);
+        }
+      }
+    }
+    
+    for (let i = 0; i < 60; i++) bubbles.push(new Bubble(true));
+    
+    const loop = () => {
+      ctx.clearRect(0, 0, W, H);
+      bubbles.forEach(b => { b.update(); b.draw(); });
+      raf = requestAnimationFrame(loop);
+    };
+    loop();
+    
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'60px 20px' }}>
+      <canvas ref={canvasRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%', pointerEvents:'none' }} />
+      
+      <div style={{ ...S.card, width:'min(720px,95vw)', margin:'0 auto', zIndex:10, position:'relative' }}>
+        <OrnateBorder />
+
+        <div style={{ textAlign:'center', marginBottom:'16px' }}>
+          <div style={{ ...S.label, opacity:0.8, marginBottom:'12px' }}>◆ UNA CELEBRACIÓN DE ESPLENDOR ◆</div>
+          <div style={{ ...S.ornate, ...S.goldText, fontSize:'clamp(0.9rem,2.5vw,1.2rem)', marginBottom:'8px', ...S.embossed }}>
+            Te Invitamos a Celebrar a
           </div>
         </div>
 
-        {/* Encabezado */}
-        <div style={{ textAlign:'center', marginBottom:'12px' }}>
-          <div style={{ ...S.label, marginBottom:'8px', opacity:0.7 }}>★ UNA NOCHE EN EL TEATRO ★</div>
-          <div style={{ ...S.marquee, fontSize:'clamp(2.2rem,6vw,3.6rem)', marginBottom:'6px' }}>GRAN GALA</div>
-          <div style={{ ...S.label, fontSize:'0.75rem' }}>CELEBRANDO A</div>
-        </div>
+        <GoldDivider />
 
-        <DecoLine />
-
-        {/* Nombre principal */}
-        <div style={{ textAlign:'center', margin:'24px 0' }}>
-          <div style={{ ...S.marquee, fontSize:'clamp(2rem,7vw,4.2rem)', color:V.burgundy, textShadow:`3px 3px 0 rgba(212,165,116,0.3)`, marginBottom:'8px' }}>
+        <div style={{ textAlign:'center', margin:'32px 0' }}>
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(2.5rem,7vw,4.5rem)', lineHeight:1.1, marginBottom:'12px', ...S.embossed, animation:'shimmer 3s ease-in-out infinite' }}>
             ZANDRA
           </div>
-          <div style={{ ...S.serif, fontSize:'clamp(1.3rem,4vw,2rem)', marginBottom:'4px' }}>
+          <div style={{ ...S.serif, fontSize:'clamp(1.4rem,4vw,2.2rem)', color:F.lightGold, marginBottom:'8px' }}>
             B. Veliz Ortiz
           </div>
         </div>
 
-        {/* Milestone */}
-        <div style={{ textAlign:'center', background:V.burgundy, margin:'24px -32px', padding:'20px', position:'relative' }}>
-          <div style={{ position:'absolute', inset:0, background:`repeating-linear-gradient(90deg, ${V.gold} 0px, ${V.gold} 1px, transparent 1px, transparent 20px)`, opacity:0.1 }} />
-          <div style={{ ...S.marquee, fontSize:'clamp(4rem,12vw,6.5rem)', color:V.gold, lineHeight:1, marginBottom:'4px', textShadow:`4px 4px 0 rgba(0,0,0,0.2)` }}>60</div>
-          <div style={{ ...S.label, color:V.cream, fontSize:'0.85rem' }}>AÑOS DE BRILLANTEZ</div>
+        <div style={{ background:`linear-gradient(135deg, rgba(212,175,55,0.15), rgba(205,127,50,0.1))`, padding:'28px', margin:'0 -36px', position:'relative' }}>
+          <div style={{ position:'absolute', inset:0, borderTop:`1px solid ${F.pureGold}`, borderBottom:`1px solid ${F.pureGold}`, opacity:0.5 }} />
+          <div style={{ textAlign:'center', position:'relative' }}>
+            <div style={{ ...S.label, marginBottom:'10px', fontSize:'0.75rem' }}>EN SUS</div>
+            <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(5rem,15vw,8rem)', lineHeight:1, marginBottom:'8px', ...S.embossed }}>
+              60
+            </div>
+            <div style={{ ...S.label, fontSize:'0.85rem', letterSpacing:'0.4em' }}>AÑOS DE BRILLANTEZ</div>
+          </div>
         </div>
 
-        {/* Tema */}
-        <div style={{ textAlign:'center', margin:'24px 0' }}>
-          <div style={{ ...S.marquee, fontSize:'clamp(1.2rem,3.5vw,1.8rem)', marginBottom:'12px' }}>
+        <GoldDivider />
+
+        <div style={{ textAlign:'center', margin:'32px 0' }}>
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.4rem,4vw,2.2rem)', marginBottom:'16px', ...S.embossed }}>
             Una Velada Gatsby
           </div>
-          <div style={{ ...S.serif, fontSize:'0.95rem', opacity:0.75, maxWidth:'420px', margin:'0 auto 20px' }}>
-            Vístete con el esplendor de los años 20. Lentejuelas, plumas y elegancia. Te esperamos para una noche inolvidable.
+          <div style={{ ...S.body, opacity:0.85, maxWidth:'520px', margin:'0 auto 20px', fontSize:'1.08rem' }}>
+            Viste con el esplendor de los años 20. Lentejuelas, plumas, guantes y elegancia. Una noche inolvidable te espera.
           </div>
         </div>
 
-        <DecoLine />
-
-        {/* Detalles */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:'16px', margin:'24px 0' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:'20px', margin:'32px 0' }}>
           {[
-            { i:'📅', l:'FECHA', v:'Sábado\n5 de Septiembre, 2026' },
-            { i:'🕖', l:'HORARIO', v:'19:00 – 00:00 hrs' },
-            { i:'📍', l:'ESCENARIO', v:'El Club Español\nÁrea Fuentecilla' },
+            { i:'◆', l:'Fecha', v:'Sábado\n5 de Septiembre, 2026' },
+            { i:'◆', l:'Horario', v:'19:00 – 00:00 hrs' },
+            { i:'◆', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
           ].map(d => (
-            <div key={d.l} style={{ textAlign:'center', padding:'16px', border:`2px solid ${V.border}`, borderRadius:'3px', background:V.cream }}>
-              <div style={{ fontSize:'2rem', marginBottom:'8px' }}>{d.i}</div>
-              <div style={{ ...S.label, marginBottom:'6px', fontSize:'0.55rem' }}>{d.l}</div>
-              <div style={{ ...S.body, fontSize:'0.87rem', whiteSpace:'pre-line', fontWeight:600 }}>{d.v}</div>
+            <div key={d.l} style={{ textAlign:'center', padding:'20px', background:'rgba(212,175,55,0.05)', border:`1px solid ${F.bronze}`, borderRadius:'6px' }}>
+              <div style={{ color:F.pureGold, fontSize:'1.5rem', marginBottom:'12px' }}>{d.i}</div>
+              <div style={{ ...S.label, marginBottom:'10px', fontSize:'0.6rem' }}>{d.l}</div>
+              <div style={{ ...S.body, fontSize:'0.95rem', whiteSpace:'pre-line', lineHeight:1.6 }}>{d.v}</div>
             </div>
           ))}
         </div>
 
-        {/* Dirección */}
-        <div style={{ textAlign:'center', background:`linear-gradient(135deg, ${V.cream}, ${V.paper})`, padding:'16px', borderRadius:'3px', border:`2px dashed ${V.border}`, marginBottom:'24px' }}>
-          <div style={{ ...S.label, marginBottom:'6px' }}>DIRECCIÓN DEL VENUE</div>
-          <div style={{ ...S.body, fontSize:'0.9rem', marginBottom:'8px' }}>{EVENTO.direccion}</div>
-          <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.6rem', padding:'8px 18px', textDecoration:'none' }}>
-            🗺 VER MAPA
+        <div style={{ textAlign:'center', background:`linear-gradient(135deg, rgba(26,22,18,0.8), rgba(13,12,10,0.9))`, padding:'24px', borderRadius:'6px', border:`1px solid ${F.bronze}`, marginBottom:'28px' }}>
+          <div style={{ ...S.label, marginBottom:'8px' }}>DIRECCIÓN</div>
+          <div style={{ ...S.body, fontSize:'0.96rem', marginBottom:'14px', opacity:0.8 }}>{EVENTO.direccion}</div>
+          <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.65rem', padding:'12px 28px', textDecoration:'none' }}>
+            ◆ ABRIR MAPA ◆
           </a>
         </div>
 
-        {/* Código de vestimenta */}
-        <div style={{ background:V.burgundy, margin:'24px -32px -32px', padding:'28px 32px', borderRadius:'0 0 4px 4px', position:'relative' }}>
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:'4px', background:`repeating-linear-gradient(90deg, ${V.gold} 0px, ${V.gold} 8px, transparent 8px, transparent 16px)` }} />
-          <div style={{ textAlign:'center' }}>
-            <div style={{ ...S.label, color:V.gold, marginBottom:'10px' }}>CÓDIGO DE VESTIMENTA</div>
-            <div style={{ ...S.marquee, color:V.cream, fontSize:'clamp(1.1rem,3vw,1.5rem)', marginBottom:'14px' }}>
-              ETIQUETA RIGUROSA
-            </div>
-            <div style={{ ...S.serif, color:V.cream, fontSize:'0.92rem', opacity:0.9, marginBottom:'24px' }}>
-              Negro · Dorado · Champagne · Glamour Gatsby
-            </div>
-            <div style={{ display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap' }}>
-              <Btn onClick={() => navigate('detalles')}>VER PROGRAMA</Btn>
-              <Btn onClick={() => navigate('rsvp')} filled>RESERVAR ASIENTO ★</Btn>
-            </div>
+        <GoldDivider />
+
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
+          <div style={{ ...S.label, marginBottom:'10px' }}>◆ CÓDIGO DE VESTIMENTA ◆</div>
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.1rem,3vw,1.6rem)', marginBottom:'14px', ...S.embossed }}>
+            Etiqueta Rigurosa & Glamour Gatsby
+          </div>
+          <div style={{ display:'inline-flex', gap:'16px', padding:'14px 32px', border:`2px double ${F.pureGold}`, borderRadius:'6px', background:'rgba(212,175,55,0.05)' }}>
+            {['Negro', 'Dorado', 'Champagne'].map(c => (
+              <span key={c} style={{ ...S.label, fontSize:'0.7rem' }}>{c}</span>
+            ))}
           </div>
         </div>
+
+        <div style={{ display:'flex', gap:'16px', justifyContent:'center', flexWrap:'wrap' }}>
+          <Btn onClick={() => navigate('detalles')}>Ver Detalles</Btn>
+          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia ◆</Btn>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0%, 100% { filter: brightness(1); }
+          50% { filter: brightness(1.3); }
+        }
+      `}</style>
     </div>
   );
 }
 
-// ── PÁGINA 2: PROGRAMA (DETALLES) ─────────────────────────────
+// ── PÁGINA 2: DETALLES ────────────────────────────────────────
 const VESTUARIO = [
   { titulo:'Señoras — Vestido de Gala', desc:'Vestido largo en dorado, negro o champagne con lentejuelas o encaje. Tocado, diadema o plumas. Joyería art déco.', colores:['#C9A84C','#1a1208','#F5EDD6'] },
   { titulo:'Señoras — Conjunto de Noche', desc:'Pantalón y blusa con brillos o brocado. Bolso clutch dorado o negro. Guantes de encaje opcionales.', colores:['#2a2015','#C9A84C','#8b6f2e'] },
@@ -236,78 +313,83 @@ const VESTUARIO = [
 
 function Detalles({ navigate }) {
   return (
-    <div style={{ ...S.page, paddingTop:'80px' }}>
+    <div style={{ ...S.page, paddingTop:'90px' }}>
       <Nav navigate={navigate} current="detalles" />
-      <div style={{ maxWidth:'820px', margin:'0 auto', padding:'40px 20px 80px' }}>
+      <div style={{ maxWidth:'900px', margin:'0 auto', padding:'50px 20px 90px' }}>
 
-        <div style={{ textAlign:'center', marginBottom:'40px' }}>
-          <div style={{ ...S.label, marginBottom:'8px' }}>★ PROGRAMA DEL EVENTO ★</div>
-          <div style={{ ...S.marquee, fontSize:'clamp(1.8rem,5vw,3rem)', marginBottom:'8px' }}>UNA VELADA GATSBY</div>
-          <div style={{ ...S.serif, fontSize:'clamp(1.2rem,3vw,1.8rem)' }}>Celebrando a Zandra B. Veliz Ortiz</div>
+        <div style={{ textAlign:'center', marginBottom:'48px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>◆ PROGRAMA DEL EVENTO ◆</div>
+          <GoldDivider />
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(2rem,6vw,3.5rem)', marginBottom:'12px', ...S.embossed }}>
+            Una Velada Gatsby
+          </div>
+          <div style={{ ...S.serif, fontSize:'clamp(1.3rem,4vw,2rem)', color:F.lightGold }}>
+            Celebrando a Zandra B. Veliz Ortiz
+          </div>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))', gap:'16px', marginBottom:'40px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:'20px', marginBottom:'48px' }}>
           {[
-            { i:'📅', l:'FECHA', v:'Sábado, 5 de Septiembre, 2026' },
-            { i:'🕖', l:'HORARIO', v:'19:00 – 00:00 hrs' },
-            { i:'📍', l:'ESCENARIO', v:'El Club Español\nÁrea Fuentecilla' },
-            { i:'🗺️', l:'DIRECCIÓN', v:'Calzada Roosevelt Km. 13.5\nZona 7 de Mixco, Guatemala' },
+            { i:'◆', l:'Fecha', v:'Sábado, 5 de Septiembre, 2026' },
+            { i:'◆', l:'Horario', v:'19:00 – 00:00 hrs' },
+            { i:'◆', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
+            { i:'◆', l:'Dirección', v:'Calzada Roosevelt Km. 13.5\nZona 7 de Mixco, Guatemala' },
           ].map(d => (
-            <div key={d.l} style={{ ...S.ticket, padding:'20px', textAlign:'center' }}>
-              <div style={{ fontSize:'2rem', marginBottom:'10px' }}>{d.i}</div>
-              <div style={{ ...S.label, marginBottom:'8px' }}>{d.l}</div>
-              <div style={{ ...S.body, fontSize:'0.88rem', whiteSpace:'pre-line', fontWeight:600 }}>{d.v}</div>
+            <div key={d.l} style={{ ...S.card, padding:'24px', textAlign:'center' }}>
+              <div style={{ color:F.pureGold, fontSize:'2.2rem', marginBottom:'14px' }}>{d.i}</div>
+              <div style={{ ...S.label, marginBottom:'10px' }}>{d.l}</div>
+              <div style={{ ...S.body, fontSize:'0.95rem', whiteSpace:'pre-line' }}>{d.v}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ ...S.ticket, textAlign:'center', marginBottom:'40px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>UBICACIÓN DEL EVENTO</div>
+        <div style={{ ...S.card, textAlign:'center', marginBottom:'48px' }}>
+          <div style={{ ...S.label, marginBottom:'16px' }}>UBICACIÓN DEL EVENTO</div>
           <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, ...S.btnFill }}>
-            🗺 ABRIR EN GOOGLE MAPS
+            ◆ ABRIR EN GOOGLE MAPS ◆
           </a>
         </div>
 
-        <div style={{ textAlign:'center', marginBottom:'36px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>★ CÓDIGO DE VESTIMENTA ★</div>
-          <DecoLine />
-          <div style={{ ...S.marquee, fontSize:'clamp(1.2rem,3.5vw,1.8rem)', marginBottom:'16px' }}>
+        <div style={{ textAlign:'center', marginBottom:'44px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>◆ CÓDIGO DE VESTIMENTA ◆</div>
+          <GoldDivider />
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.3rem,4vw,2rem)', marginBottom:'18px', ...S.embossed }}>
             Etiqueta Rigurosa & Glamour Gatsby
           </div>
-          <div style={{ ...S.body, opacity:0.8, maxWidth:'560px', margin:'0 auto 20px', fontSize:'0.96rem', lineHeight:1.75 }}>
+          <div style={{ ...S.body, opacity:0.85, maxWidth:'620px', margin:'0 auto 24px', fontSize:'1.05rem' }}>
             Celebremos con el esplendor de los años 20. Viste de negro, dorado o champagne. Lentejuelas, plumas, guantes y alhajas son bienvenidos. ¡Sorpréndenos!
           </div>
-          <div style={{ display:'inline-flex', gap:'12px', padding:'12px 32px', border:`3px double ${V.burgundy}`, borderRadius:'4px', background:V.cream }}>
-            <span style={{ ...S.label, fontSize:'0.75rem' }}>NEGRO</span>
-            <span style={{ ...S.label, fontSize:'0.75rem' }}>·</span>
-            <span style={{ ...S.label, fontSize:'0.75rem' }}>DORADO</span>
-            <span style={{ ...S.label, fontSize:'0.75rem' }}>·</span>
-            <span style={{ ...S.label, fontSize:'0.75rem' }}>CHAMPAGNE</span>
+          <div style={{ display:'inline-flex', gap:'20px', padding:'16px 44px', border:`2px double ${F.pureGold}`, borderRadius:'8px', background:'rgba(212,175,55,0.08)' }}>
+            {['Negro', 'Dorado', 'Champagne', 'Marfil'].map(c => (
+              <span key={c} style={{ ...S.label, fontSize:'0.75rem' }}>{c}</span>
+            ))}
           </div>
         </div>
 
-        <div style={{ marginBottom:'44px' }}>
+        <div style={{ marginBottom:'52px' }}>
           <div style={{ ...S.label, textAlign:'center', marginBottom:'12px' }}>INSPIRACIÓN DE VESTUARIO</div>
-          <DecoLine />
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))', gap:'18px', marginTop:'24px' }}>
+          <GoldDivider />
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:'20px', marginTop:'28px' }}>
             {VESTUARIO.map((v, i) => (
-              <div key={i} style={{ ...S.ticket, padding:'20px' }}>
-                <div style={{ display:'flex', gap:'8px', marginBottom:'12px' }}>
-                  {v.colores.map((c,j) => <div key={j} style={{ width:'26px', height:'26px', background:c, borderRadius:'50%', border:`2px solid ${V.border}` }} />)}
+              <div key={i} style={{ ...S.card, padding:'24px' }}>
+                <div style={{ display:'flex', gap:'10px', marginBottom:'16px', justifyContent:'center' }}>
+                  {v.colores.map((c,j) => (
+                    <div key={j} style={{ width:'32px', height:'32px', background:c, borderRadius:'50%', border:`2px solid ${F.pureGold}`, boxShadow:`0 0 12px ${F.shadow}` }} />
+                  ))}
                 </div>
-                <div style={{ ...S.label, marginBottom:'8px', fontSize:'0.65rem' }}>{v.titulo}</div>
-                <div style={{ ...S.body, fontSize:'0.88rem', lineHeight:1.6 }}>{v.desc}</div>
+                <div style={{ ...S.label, marginBottom:'12px', fontSize:'0.65rem', textAlign:'center' }}>{v.titulo}</div>
+                <div style={{ ...S.body, fontSize:'0.94rem', textAlign:'center', lineHeight:1.7 }}>{v.desc}</div>
               </div>
             ))}
           </div>
         </div>
 
         <div style={{ textAlign:'center' }}>
-          <DecoLine />
-          <div style={{ ...S.body, fontStyle:'italic', opacity:0.6, marginBottom:'20px', fontSize:'0.92rem' }}>
+          <GoldDivider />
+          <div style={{ ...S.body, fontStyle:'italic', opacity:0.6, marginBottom:'24px', fontSize:'0.98rem' }}>
             Los cupos son limitados. Confirma tu asistencia pronto.
           </div>
-          <Btn onClick={() => navigate('rsvp')} filled>RESERVAR ASIENTO ★</Btn>
+          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia ◆</Btn>
         </div>
       </div>
     </div>
@@ -370,29 +452,30 @@ function RSVP({ navigate, setRsvpData }) {
   };
 
   return (
-    <div style={{ ...S.page, paddingTop:'80px' }}>
+    <div style={{ ...S.page, paddingTop:'90px' }}>
       <Nav navigate={navigate} current="rsvp" />
-      <div style={{ maxWidth:'580px', margin:'0 auto', padding:'40px 20px 80px' }}>
+      <div style={{ maxWidth:'640px', margin:'0 auto', padding:'50px 20px 90px' }}>
 
-        <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ ...S.label, marginBottom:'8px' }}>★ RESERVACIÓN DE ASIENTOS ★</div>
-          <DecoLine />
-          <div style={{ ...S.marquee, fontSize:'clamp(1.6rem,5vw,2.4rem)', marginBottom:'12px' }}>¿Nos Acompañas?</div>
-          <div style={{ ...S.body, opacity:0.7, fontSize:'0.92rem', marginBottom:'12px' }}>
-            {stats.libres} asientos disponibles de {EVENTO.cupo}
+        <div style={{ textAlign:'center', marginBottom:'40px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>◆ CONFIRMAR ASISTENCIA ◆</div>
+          <GoldDivider />
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.8rem,5vw,2.8rem)', marginBottom:'16px', ...S.embossed }}>
+            ¿Nos Acompañas?
           </div>
-          <div style={{ width:'280px', height:'8px', background:V.cream, margin:'0 auto', borderRadius:'4px', overflow:'hidden', border:`2px solid ${V.border}` }}>
-            <div style={{ width:`${((EVENTO.cupo-stats.libres)/EVENTO.cupo)*100}%`, height:'100%', background:V.burgundy, borderRadius:'2px', transition:'width 1s ease' }} />
+          <div style={{ ...S.body, opacity:0.75, fontSize:'0.98rem', marginBottom:'16px' }}>
+            {stats.libres} lugares disponibles de {EVENTO.cupo}
+          </div>
+          <div style={{ width:'320px', height:'6px', background:'rgba(212,175,55,0.15)', margin:'0 auto', borderRadius:'3px', overflow:'hidden', border:`1px solid ${F.bronze}` }}>
+            <div style={{ width:`${((EVENTO.cupo-stats.libres)/EVENTO.cupo)*100}%`, height:'100%', background:`linear-gradient(90deg,${F.bronze},${F.pureGold})`, borderRadius:'2px', transition:'width 1s ease', boxShadow:`0 0 12px ${F.shadow}` }} />
           </div>
         </div>
 
-        <div style={{ ...S.ticket, position:'relative' }}>
-          <PerforatedEdge side="left" />
-          <PerforatedEdge side="right" />
+        <div style={{ ...S.card, position:'relative' }}>
+          <OrnateBorder />
 
           {errors.general && (
-            <div style={{ background:'rgba(107,31,38,0.1)', border:`2px solid ${V.burgundy}`, padding:'14px', borderRadius:'3px', marginBottom:'20px' }}>
-              <div style={{ color:V.burgundy, fontSize:'0.88rem', fontWeight:600 }}>⚠️ {errors.general}</div>
+            <div style={{ background:'rgba(192,57,43,0.1)', border:`2px solid #c0392b`, padding:'16px', borderRadius:'6px', marginBottom:'24px' }}>
+              <p style={{ color:'#e74c3c', fontSize:'0.92rem', fontWeight:600 }}>⚠️ {errors.general}</p>
             </div>
           )}
 
@@ -424,13 +507,13 @@ function RSVP({ navigate, setRsvpData }) {
             placeholder="+502 0000-0000"
           />
 
-          <div style={{ marginBottom:'20px' }}>
-            <div onClick={() => set('acompanante', !form.acompanante)} style={{ display:'flex', alignItems:'center', gap:'14px', cursor:'pointer', padding:'14px', border:`2px solid ${form.acompanante ? V.burgundy : V.border}`, borderRadius:'3px', background: form.acompanante ? 'rgba(107,31,38,0.05)' : V.cream, transition:'all 0.25s' }}>
-              <div style={{ width:'48px', height:'26px', borderRadius:'13px', background: form.acompanante ? V.burgundy : V.border, position:'relative', transition:'background 0.3s', flexShrink:0 }}>
-                <div style={{ position:'absolute', top:'3px', left: form.acompanante ? '24px' : '3px', width:'20px', height:'20px', borderRadius:'50%', background: V.cream, transition:'left 0.3s', boxShadow:`0 2px 4px ${V.shadow}` }} />
+          <div style={{ marginBottom:'24px' }}>
+            <div onClick={() => set('acompanante', !form.acompanante)} style={{ display:'flex', alignItems:'center', gap:'16px', cursor:'pointer', padding:'18px', border:`2px solid ${form.acompanante ? F.pureGold : F.bronze}`, borderRadius:'6px', background: form.acompanante ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.02)', transition:'all 0.3s', boxShadow: form.acompanante ? `0 0 20px ${F.shadow}` : 'none' }}>
+              <div style={{ width:'52px', height:'28px', borderRadius:'14px', background: form.acompanante ? `linear-gradient(135deg,${F.bronze},${F.pureGold})` : F.bronze, position:'relative', transition:'background 0.3s', flexShrink:0 }}>
+                <div style={{ position:'absolute', top:'3px', left: form.acompanante ? '26px' : '3px', width:'22px', height:'22px', borderRadius:'50%', background: F.ivory, transition:'left 0.3s', boxShadow:`0 2px 8px rgba(0,0,0,0.4)` }} />
               </div>
-              <span style={{ ...S.body, fontSize:'0.96rem', fontWeight:600 }}>
-                Llevaré un acompañante <span style={{ opacity:0.55, fontWeight:400 }}>(máx. 1)</span>
+              <span style={{ ...S.body, fontSize:'1rem' }}>
+                Llevaré un acompañante <span style={{ opacity:0.6, fontSize:'0.92rem' }}>(máx. 1)</span>
               </span>
             </div>
           </div>
@@ -446,14 +529,14 @@ function RSVP({ navigate, setRsvpData }) {
             />
           )}
 
-          <div style={{ background:`linear-gradient(135deg, ${V.cream}, ${V.paper})`, border:`2px dashed ${V.burgundy}`, padding:'18px', borderRadius:'4px', marginBottom:'26px' }}>
-            <div style={{ ...S.body, fontSize:'0.88rem', lineHeight:1.7, textAlign:'center' }}>
-              💛 &nbsp; Tras confirmar, recibirás un <strong style={{color:V.burgundy}}>enlace especial</strong> para subir una foto o mensaje de video para Zandra.
-            </div>
+          <div style={{ background:`linear-gradient(135deg, rgba(212,175,55,0.12), rgba(205,127,50,0.08))`, border:`2px solid ${F.pureGold}`, padding:'20px', borderRadius:'6px', marginBottom:'32px' }}>
+            <p style={{ ...S.body, fontSize:'0.92rem', textAlign:'center', lineHeight:1.8 }}>
+              ◆ &nbsp; Tras confirmar, recibirás un <strong style={{color:F.pureGold}}>enlace especial</strong> para subir una foto o mensaje de video para Zandra.
+            </p>
           </div>
 
-          <Btn onClick={enviar} filled disabled={submitting} style={{ width:'100%', textAlign:'center', display:'block', fontSize:'0.75rem' }}>
-            {submitting ? 'CONFIRMANDO...' : 'CONFIRMAR ASISTENCIA ★'}
+          <Btn onClick={enviar} filled disabled={submitting} style={{ width:'100%', textAlign:'center', display:'block' }}>
+            {submitting ? 'CONFIRMANDO...' : 'CONFIRMAR ASISTENCIA ◆'}
           </Btn>
         </div>
       </div>
@@ -466,37 +549,38 @@ function Confirmacion({ navigate, rsvpData }) {
   const uploadUrl = `${window.location.origin}?upload=${rsvpData?.uploadToken || ''}`;
 
   return (
-    <div style={{ ...S.page, paddingTop:'80px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
+    <div style={{ ...S.page, paddingTop:'90px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
       <Nav navigate={navigate} current="" />
-      <div style={{ ...S.ticket, maxWidth:'600px', width:'95vw', textAlign:'center', padding:'44px 40px', margin:'40px auto', position:'relative' }}>
-        <PerforatedEdge side="left" />
-        <PerforatedEdge side="right" />
+      <div style={{ ...S.card, maxWidth:'680px', width:'95vw', textAlign:'center', padding:'52px 44px', margin:'50px auto', position:'relative' }}>
+        <OrnateBorder />
         
-        <div style={{ fontSize:'3.5rem', marginBottom:'16px' }}>🎟️</div>
-        <div style={{ ...S.label, marginBottom:'8px' }}>★ ¡ASIENTO RESERVADO! ★</div>
-        <DecoLine />
-        <div style={{ ...S.marquee, fontSize:'clamp(1.4rem,4vw,2rem)', marginBottom:'12px' }}>¡Nos Alegra Contar Contigo!</div>
-        <div style={{ ...S.serif, fontSize:'clamp(1.2rem,3.5vw,1.7rem)', marginBottom:'20px', color:V.burgundy }}>
+        <div style={{ fontSize:'4rem', marginBottom:'20px' }}>🥂</div>
+        <div style={{ ...S.label, marginBottom:'12px' }}>◆ ¡CONFIRMACIÓN RECIBIDA! ◆</div>
+        <GoldDivider />
+        <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.6rem,5vw,2.4rem)', marginBottom:'16px', ...S.embossed }}>
+          ¡Nos Alegra Contar Contigo!
+        </div>
+        <div style={{ ...S.serif, fontSize:'clamp(1.3rem,4vw,2rem)', marginBottom:'24px', color:F.lightGold }}>
           {rsvpData?.nombre || 'Estimado Invitado'}
         </div>
-        <div style={{ ...S.body, opacity:0.75, marginBottom:'20px', fontSize:'0.95rem', lineHeight:1.75 }}>
+        <p style={{ ...S.body, opacity:0.8, marginBottom:'28px', fontSize:'1.02rem' }}>
           Tu asistencia ha sido registrada{rsvpData?.acompanante && rsvpData.nombreAcomp ? ` junto con ${rsvpData.nombreAcomp}` : ''} para la celebración de los 60 años de Zandra.
-        </div>
+        </p>
         
-        <div style={{ background:V.cream, border:`3px double ${V.burgundy}`, padding:'22px', borderRadius:'4px', margin:'0 0 24px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>TU ENLACE PERSONAL</div>
+        <div style={{ background:'rgba(212,175,55,0.08)', border:`2px solid ${F.pureGold}`, padding:'26px', borderRadius:'6px', margin:'0 0 28px' }}>
+          <p style={{ ...S.label, marginBottom:'14px' }}>TU ENLACE PERSONAL</p>
           <input readOnly value={uploadUrl} onClick={e => e.target.select()}
-            style={{ ...S.input, fontSize:'0.76rem', textAlign:'center', cursor:'pointer', marginBottom:'12px', fontFamily:"'Courier New',monospace", background:V.paper }} />
-          <div style={{ ...S.body, fontSize:'0.86rem', lineHeight:1.7 }}>
-            📧 Usa este enlace para subir una foto o video para Zandra. Guárdalo bien — será parte de la sorpresa.
-          </div>
+            style={{ ...S.input, fontSize:'0.8rem', textAlign:'center', cursor:'pointer', marginBottom:'14px', fontFamily:"'Courier New',monospace" }} />
+          <p style={{ ...S.body, fontSize:'0.9rem', lineHeight:1.8 }}>
+            ◆ Usa este enlace para subir una foto o video para Zandra. Guárdalo bien — será parte de la sorpresa.
+          </p>
         </div>
         
-        <DecoLine />
-        <div style={{ ...S.body, fontStyle:'italic', opacity:0.5, fontSize:'0.85rem', marginBottom:'24px' }}>
-          {EVENTO.fecha} &nbsp;·&nbsp; {EVENTO.hora}<br/>{EVENTO.lugar}
-        </div>
-        <Btn onClick={() => navigate('landing')}>← VOLVER AL PLAYBILL</Btn>
+        <GoldDivider />
+        <p style={{ ...S.body, fontStyle:'italic', opacity:0.5, fontSize:'0.88rem', marginBottom:'28px' }}>
+          {EVENTO.fecha} · {EVENTO.hora}<br/>{EVENTO.lugar}
+        </p>
+        <Btn onClick={() => navigate('landing')}>← Volver al Inicio</Btn>
       </div>
     </div>
   );
@@ -575,68 +659,68 @@ function SubirArchivo({ navigate, uploadToken }) {
 
   if (done) return (
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'20px' }}>
-      <div style={{ ...S.ticket, maxWidth:'520px', width:'95vw', textAlign:'center', padding:'48px 40px', position:'relative' }}>
-        <PerforatedEdge side="left" />
-        <PerforatedEdge side="right" />
-        <div style={{ fontSize:'3.5rem', marginBottom:'16px' }}>💛</div>
-        <div style={{ ...S.label, marginBottom:'8px' }}>★ ¡RECIBIDO CON AMOR! ★</div>
-        <DecoLine />
-        <div style={{ ...S.body, opacity:0.8, marginBottom:'24px', fontSize:'0.96rem', lineHeight:1.75 }}>
+      <div style={{ ...S.card, maxWidth:'580px', width:'95vw', textAlign:'center', padding:'52px 44px', position:'relative' }}>
+        <OrnateBorder />
+        <div style={{ fontSize:'4rem', marginBottom:'20px' }}>◆</div>
+        <div style={{ ...S.label, marginBottom:'12px' }}>¡RECIBIDO CON AMOR!</div>
+        <GoldDivider />
+        <p style={{ ...S.body, opacity:0.85, marginBottom:'28px', fontSize:'1rem' }}>
           Tu mensaje fue enviado exitosamente. Será parte de la sorpresa especial el día de la celebración de Zandra.
-        </div>
-        <Btn onClick={() => navigate('landing')}>← VOLVER AL PLAYBILL</Btn>
+        </p>
+        <Btn onClick={() => navigate('landing')}>← Volver al Inicio</Btn>
       </div>
     </div>
   );
 
   return (
-    <div style={{ ...S.page, paddingTop:'40px' }}>
-      <div style={{ maxWidth:'640px', margin:'0 auto', padding:'40px 20px 80px' }}>
+    <div style={{ ...S.page, paddingTop:'50px' }}>
+      <div style={{ maxWidth:'720px', margin:'0 auto', padding:'50px 20px 90px' }}>
 
-        <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ ...S.label, marginBottom:'8px' }}>★ TU MENSAJE ESPECIAL ★</div>
-          <DecoLine />
-          <div style={{ ...S.marquee, fontSize:'clamp(1.4rem,4vw,2rem)', marginBottom:'10px' }}>Un Regalo para Zandra</div>
-          <div style={{ ...S.body, opacity:0.7, fontSize:'0.93rem', maxWidth:'480px', margin:'0 auto' }}>
-            Comparte un recuerdo especial. Se presentará como sorpresa el día de su celebración. 💛
+        <div style={{ textAlign:'center', marginBottom:'40px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>◆ TU MENSAJE ESPECIAL ◆</div>
+          <GoldDivider />
+          <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.6rem,5vw,2.4rem)', marginBottom:'14px', ...S.embossed }}>
+            Un Regalo para Zandra
           </div>
+          <p style={{ ...S.body, opacity:0.75, fontSize:'0.98rem', maxWidth:'540px', margin:'0 auto' }}>
+            Comparte un recuerdo especial. Se presentará como sorpresa el día de su celebración. ◆
+          </p>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'26px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px', marginBottom:'32px' }}>
           {[
-            { k:'foto-con-ella', i:'🤝', t:'Foto con Ella', d:'Una foto tuya junto a Zandra' },
-            { k:'recuerdo', i:'🕰️', t:'Recuerdo', d:'Foto de infancia u otro momento especial' },
-            { k:'video', i:'🎬', t:'Video Mensaje', d:'Felicitación en video (máx. 1 min)' },
+            { k:'foto-con-ella', i:'◆', t:'Foto con Ella', d:'Una foto tuya junto a Zandra' },
+            { k:'recuerdo', i:'◆', t:'Recuerdo', d:'Foto de infancia u otro momento especial' },
+            { k:'video', i:'◆', t:'Video Mensaje', d:'Felicitación en video (máx. 1 min)' },
           ].map(o => {
             const sel = tipoArchivo === o.k;
             return (
               <div key={o.k} onClick={() => { setTipoArchivo(o.k); setFile(null); setPreview(null); setVideoError(''); }}
-                style={{ ...S.ticket, padding:'16px 12px', textAlign:'center', cursor:'pointer', borderColor: sel ? V.burgundy : V.border, borderWidth: sel ? '3px' : '2px', background: sel ? 'rgba(107,31,38,0.05)' : V.paper, transition:'all 0.25s' }}>
-                <div style={{ fontSize:'1.8rem', marginBottom:'8px' }}>{o.i}</div>
-                <div style={{ ...S.label, fontSize:'0.58rem', marginBottom:'5px', color: sel ? V.burgundy : V.border }}>{o.t}</div>
-                <div style={{ ...S.body, fontSize:'0.72rem', opacity:0.65, lineHeight:1.4 }}>{o.d}</div>
-                {sel && <div style={{ width:'24px', height:'3px', background:V.burgundy, margin:'10px auto 0' }} />}
+                style={{ ...S.card, padding:'20px 16px', textAlign:'center', cursor:'pointer', borderColor: sel ? F.pureGold : F.bronze, borderWidth: sel ? '3px' : '2px', background: sel ? 'rgba(212,175,55,0.1)' : 'linear-gradient(145deg, rgba(26,22,18,0.9), rgba(13,12,10,0.95))', transition:'all 0.3s', boxShadow: sel ? `0 0 30px ${F.shadow}` : S.card.boxShadow }}>
+                <div style={{ color:F.pureGold, fontSize:'2rem', marginBottom:'12px' }}>{o.i}</div>
+                <div style={{ ...S.label, fontSize:'0.6rem', marginBottom:'8px', color: sel ? F.pureGold : F.champagne }}>{o.t}</div>
+                <div style={{ ...S.body, fontSize:'0.76rem', opacity:0.7, lineHeight:1.5 }}>{o.d}</div>
+                {sel && <div style={{ width:'32px', height:'3px', background:F.pureGold, margin:'12px auto 0', boxShadow:`0 0 8px ${F.shadow}` }} />}
               </div>
             );
           })}
         </div>
 
-        <div style={{ ...S.ticket, position:'relative' }}>
-          <PerforatedEdge side="left" />
-          <PerforatedEdge side="right" />
+        <div style={{ ...S.card, position:'relative' }}>
+          <OrnateBorder />
 
-          <div style={{ marginBottom:'20px' }}>
+          <div style={{ marginBottom:'24px' }}>
             <label style={S.label}>TU NOMBRE COMPLETO</label>
             <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="¿Cómo te llamas?" style={S.input} />
           </div>
 
           {tipoArchivo && (
-            <div style={{ background:V.cream, border:`2px dashed ${V.burgundy}`, padding:'14px 18px', borderRadius:'4px', marginBottom:'20px' }}>
-              <div style={{ ...S.body, fontSize:'0.86rem', lineHeight:1.65 }}>
-                {tipoArchivo === 'foto-con-ella' && '📸 Sube una foto donde aparezcas junto a Zandra — puede ser reciente o de cualquier época.'}
-                {tipoArchivo === 'recuerdo' && '🕰️ Sube una foto que capture un recuerdo de Zandra — de su infancia, juventud o cualquier momento que quieras compartir.'}
-                {tipoArchivo === 'video' && '🎬 Graba un video con tus felicitaciones de cumpleaños. Máximo 1 minuto (60 segundos). ¡Habla desde el corazón!'}
-              </div>
+            <div style={{ background:'rgba(212,175,55,0.08)', border:`2px solid ${F.pureGold}`, padding:'18px 22px', borderRadius:'6px', marginBottom:'24px' }}>
+              <p style={{ ...S.body, fontSize:'0.9rem', textAlign:'center', lineHeight:1.75 }}>
+                {tipoArchivo === 'foto-con-ella' && '◆ Sube una foto donde aparezcas junto a Zandra — puede ser reciente o de cualquier época.'}
+                {tipoArchivo === 'recuerdo' && '◆ Sube una foto que capture un recuerdo de Zandra — de su infancia, juventud o cualquier momento que quieras compartir.'}
+                {tipoArchivo === 'video' && '◆ Graba un video con tus felicitaciones de cumpleaños. Máximo 1 minuto (60 segundos). ¡Habla desde el corazón!'}
+              </p>
             </div>
           )}
 
@@ -645,54 +729,54 @@ function SubirArchivo({ navigate, uploadToken }) {
             onDragLeave={() => setDrag(false)}
             onDrop={e => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files[0]); }}
             onClick={() => tipoArchivo && document.getElementById('fileInput').click()}
-            style={{ border:`3px dashed ${drag?V.burgundy:tipoArchivo?V.border:'rgba(139,111,71,0.3)'}`, borderRadius:'4px', padding:'38px 24px', textAlign:'center', cursor:tipoArchivo?'pointer':'not-allowed', marginBottom:'12px', background:drag?'rgba(107,31,38,0.05)':V.cream, transition:'all 0.3s', opacity:tipoArchivo?1:0.5 }}
+            style={{ border:`3px dashed ${drag?F.pureGold:tipoArchivo?F.bronze:'rgba(205,127,50,0.3)'}`, borderRadius:'6px', padding:'44px 28px', textAlign:'center', cursor:tipoArchivo?'pointer':'not-allowed', marginBottom:'16px', background:drag?'rgba(212,175,55,0.08)':'rgba(255,255,255,0.02)', transition:'all 0.3s', opacity:tipoArchivo?1:0.5, boxShadow: drag?`0 0 30px ${F.shadow}`:'none' }}
           >
             <input id="fileInput" type="file" accept={tipoArchivo==='video'?'video/*':'image/*'} style={{ display:'none' }} onChange={e => handleFile(e.target.files[0])} />
-            <div style={{ fontSize:'2.4rem', marginBottom:'10px' }}>{file ? '✅' : tipoArchivo==='video' ? '🎬' : '🖼️'}</div>
-            <div style={{ ...S.label, marginBottom:'6px', fontSize:'0.62rem' }}>
+            <div style={{ fontSize:'3rem', marginBottom:'14px', color:F.pureGold }}>{file ? '◆' : tipoArchivo==='video' ? '◆' : '◆'}</div>
+            <div style={{ ...S.label, marginBottom:'8px', fontSize:'0.65rem' }}>
               {file ? file.name : tipoArchivo ? (tipoArchivo==='video'?'VIDEO — MP4 · MOV':'IMAGEN — JPG · PNG') : 'PRIMERO ELIGE UN TIPO ARRIBA'}
             </div>
-            <div style={{ ...S.body, opacity:0.5, fontSize:'0.82rem' }}>
+            <p style={{ ...S.body, opacity:0.6, fontSize:'0.86rem' }}>
               {file ? 'Haz clic para cambiar el archivo' : 'Arrastra aquí o haz clic para seleccionar'}
-            </div>
+            </p>
             {tipoArchivo === 'video' && !file && (
-              <div style={{ ...S.label, fontSize:'0.7rem', color:V.burgundy, marginTop:'8px' }}>⏱ MÁXIMO 60 SEGUNDOS</div>
+              <p style={{ ...S.label, fontSize:'0.72rem', color:F.pureGold, marginTop:'10px' }}>⏱ MÁXIMO 60 SEGUNDOS</p>
             )}
           </div>
 
           {videoError && (
-            <div style={{ background:'rgba(107,31,38,0.1)', border:`2px solid ${V.burgundy}`, padding:'12px 16px', borderRadius:'4px', marginBottom:'16px' }}>
-              <div style={{ color:V.burgundy, fontSize:'0.86rem', fontStyle:'italic', fontWeight:600 }}>⚠️ {videoError}</div>
+            <div style={{ background:'rgba(192,57,43,0.1)', border:`2px solid #c0392b`, padding:'14px 20px', borderRadius:'6px', marginBottom:'20px' }}>
+              <p style={{ color:'#e74c3c', fontSize:'0.9rem', fontStyle:'italic', fontWeight:600 }}>⚠️ {videoError}</p>
             </div>
           )}
 
           {preview && !videoError && (
-            <div style={{ marginBottom:'20px', textAlign:'center', borderRadius:'4px', overflow:'hidden', border:`3px solid ${V.border}` }}>
+            <div style={{ marginBottom:'24px', textAlign:'center', borderRadius:'6px', overflow:'hidden', border:`3px solid ${F.pureGold}`, boxShadow:`0 0 20px ${F.shadow}` }}>
               {preview.tipo === 'imagen'
-                ? <img src={preview.url} alt="preview" style={{ maxWidth:'100%', maxHeight:'240px', display:'block', margin:'0 auto' }} />
-                : <video src={preview.url} controls style={{ maxWidth:'100%', maxHeight:'240px', display:'block', margin:'0 auto' }} />}
+                ? <img src={preview.url} alt="preview" style={{ maxWidth:'100%', maxHeight:'280px', display:'block', margin:'0 auto' }} />
+                : <video src={preview.url} controls style={{ maxWidth:'100%', maxHeight:'280px', display:'block', margin:'0 auto' }} />}
             </div>
           )}
 
-          <div style={{ marginBottom:'26px', marginTop:'12px' }}>
-            <label style={S.label}>MENSAJE ESCRITO PARA ZANDRA <span style={{ opacity:0.45 }}>(OPCIONAL)</span></label>
+          <div style={{ marginBottom:'32px', marginTop:'16px' }}>
+            <label style={S.label}>MENSAJE ESCRITO PARA ZANDRA <span style={{ opacity:0.5 }}>(OPCIONAL)</span></label>
             <textarea value={msg} onChange={e => setMsg(e.target.value)}
               placeholder="Escribe unas palabras de cariño para Zandra en su día especial..." rows={3}
-              style={{ ...S.input, resize:'vertical', lineHeight:1.65, fontFamily:"'Libre Baskerville','Georgia',serif" }} />
+              style={{ ...S.input, resize:'vertical', lineHeight:1.7 }} />
           </div>
 
           {(!tipoArchivo || !file || !nombre.trim()) && (
-            <div style={{ ...S.body, fontSize:'0.8rem', opacity:0.45, textAlign:'center', marginBottom:'16px', fontWeight:600 }}>
+            <p style={{ ...S.body, fontSize:'0.84rem', opacity:0.5, textAlign:'center', marginBottom:'20px', fontWeight:600 }}>
               {!tipoArchivo ? '① Elige el tipo de archivo arriba'
                 : !nombre.trim() ? '② Ingresa tu nombre'
                 : '③ Selecciona tu archivo'}
-            </div>
+            </p>
           )}
 
           <Btn onClick={enviar} filled
             disabled={!file || !nombre.trim() || uploading || !!videoError || !tipoArchivo}
-            style={{ width:'100%', display:'block', textAlign:'center', fontSize:'0.75rem' }}>
-            {uploading ? 'ENVIANDO CON AMOR...' : 'ENVIAR MI REGALO ★'}
+            style={{ width:'100%', display:'block', textAlign:'center' }}>
+            {uploading ? 'ENVIANDO CON AMOR...' : 'ENVIAR MI REGALO ◆'}
           </Btn>
         </div>
       </div>
@@ -727,24 +811,23 @@ function Admin({ navigate }) {
 
   if (!auth) return (
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
-      <div style={{ ...S.ticket, maxWidth:'380px', width:'94vw', textAlign:'center', padding:'42px 32px', position:'relative' }}>
-        <PerforatedEdge side="left" />
-        <PerforatedEdge side="right" />
-        <div style={{ ...S.label, marginBottom:'8px' }}>★ PANEL DE ADMINISTRACIÓN ★</div>
-        <DecoLine />
-        <div style={{ ...S.body, opacity:0.5, marginBottom:'24px', fontSize:'0.9rem' }}>Acceso restringido</div>
+      <div style={{ ...S.card, maxWidth:'420px', width:'94vw', textAlign:'center', padding:'48px 40px', position:'relative' }}>
+        <OrnateBorder />
+        <p style={S.label}>◆ PANEL DE ADMINISTRACIÓN ◆</p>
+        <GoldDivider />
+        <p style={{ ...S.body, opacity:0.6, marginBottom:'28px', fontSize:'0.94rem' }}>Acceso restringido</p>
         <label style={S.label}>CONTRASEÑA</label>
-        <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&intentar()} style={{ ...S.input, textAlign:'center', marginBottom:'10px', letterSpacing:'0.25em', fontFamily:"'Courier New',monospace" }} placeholder="••••••••" />
-        {err && <div style={{ color:V.burgundy, fontSize:'0.82rem', marginBottom:'10px', fontWeight:600 }}>{err}</div>}
-        <Btn onClick={intentar} filled style={{ width:'100%', display:'block', textAlign:'center', marginTop:'12px' }}>INGRESAR</Btn>
-        <Btn onClick={() => navigate('landing')} style={{ width:'100%', display:'block', textAlign:'center', marginTop:'12px', fontSize:'0.62rem' }}>← VOLVER</Btn>
+        <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&intentar()} style={{ ...S.input, textAlign:'center', marginBottom:'12px', letterSpacing:'0.3em', fontFamily:"'Courier New',monospace" }} placeholder="••••••••" />
+        {err && <p style={{ color:'#e74c3c', fontSize:'0.86rem', marginBottom:'12px', fontWeight:600 }}>{err}</p>}
+        <Btn onClick={intentar} filled style={{ width:'100%', display:'block', textAlign:'center', marginTop:'16px' }}>INGRESAR</Btn>
+        <Btn onClick={() => navigate('landing')} style={{ width:'100%', display:'block', textAlign:'center', marginTop:'16px', fontSize:'0.65rem' }}>← VOLVER</Btn>
       </div>
     </div>
   );
 
   if (loading) return (
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
-      <div style={{ ...S.body, opacity:0.6 }}>Cargando datos...</div>
+      <p style={{ ...S.body, opacity:0.7 }}>Cargando datos...</p>
     </div>
   );
 
@@ -764,64 +847,64 @@ function Admin({ navigate }) {
   };
 
   return (
-    <div style={{ ...S.page, paddingTop:'24px' }}>
-      <div style={{ maxWidth:'960px', margin:'0 auto', padding:'28px 20px 80px' }}>
+    <div style={{ ...S.page, paddingTop:'28px' }}>
+      <div style={{ maxWidth:'1020px', margin:'0 auto', padding:'32px 20px 90px' }}>
 
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'28px', flexWrap:'wrap', gap:'14px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px', flexWrap:'wrap', gap:'16px' }}>
           <div>
-            <div style={{ ...S.label, marginBottom:'4px' }}>PANEL DE ADMINISTRACIÓN</div>
-            <div style={{ ...S.marquee, fontSize:'1.8rem' }}>60 AÑOS — ZANDRA VELIZ</div>
+            <p style={{ ...S.label, marginBottom:'6px' }}>PANEL DE ADMINISTRACIÓN</p>
+            <div style={{ ...S.goldText, ...S.ornate, fontSize:'2.2rem', ...S.embossed }}>60 AÑOS — ZANDRA VELIZ</div>
           </div>
-          <Btn onClick={() => navigate('landing')} style={{ fontSize:'0.62rem', padding:'10px 20px' }}>← SALIR</Btn>
+          <Btn onClick={() => navigate('landing')} style={{ fontSize:'0.65rem', padding:'12px 24px' }}>← SALIR</Btn>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:'14px', marginBottom:'32px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:'16px', marginBottom:'36px' }}>
           {[
             { l:'Confirmados', v:confirmados, s:'invitados' },
             { l:'Total Personas', v:totalPersonas, s:`de ${EVENTO.cupo}` },
             { l:'Archivos Recibidos', v:conMedia, s:'fotos/videos' },
             { l:'Cupos Libres', v:EVENTO.cupo-totalPersonas, s:'disponibles' },
           ].map(stat => (
-            <div key={stat.l} style={{ ...S.ticket, padding:'18px', textAlign:'center' }}>
-              <div style={{ ...S.label, marginBottom:'6px', fontSize:'0.6rem' }}>{stat.l}</div>
-              <div style={{ ...S.marquee, fontSize:'2.6rem', margin:'6px 0', color:V.burgundy }}>{stat.v}</div>
-              <div style={{ ...S.body, fontSize:'0.76rem', opacity:0.55 }}>{stat.s}</div>
+            <div key={stat.l} style={{ ...S.card, padding:'22px', textAlign:'center' }}>
+              <p style={{ ...S.label, marginBottom:'8px', fontSize:'0.62rem' }}>{stat.l}</p>
+              <div style={{ ...S.goldText, ...S.ornate, fontSize:'3rem', margin:'8px 0', ...S.embossed }}>{stat.v}</div>
+              <p style={{ ...S.body, fontSize:'0.8rem', opacity:0.6 }}>{stat.s}</p>
             </div>
           ))}
         </div>
 
-        <div style={{ marginBottom:'32px' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px' }}>
-            <div style={{ ...S.label, fontSize:'0.6rem' }}>CAPACIDAD UTILIZADA</div>
-            <div style={{ ...S.label, fontSize:'0.6rem' }}>{Math.round((totalPersonas/EVENTO.cupo)*100)}%</div>
+        <div style={{ marginBottom:'36px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'10px' }}>
+            <p style={{ ...S.label, fontSize:'0.65rem' }}>CAPACIDAD UTILIZADA</p>
+            <p style={{ ...S.label, fontSize:'0.65rem' }}>{Math.round((totalPersonas/EVENTO.cupo)*100)}%</p>
           </div>
-          <div style={{ height:'8px', background:V.cream, borderRadius:'4px', overflow:'hidden', border:`2px solid ${V.border}` }}>
-            <div style={{ width:`${(totalPersonas/EVENTO.cupo)*100}%`, height:'100%', background:V.burgundy, borderRadius:'2px', transition:'width 1s ease' }} />
+          <div style={{ height:'8px', background:'rgba(212,175,55,0.1)', borderRadius:'4px', overflow:'hidden', border:`1px solid ${F.bronze}` }}>
+            <div style={{ width:`${(totalPersonas/EVENTO.cupo)*100}%`, height:'100%', background:`linear-gradient(90deg,${F.bronze},${F.pureGold})`, borderRadius:'3px', transition:'width 1s ease', boxShadow:`0 0 12px ${F.shadow}` }} />
           </div>
         </div>
 
-        <div style={{ ...S.ticket, padding:0, overflow:'hidden', marginBottom:'24px' }}>
-          <div style={{ padding:'16px 24px', borderBottom:`2px solid ${V.border}`, background:V.cream, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <div style={S.label}>LISTA DE CONFIRMACIONES</div>
-            <span style={{ ...S.label, fontSize:'0.58rem', opacity:0.6 }}>{confirmados} registros</span>
+        <div style={{ ...S.card, padding:0, overflow:'hidden', marginBottom:'28px' }}>
+          <div style={{ padding:'20px 28px', borderBottom:`2px solid ${F.bronze}`, background:'rgba(212,175,55,0.05)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <p style={S.label}>LISTA DE CONFIRMACIONES</p>
+            <span style={{ ...S.label, fontSize:'0.6rem', opacity:0.7 }}>{confirmados} registros</span>
           </div>
           <div style={{ overflowX:'auto' }}>
             <table style={{ width:'100%', borderCollapse:'collapse' }}>
               <thead>
-                <tr style={{ borderBottom:`2px solid ${V.border}`, background:V.paper }}>
+                <tr style={{ borderBottom:`2px solid ${F.bronze}`, background:'rgba(212,175,55,0.03)' }}>
                   {['Nombre','Email','Teléfono','Acompañante','Fecha'].map(h => (
-                    <th key={h} style={{ ...S.label, padding:'12px 18px', textAlign:'left', fontWeight:700, whiteSpace:'nowrap', fontSize:'0.6rem' }}>{h}</th>
+                    <th key={h} style={{ ...S.label, padding:'14px 20px', textAlign:'left', fontWeight:700, whiteSpace:'nowrap', fontSize:'0.62rem' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {rsvps.map((r,i) => (
-                  <tr key={i} style={{ borderBottom:`1px solid ${V.sepia}`, background: i%2===0?V.cream:V.paper }}>
-                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.9rem', whiteSpace:'nowrap', fontWeight:600 }}>{r.nombre}</td>
-                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.8rem', opacity:0.65 }}>{r.email}</td>
-                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.78rem', opacity:0.55 }}>{r.telefono || '—'}</td>
-                    <td style={{ padding:'12px 18px', fontSize:'0.85rem', color: r.acompanante?V.burgundy:V.border, fontWeight:600 }}>{r.acompanante?`★ ${r.nombre_acomp}`:'—'}</td>
-                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.78rem', opacity:0.5, whiteSpace:'nowrap' }}>{new Date(r.created_at).toLocaleDateString()}</td>
+                  <tr key={i} style={{ borderBottom:`1px solid rgba(205,127,50,0.15)`, background: i%2===0?'rgba(255,255,255,0.01)':'transparent' }}>
+                    <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.94rem', whiteSpace:'nowrap' }}>{r.nombre}</td>
+                    <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.84rem', opacity:0.7 }}>{r.email}</td>
+                    <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.8rem', opacity:0.6 }}>{r.telefono || '—'}</td>
+                    <td style={{ padding:'14px 20px', fontSize:'0.88rem', color: r.acompanante?F.pureGold:F.bronze }}>{r.acompanante?`◆ ${r.nombre_acomp}`:'—'}</td>
+                    <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.8rem', opacity:0.55, whiteSpace:'nowrap' }}>{new Date(r.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -829,26 +912,26 @@ function Admin({ navigate }) {
           </div>
         </div>
 
-        <div style={{ ...S.ticket, padding:0, overflow:'hidden', marginBottom:'24px' }}>
-          <div style={{ padding:'16px 24px', borderBottom:`2px solid ${V.border}`, background:V.cream }}>
-            <div style={S.label}>ARCHIVOS RECIBIDOS ({uploads.length})</div>
+        <div style={{ ...S.card, padding:0, overflow:'hidden', marginBottom:'28px' }}>
+          <div style={{ padding:'20px 28px', borderBottom:`2px solid ${F.bronze}`, background:'rgba(212,175,55,0.05)' }}>
+            <p style={S.label}>ARCHIVOS RECIBIDOS ({uploads.length})</p>
           </div>
-          <div style={{ padding:'24px', display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:'16px' }}>
+          <div style={{ padding:'28px', display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:'18px' }}>
             {uploads.map((u,i) => (
-              <div key={i} style={{ border:`2px solid ${V.border}`, borderRadius:'4px', padding:'14px', background:V.cream }}>
-                <div style={{ ...S.label, fontSize:'0.62rem', marginBottom:'7px' }}>{u.nombre_persona}</div>
-                <div style={{ ...S.body, fontSize:'0.78rem', opacity:0.6, marginBottom:'10px' }}>{u.tipo_archivo}</div>
-                <a href={u.archivo_url} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.58rem', padding:'8px 16px', display:'inline-block', textDecoration:'none' }}>
-                  VER ARCHIVO ↗
+              <div key={i} style={{ border:`2px solid ${F.bronze}`, borderRadius:'6px', padding:'18px', background:'rgba(212,175,55,0.03)' }}>
+                <p style={{ ...S.label, fontSize:'0.64rem', marginBottom:'9px' }}>{u.nombre_persona}</p>
+                <p style={{ ...S.body, fontSize:'0.82rem', opacity:0.65, marginBottom:'12px' }}>{u.tipo_archivo}</p>
+                <a href={u.archivo_url} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.6rem', padding:'10px 20px', display:'inline-block', textDecoration:'none' }}>
+                  VER ARCHIVO ◆
                 </a>
               </div>
             ))}
-            {uploads.length === 0 && <div style={{ ...S.body, opacity:0.4, gridColumn:'1/-1', textAlign:'center', padding:'20px' }}>No hay archivos todavía</div>}
+            {uploads.length === 0 && <p style={{ ...S.body, opacity:0.5, gridColumn:'1/-1', textAlign:'center', padding:'24px' }}>No hay archivos todavía</p>}
           </div>
         </div>
 
-        <div style={{ display:'flex', gap:'14px', flexWrap:'wrap' }}>
-          <Btn onClick={exportCSV} filled>⬇ EXPORTAR LISTA CSV</Btn>
+        <div style={{ display:'flex', gap:'16px', flexWrap:'wrap' }}>
+          <Btn onClick={exportCSV} filled>◆ EXPORTAR LISTA CSV</Btn>
         </div>
 
       </div>
@@ -864,11 +947,11 @@ export default function App() {
 
   useEffect(() => {
     const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;700&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
     const style = document.createElement('style');
-    style.textContent = '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } body { background: #f4e8d0; } button:focus { outline: none; } input:focus, textarea:focus { border-color: #6b1f26 !important; } input::placeholder, textarea::placeholder { color: rgba(43,24,16,0.3); }';
+    style.textContent = '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0d0c0a; } button:focus { outline: none; } input:focus, textarea:focus { border-color: #d4af37 !important; } input::placeholder, textarea::placeholder { color: rgba(247,231,206,0.3); }';
     document.head.appendChild(style);
 
     const params = new URLSearchParams(window.location.search);
@@ -883,7 +966,7 @@ export default function App() {
   const props = { navigate, rsvpData, setRsvpData, uploadToken };
 
   return (
-    <div style={{ background:'#c9b896', minHeight:'100vh' }}>
+    <div style={{ background:'#0d0c0a', minHeight:'100vh' }}>
       {page === 'landing'      && <Invitacion {...props} />}
       {page === 'detalles'     && <Detalles {...props} />}
       {page === 'rsvp'         && <RSVP {...props} />}
