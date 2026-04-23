@@ -6,15 +6,20 @@ const SUPABASE_URL = 'https://ndwheqxeuykmsfbhsvvp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kd2hlcXhldXlrbXNmYmhzdnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODkxMzYsImV4cCI6MjA5MjQ2NTEzNn0.yJ3prriU3vpS9Aa8zoAzjXcdjjAL8HqvTXw0f9bzkjg';
 
 const CLOUDINARY_CLOUD_NAME = 'duo4dukq4';
-const CLOUDINARY_UPLOAD_PRESET = 'zandra60_unsigned'; // Crearemos esto después
+const CLOUDINARY_UPLOAD_PRESET = 'zandra60_unsigned';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── Paleta & Evento ───────────────────────────────────────────
-const G = {
-  black: '#0a0805', deep: '#100d06', gold: '#C9A84C',
-  goldLight: '#F0D080', goldDim: '#7a5f2a', cream: '#F5EDD6',
-  text: '#e8d8b0', red: '#c0392b',
+// ── Paleta Playbill Vintage ───────────────────────────────────
+const V = {
+  paper: '#f4e8d0',
+  sepia: '#c9b896',
+  ink: '#2b1810',
+  burgundy: '#6b1f26',
+  gold: '#d4a574',
+  cream: '#fdf9f1',
+  border: '#8b6f47',
+  shadow: 'rgba(43,24,16,0.25)',
 };
 
 const EVENTO = {
@@ -28,44 +33,68 @@ const EVENTO = {
   cupo: 80,
 };
 
-// ── Estilos Base ──────────────────────────────────────────────
+// ── Estilos Playbill ──────────────────────────────────────────
 const S = {
-  page: { minHeight: '100vh', background: `linear-gradient(160deg,${G.black} 0%,#12100a 50%,${G.black} 100%)`, color: G.cream, fontFamily: "'Cormorant Garamond','Georgia',serif" },
-  eyebrow: { fontFamily: "'IM Fell English SC','Georgia',serif", fontSize: '0.63rem', letterSpacing: '0.42em', color: G.gold, textTransform: 'uppercase', opacity: 0.85 },
-  title: { fontFamily: "'Cinzel Decorative','Georgia',serif", color: G.gold, letterSpacing: '0.05em', lineHeight: 1.1, textShadow: `0 0 40px rgba(201,168,76,0.4)` },
-  name: { fontFamily: "'Playfair Display','Georgia',serif", fontStyle: 'italic', color: G.goldLight, lineHeight: 1.05 },
-  body: { fontSize: '1rem', lineHeight: 1.7, color: G.text, fontFamily: "'Cormorant Garamond','Georgia',serif" },
-  card: { background: `linear-gradient(135deg,#1a1508,#0f0b04)`, border: `1px solid ${G.goldDim}`, borderRadius: '2px', padding: '28px', boxShadow: `0 0 40px rgba(0,0,0,0.6),inset 0 0 40px rgba(0,0,0,0.3)` },
-  input: { width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${G.goldDim}`, color: G.cream, padding: '12px 16px', fontSize: '1rem', fontFamily: "'Cormorant Garamond','Georgia',serif", outline: 'none', boxSizing: 'border-box', borderRadius: '2px' },
-  label: { fontFamily: "'IM Fell English SC','Georgia',serif", fontSize: '0.63rem', letterSpacing: '0.3em', color: G.goldDim, textTransform: 'uppercase', display: 'block', marginBottom: '7px' },
-  btn: { display: 'inline-block', border: `1px solid ${G.gold}`, padding: '12px 28px', fontFamily: "'IM Fell English SC','Georgia',serif", fontSize: '0.68rem', letterSpacing: '0.35em', color: G.gold, textTransform: 'uppercase', background: 'transparent', cursor: 'pointer', transition: 'all 0.3s', textDecoration: 'none' },
-  btnFill: { background: `linear-gradient(135deg,${G.gold},${G.goldLight})`, color: G.black, border: 'none' },
+  page: { minHeight:'100vh', background:`radial-gradient(ellipse at top,${V.sepia},#a89372)`, color:V.ink, fontFamily:"'Libre Baskerville','Georgia',serif", position:'relative' },
+  marquee: { fontFamily:"'Abril Fatface','Georgia',serif", color:V.burgundy, letterSpacing:'0.08em', lineHeight:0.9, textTransform:'uppercase' },
+  serif: { fontFamily:"'Libre Baskerville','Georgia',serif", fontStyle:'italic', color:V.ink },
+  label: { fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.65rem', letterSpacing:'0.25em', color:V.border, textTransform:'uppercase', fontWeight:700 },
+  body: { fontSize:'1rem', lineHeight:1.65, color:V.ink, fontFamily:"'Libre Baskerville','Georgia',serif" },
+  ticket: { background:V.paper, border:`3px solid ${V.ink}`, borderRadius:'4px', padding:'32px', boxShadow:`0 8px 24px ${V.shadow}, inset 0 0 0 1px rgba(255,255,255,0.5)`, position:'relative' },
+  input: { width:'100%', background:V.cream, border:`2px solid ${V.border}`, color:V.ink, padding:'12px 14px', fontSize:'1rem', fontFamily:"'Libre Baskerville','Georgia',serif", outline:'none', boxSizing:'border-box', borderRadius:'2px' },
+  btn: { display:'inline-block', border:`3px solid ${V.burgundy}`, padding:'14px 32px', fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.7rem', letterSpacing:'0.25em', color:V.burgundy, textTransform:'uppercase', background:'transparent', cursor:'pointer', transition:'all 0.25s', textDecoration:'none', fontWeight:700 },
+  btnFill: { background:V.burgundy, color:V.cream, boxShadow:`0 4px 12px rgba(107,31,38,0.3)` },
 };
 
-// ── Componentes Compartidos ───────────────────────────────────
-function Divider() {
+// ── Borde Perforado ───────────────────────────────────────────
+function PerforatedEdge({ side }) {
+  const holes = Array.from({ length: 20 }, (_, i) => i);
+  const isVertical = side === 'left' || side === 'right';
+  
+  const style = {
+    position: 'absolute',
+    [side]: '-6px',
+    [isVertical ? 'top' : 'left']: 0,
+    [isVertical ? 'height' : 'width']: '100%',
+    [isVertical ? 'width' : 'height']: '12px',
+    display: 'flex',
+    flexDirection: isVertical ? 'column' : 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+  };
+
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:'12px', margin:'14px 0' }}>
-      <div style={{ flex:1, height:'1px', background:`linear-gradient(90deg,transparent,${G.gold},transparent)` }} />
-      <div style={{ width:'7px', height:'7px', background:G.gold, transform:'rotate(45deg)', flexShrink:0 }} />
-      <div style={{ width:'7px', height:'7px', background:G.gold, transform:'rotate(45deg) scale(0.45)', flexShrink:0, margin:'0 -5px' }} />
-      <div style={{ width:'7px', height:'7px', background:G.gold, transform:'rotate(45deg)', flexShrink:0 }} />
-      <div style={{ flex:1, height:'1px', background:`linear-gradient(90deg,transparent,${G.gold},transparent)` }} />
+    <div style={style}>
+      {holes.map(i => (
+        <div key={i} style={{ width:'6px', height:'6px', borderRadius:'50%', background:V.sepia, border:`1px solid ${V.border}` }} />
+      ))}
     </div>
   );
 }
 
-function Nav({ navigate, current }) {
-  const links = [{ k:'landing', l:'Invitación' }, { k:'detalles', l:'Detalles' }, { k:'rsvp', l:'Confirmar' }];
+// ── Líneas Decorativas ────────────────────────────────────────
+function DecoLine() {
   return (
-    <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:'rgba(10,8,5,0.93)', backdropFilter:'blur(10px)', borderBottom:`1px solid rgba(201,168,76,0.18)`, display:'flex', alignItems:'center' }}>
+    <div style={{ display:'flex', alignItems:'center', gap:'8px', margin:'16px 0' }}>
+      <div style={{ flex:1, height:'2px', background:`linear-gradient(90deg,transparent,${V.burgundy},transparent)` }} />
+      <div style={{ width:'8px', height:'8px', background:V.burgundy, transform:'rotate(45deg)' }} />
+      <div style={{ flex:1, height:'2px', background:`linear-gradient(90deg,transparent,${V.burgundy},transparent)` }} />
+    </div>
+  );
+}
+
+// ── Nav ───────────────────────────────────────────────────────
+function Nav({ navigate, current }) {
+  const links = [{ k:'landing', l:'PLAYBILL' }, { k:'detalles', l:'PROGRAMA' }, { k:'rsvp', l:'RESERVAR' }];
+  return (
+    <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:V.burgundy, borderBottom:`4px double ${V.gold}`, display:'flex', alignItems:'center', boxShadow:`0 4px 12px ${V.shadow}` }}>
       {links.map(l => (
-        <button key={l.k} onClick={() => navigate(l.k)} style={{ background:'none', border:'none', cursor:'pointer', padding:'15px 20px', fontFamily:"'IM Fell English SC','Georgia',serif", fontSize:'0.62rem', letterSpacing:'0.3em', textTransform:'uppercase', color: current===l.k ? G.gold : G.goldDim, borderBottom: current===l.k ? `2px solid ${G.gold}` : '2px solid transparent', transition:'all 0.3s' }}>
+        <button key={l.k} onClick={() => navigate(l.k)} style={{ background:'none', border:'none', cursor:'pointer', padding:'16px 24px', fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.65rem', letterSpacing:'0.22em', fontWeight:700, textTransform:'uppercase', color: current===l.k ? V.gold : V.cream, borderBottom: current===l.k ? `3px solid ${V.gold}` : '3px solid transparent', transition:'all 0.25s' }}>
           {l.l}
         </button>
       ))}
-      <button onClick={() => navigate('admin')} style={{ background:'none', border:'none', cursor:'pointer', padding:'15px 14px', fontFamily:"'IM Fell English SC','Georgia',serif", fontSize:'0.52rem', letterSpacing:'0.2em', color:'rgba(122,95,42,0.35)', marginLeft:'auto', transition:'color 0.3s' }}>
-        Admin
+      <button onClick={() => navigate('admin')} style={{ background:'none', border:'none', cursor:'pointer', padding:'16px 18px', fontFamily:"'Libre Franklin','Arial',sans-serif", fontSize:'0.55rem', letterSpacing:'0.2em', color:'rgba(255,255,255,0.3)', marginLeft:'auto', fontWeight:700 }}>
+        ADMIN
       </button>
     </nav>
   );
@@ -75,67 +104,119 @@ function Btn({ onClick, filled, children, style={}, disabled=false }) {
   const [hover, setHover] = useState(false);
   return (
     <button onClick={onClick} disabled={disabled} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ ...S.btn, ...(filled ? S.btnFill : {}), ...style, opacity: disabled ? 0.45 : hover ? 0.82 : 1, transform: hover && !disabled ? 'translateY(-1px)' : 'none' }}>
+      style={{ ...S.btn, ...(filled ? S.btnFill : {}), ...style, opacity: disabled ? 0.5 : 1, transform: hover && !disabled ? 'translateY(-2px)' : 'none', boxShadow: hover && !disabled ? `0 6px 16px ${V.shadow}` : (filled ? S.btnFill.boxShadow : 'none') }}>
       {children}
     </button>
   );
 }
 
-// ── PÁGINA 1: INVITACIÓN ──────────────────────────────────────
+// ── Campo de formulario (movido fuera del componente) ─────────
+const Campo = ({ k, value, onChange, label, tipo='text', placeholder='', error }) => (
+  <div style={{ marginBottom:'18px' }}>
+    <label style={S.label}>{label}</label>
+    <input type={tipo} value={value} placeholder={placeholder} onChange={onChange}
+      style={{ ...S.input, borderColor: error ? V.burgundy : V.border, borderWidth: error ? '3px' : '2px' }} />
+    {error && <p style={{ color:V.burgundy, fontSize:'0.78rem', marginTop:'4px', fontStyle:'italic', fontWeight:600 }}>{error}</p>}
+  </div>
+);
+
+// ── PÁGINA 1: PLAYBILL ────────────────────────────────────────
 function Invitacion({ navigate }) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current; if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let W, H, pts = [], raf;
-    const resize = () => { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; };
-    resize(); window.addEventListener('resize', resize);
-    const rnd = (a,b) => Math.random()*(b-a)+a;
-    class P {
-      constructor(init) { this.x=rnd(0,W); this.y=init?rnd(0,H):rnd(-20,-5); this.r=rnd(1,3.2); this.vy=rnd(0.2,0.75); this.vx=rnd(-0.2,0.2); this.a=rnd(0.12,0.65); this.c=Math.random()>0.5?'#C9A84C':'#F0D080'; this.d=Math.random()>0.55; }
-      draw() { ctx.save(); ctx.globalAlpha=this.a; ctx.fillStyle=this.c; if(this.d){ctx.translate(this.x,this.y);ctx.rotate(Math.PI/4);ctx.fillRect(-this.r,-this.r,this.r*2,this.r*2);}else{ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();} ctx.restore(); }
-      update() { this.y+=this.vy; this.x+=this.vx; if(this.y>H+10){this.x=rnd(0,W);this.y=rnd(-20,-5);} }
-    }
-    for(let i=0;i<85;i++) pts.push(new P(true));
-    const loop=()=>{ ctx.clearRect(0,0,W,H); pts.forEach(p=>{p.update();p.draw();}); raf=requestAnimationFrame(loop); };
-    loop();
-    return ()=>{ cancelAnimationFrame(raf); window.removeEventListener('resize',resize); };
-  }, []);
-
   return (
-    <div style={{ ...S.page, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
-      <canvas ref={canvasRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%', pointerEvents:'none' }} />
-      <div style={{ position:'absolute', top:'-60px', left:'50%', transform:'translateX(-50%)', width:'500px', height:'220px', background:'radial-gradient(ellipse,rgba(201,168,76,0.13) 0%,transparent 70%)', pointerEvents:'none' }} />
+    <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'40px 20px' }}>
+      {/* Patrón de fondo */}
+      <div style={{ position:'absolute', inset:0, opacity:0.05, backgroundImage:`repeating-linear-gradient(45deg, ${V.ink} 0px, ${V.ink} 2px, transparent 2px, transparent 12px)`, pointerEvents:'none' }} />
+      
+      <div style={{ ...S.ticket, width:'min(680px,95vw)', margin:'0 auto', position:'relative', overflow:'visible' }}>
+        <PerforatedEdge side="left" />
+        <PerforatedEdge side="right" />
+        
+        {/* Sello de admisión */}
+        <div style={{ position:'absolute', top:'24px', right:'24px', width:'80px', height:'80px', borderRadius:'50%', border:`4px double ${V.burgundy}`, display:'flex', alignItems:'center', justifyContent:'center', background:V.cream, transform:'rotate(12deg)' }}>
+          <div style={{ textAlign:'center' }}>
+            <div style={{ ...S.label, fontSize:'0.5rem', marginBottom:'2px' }}>ADMIT</div>
+            <div style={{ ...S.marquee, fontSize:'1.8rem', lineHeight:1 }}>ONE</div>
+            <div style={{ ...S.label, fontSize:'0.45rem', marginTop:'2px' }}>+1 GUEST</div>
+          </div>
+        </div>
 
-      <div style={{ ...S.card, position:'relative', width:'min(640px,95vw)', margin:'32px auto', zIndex:10, overflow:'hidden' }}>
-        {['top','bottom'].map(p => (
-          <div key={p} style={{ position:'absolute', [p]:0, left:0, right:0, height:'5px', background:`repeating-linear-gradient(90deg,${G.gold} 0,${G.gold} 2px,transparent 2px,transparent 13px,${G.gold} 13px,${G.gold} 15px)`, opacity:0.55 }} />
-        ))}
-        {[['top','left'],['top','right'],['bottom','left'],['bottom','right']].map(([v,h]) => (
-          <div key={v+h} style={{ position:'absolute', [v]:'14px', [h]:'14px', width:'36px', height:'36px', borderTop: v==='top'?`2px solid ${G.goldDim}`:'none', borderBottom: v==='bottom'?`2px solid ${G.goldDim}`:'none', borderLeft: h==='left'?`2px solid ${G.goldDim}`:'none', borderRight: h==='right'?`2px solid ${G.goldDim}`:'none' }} />
-        ))}
+        {/* Encabezado */}
+        <div style={{ textAlign:'center', marginBottom:'12px' }}>
+          <div style={{ ...S.label, marginBottom:'8px', opacity:0.7 }}>★ UNA NOCHE EN EL TEATRO ★</div>
+          <div style={{ ...S.marquee, fontSize:'clamp(2.2rem,6vw,3.6rem)', marginBottom:'6px' }}>GRAN GALA</div>
+          <div style={{ ...S.label, fontSize:'0.75rem' }}>CELEBRANDO A</div>
+        </div>
 
-        <div style={{ padding:'48px 40px', textAlign:'center' }}>
-          <p style={S.eyebrow}>✦ &nbsp; Una Celebración de Esplendor &nbsp; ✦</p>
-          <Divider />
-          <p style={{ ...S.body, fontStyle:'italic', opacity:0.65, marginBottom:'6px' }}>te invitamos a celebrar a</p>
-          <h1 style={{ ...S.name, fontSize:'clamp(2rem,6vw,3.2rem)', margin:'8px 0 16px', background:`linear-gradient(90deg,${G.goldLight} 20%,#fffbe6 50%,${G.goldLight} 80%)`, WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>
-            Zandra B. Veliz Ortiz
-          </h1>
-          <Divider />
-          <p style={{ ...S.eyebrow, marginBottom:'6px', fontSize:'0.58rem' }}>en sus</p>
-          <div style={{ ...S.title, fontSize:'clamp(4rem,12vw,6rem)', lineHeight:1, marginBottom:'2px' }}>60</div>
-          <p style={{ ...S.eyebrow, letterSpacing:'0.55em', marginBottom:'20px' }}>Años de Brillantez</p>
-          <div style={{ ...S.title, fontSize:'clamp(1.3rem,4vw,2rem)', marginBottom:'20px' }}>Una Velada Gatsby</div>
-          <Divider />
-          <p style={{ ...S.body, fontStyle:'italic', opacity:0.8, margin:'8px 0 4px' }}>{EVENTO.fecha}</p>
-          <p style={{ ...S.body, opacity:0.55, marginBottom:'4px' }}>{EVENTO.hora}</p>
-          <p style={{ ...S.body, opacity:0.65, fontSize:'0.92rem', marginBottom:'3px' }}>{EVENTO.lugar}</p>
-          <p style={{ ...S.body, opacity:0.42, fontSize:'0.78rem', marginBottom:'28px' }}>{EVENTO.direccion}</p>
-          <div style={{ display:'flex', gap:'14px', justifyContent:'center', flexWrap:'wrap' }}>
-            <Btn onClick={() => navigate('detalles')}>Ver Detalles</Btn>
-            <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia ✦</Btn>
+        <DecoLine />
+
+        {/* Nombre principal */}
+        <div style={{ textAlign:'center', margin:'24px 0' }}>
+          <div style={{ ...S.marquee, fontSize:'clamp(2rem,7vw,4.2rem)', color:V.burgundy, textShadow:`3px 3px 0 rgba(212,165,116,0.3)`, marginBottom:'8px' }}>
+            ZANDRA
+          </div>
+          <div style={{ ...S.serif, fontSize:'clamp(1.3rem,4vw,2rem)', marginBottom:'4px' }}>
+            B. Veliz Ortiz
+          </div>
+        </div>
+
+        {/* Milestone */}
+        <div style={{ textAlign:'center', background:V.burgundy, margin:'24px -32px', padding:'20px', position:'relative' }}>
+          <div style={{ position:'absolute', inset:0, background:`repeating-linear-gradient(90deg, ${V.gold} 0px, ${V.gold} 1px, transparent 1px, transparent 20px)`, opacity:0.1 }} />
+          <div style={{ ...S.marquee, fontSize:'clamp(4rem,12vw,6.5rem)', color:V.gold, lineHeight:1, marginBottom:'4px', textShadow:`4px 4px 0 rgba(0,0,0,0.2)` }}>60</div>
+          <div style={{ ...S.label, color:V.cream, fontSize:'0.85rem' }}>AÑOS DE BRILLANTEZ</div>
+        </div>
+
+        {/* Tema */}
+        <div style={{ textAlign:'center', margin:'24px 0' }}>
+          <div style={{ ...S.marquee, fontSize:'clamp(1.2rem,3.5vw,1.8rem)', marginBottom:'12px' }}>
+            Una Velada Gatsby
+          </div>
+          <div style={{ ...S.serif, fontSize:'0.95rem', opacity:0.75, maxWidth:'420px', margin:'0 auto 20px' }}>
+            Vístete con el esplendor de los años 20. Lentejuelas, plumas y elegancia. Te esperamos para una noche inolvidable.
+          </div>
+        </div>
+
+        <DecoLine />
+
+        {/* Detalles */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:'16px', margin:'24px 0' }}>
+          {[
+            { i:'📅', l:'FECHA', v:'Sábado\n5 de Septiembre, 2026' },
+            { i:'🕖', l:'HORARIO', v:'19:00 – 00:00 hrs' },
+            { i:'📍', l:'ESCENARIO', v:'El Club Español\nÁrea Fuentecilla' },
+          ].map(d => (
+            <div key={d.l} style={{ textAlign:'center', padding:'16px', border:`2px solid ${V.border}`, borderRadius:'3px', background:V.cream }}>
+              <div style={{ fontSize:'2rem', marginBottom:'8px' }}>{d.i}</div>
+              <div style={{ ...S.label, marginBottom:'6px', fontSize:'0.55rem' }}>{d.l}</div>
+              <div style={{ ...S.body, fontSize:'0.87rem', whiteSpace:'pre-line', fontWeight:600 }}>{d.v}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dirección */}
+        <div style={{ textAlign:'center', background:`linear-gradient(135deg, ${V.cream}, ${V.paper})`, padding:'16px', borderRadius:'3px', border:`2px dashed ${V.border}`, marginBottom:'24px' }}>
+          <div style={{ ...S.label, marginBottom:'6px' }}>DIRECCIÓN DEL VENUE</div>
+          <div style={{ ...S.body, fontSize:'0.9rem', marginBottom:'8px' }}>{EVENTO.direccion}</div>
+          <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.6rem', padding:'8px 18px', textDecoration:'none' }}>
+            🗺 VER MAPA
+          </a>
+        </div>
+
+        {/* Código de vestimenta */}
+        <div style={{ background:V.burgundy, margin:'24px -32px -32px', padding:'28px 32px', borderRadius:'0 0 4px 4px', position:'relative' }}>
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:'4px', background:`repeating-linear-gradient(90deg, ${V.gold} 0px, ${V.gold} 8px, transparent 8px, transparent 16px)` }} />
+          <div style={{ textAlign:'center' }}>
+            <div style={{ ...S.label, color:V.gold, marginBottom:'10px' }}>CÓDIGO DE VESTIMENTA</div>
+            <div style={{ ...S.marquee, color:V.cream, fontSize:'clamp(1.1rem,3vw,1.5rem)', marginBottom:'14px' }}>
+              ETIQUETA RIGUROSA
+            </div>
+            <div style={{ ...S.serif, color:V.cream, fontSize:'0.92rem', opacity:0.9, marginBottom:'24px' }}>
+              Negro · Dorado · Champagne · Glamour Gatsby
+            </div>
+            <div style={{ display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap' }}>
+              <Btn onClick={() => navigate('detalles')}>VER PROGRAMA</Btn>
+              <Btn onClick={() => navigate('rsvp')} filled>RESERVAR ASIENTO ★</Btn>
+            </div>
           </div>
         </div>
       </div>
@@ -143,86 +224,90 @@ function Invitacion({ navigate }) {
   );
 }
 
-// ── PÁGINA 2: DETALLES ────────────────────────────────────────
+// ── PÁGINA 2: PROGRAMA (DETALLES) ─────────────────────────────
 const VESTUARIO = [
   { titulo:'Señoras — Vestido de Gala', desc:'Vestido largo en dorado, negro o champagne con lentejuelas o encaje. Tocado, diadema o plumas. Joyería art déco.', colores:['#C9A84C','#1a1208','#F5EDD6'] },
-  { titulo:'Señoras — Conjunto de Noche', desc:'Pantalón y blusa con brillos o brocado. Bolso clutch dorado o negro. Guantes de encaje opcionales.', colores:['#2a2015','#C9A84C','#8a6f2e'] },
+  { titulo:'Señoras — Conjunto de Noche', desc:'Pantalón y blusa con brillos o brocado. Bolso clutch dorado o negro. Guantes de encaje opcionales.', colores:['#2a2015','#C9A84C','#8b6f2e'] },
   { titulo:'Caballeros — Esmoquin', desc:'Esmoquin negro o blanco con corbatín y fajín. Pañuelo dorado. Zapatos de charol.', colores:['#1a1208','#F5EDD6','#C9A84C'] },
   { titulo:'Caballeros — Traje Completo', desc:'Traje 3 piezas en negro, gris carbón o azul noche. Chaleco, sombrero de ala y bastón elegante.', colores:['#2d3142','#C9A84C','#F5EDD6'] },
   { titulo:'Accesorios — Señoras', desc:'Collar de perlas, aretes largos, pulsera dorada. Portacigarros decorativo o abanico de plumas como prop.', colores:['#F5EDD6','#C9A84C','#f0e0a0'] },
-  { titulo:'Accesorios — Caballeros', desc:'Gemelos dorados, reloj de bolsillo con cadena. Sombrero Fedora o Bowler. Broche de solapa art déco.', colores:['#C9A84C','#1a1208','#8a6f2e'] },
+  { titulo:'Accesorios — Caballeros', desc:'Gemelos dorados, reloj de bolsillo con cadena. Sombrero Fedora o Bowler. Broche de solapa art déco.', colores:['#C9A84C','#1a1208','#8b6f2e'] },
 ];
 
 function Detalles({ navigate }) {
   return (
-    <div style={{ ...S.page, paddingTop:'68px' }}>
+    <div style={{ ...S.page, paddingTop:'80px' }}>
       <Nav navigate={navigate} current="detalles" />
-      <div style={{ maxWidth:'780px', margin:'0 auto', padding:'40px 18px 70px' }}>
+      <div style={{ maxWidth:'820px', margin:'0 auto', padding:'40px 20px 80px' }}>
 
         <div style={{ textAlign:'center', marginBottom:'40px' }}>
-          <p style={S.eyebrow}>✦ &nbsp; Detalles del Evento &nbsp; ✦</p>
-          <Divider />
-          <div style={{ ...S.title, fontSize:'clamp(1.4rem,4vw,2.2rem)', marginBottom:'8px' }}>Una Velada Gatsby</div>
-          <div style={{ ...S.name, fontSize:'clamp(1.3rem,4vw,2rem)' }}>Zandra B. Veliz Ortiz</div>
+          <div style={{ ...S.label, marginBottom:'8px' }}>★ PROGRAMA DEL EVENTO ★</div>
+          <div style={{ ...S.marquee, fontSize:'clamp(1.8rem,5vw,3rem)', marginBottom:'8px' }}>UNA VELADA GATSBY</div>
+          <div style={{ ...S.serif, fontSize:'clamp(1.2rem,3vw,1.8rem)' }}>Celebrando a Zandra B. Veliz Ortiz</div>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))', gap:'14px', marginBottom:'36px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))', gap:'16px', marginBottom:'40px' }}>
           {[
-            { i:'📅', l:'Fecha', v:'Sábado\n5 de Septiembre, 2026' },
-            { i:'🕖', l:'Hora', v:'19:00 A 24:00 hrs' },
-            { i:'📍', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
-            { i:'🗺️', l:'Dirección', v:'Calzada Roosevelt Km. 13.5\nZona 7 de Mixco, Guatemala' },
+            { i:'📅', l:'FECHA', v:'Sábado, 5 de Septiembre, 2026' },
+            { i:'🕖', l:'HORARIO', v:'19:00 – 00:00 hrs' },
+            { i:'📍', l:'ESCENARIO', v:'El Club Español\nÁrea Fuentecilla' },
+            { i:'🗺️', l:'DIRECCIÓN', v:'Calzada Roosevelt Km. 13.5\nZona 7 de Mixco, Guatemala' },
           ].map(d => (
-            <div key={d.l} style={{ ...S.card, padding:'18px', textAlign:'center' }}>
-              <div style={{ fontSize:'1.7rem', marginBottom:'8px' }}>{d.i}</div>
-              <p style={{ ...S.eyebrow, marginBottom:'6px' }}>{d.l}</p>
-              <p style={{ ...S.body, fontSize:'0.87rem', whiteSpace:'pre-line', opacity:0.8 }}>{d.v}</p>
+            <div key={d.l} style={{ ...S.ticket, padding:'20px', textAlign:'center' }}>
+              <div style={{ fontSize:'2rem', marginBottom:'10px' }}>{d.i}</div>
+              <div style={{ ...S.label, marginBottom:'8px' }}>{d.l}</div>
+              <div style={{ ...S.body, fontSize:'0.88rem', whiteSpace:'pre-line', fontWeight:600 }}>{d.v}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ ...S.card, textAlign:'center', marginBottom:'36px', padding:'20px' }}>
-          <p style={{ ...S.eyebrow, marginBottom:'12px' }}>Ubicación del Evento</p>
-          <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, display:'inline-block' }}>
-            📍 &nbsp; Abrir en Google Maps
+        <div style={{ ...S.ticket, textAlign:'center', marginBottom:'40px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>UBICACIÓN DEL EVENTO</div>
+          <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, ...S.btnFill }}>
+            🗺 ABRIR EN GOOGLE MAPS
           </a>
         </div>
 
-        <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <p style={S.eyebrow}>✦ &nbsp; Código de Vestimenta &nbsp; ✦</p>
-          <Divider />
-          <div style={{ ...S.title, fontSize:'clamp(1.1rem,3vw,1.5rem)', marginBottom:'12px' }}>Etiqueta Rigurosa & Glamour Gatsby</div>
-          <p style={{ ...S.body, opacity:0.65, maxWidth:'500px', margin:'0 auto 16px', fontSize:'0.93rem' }}>
+        <div style={{ textAlign:'center', marginBottom:'36px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>★ CÓDIGO DE VESTIMENTA ★</div>
+          <DecoLine />
+          <div style={{ ...S.marquee, fontSize:'clamp(1.2rem,3.5vw,1.8rem)', marginBottom:'16px' }}>
+            Etiqueta Rigurosa & Glamour Gatsby
+          </div>
+          <div style={{ ...S.body, opacity:0.8, maxWidth:'560px', margin:'0 auto 20px', fontSize:'0.96rem', lineHeight:1.75 }}>
             Celebremos con el esplendor de los años 20. Viste de negro, dorado o champagne. Lentejuelas, plumas, guantes y alhajas son bienvenidos. ¡Sorpréndenos!
-          </p>
-          <div style={{ display:'inline-block', border:`1px solid ${G.goldDim}`, padding:'8px 26px', marginBottom:'28px' }}>
-            <p style={{ ...S.eyebrow, color:G.gold }}>Negro · Dorado · Champagne · Marfil</p>
+          </div>
+          <div style={{ display:'inline-flex', gap:'12px', padding:'12px 32px', border:`3px double ${V.burgundy}`, borderRadius:'4px', background:V.cream }}>
+            <span style={{ ...S.label, fontSize:'0.75rem' }}>NEGRO</span>
+            <span style={{ ...S.label, fontSize:'0.75rem' }}>·</span>
+            <span style={{ ...S.label, fontSize:'0.75rem' }}>DORADO</span>
+            <span style={{ ...S.label, fontSize:'0.75rem' }}>·</span>
+            <span style={{ ...S.label, fontSize:'0.75rem' }}>CHAMPAGNE</span>
           </div>
         </div>
 
-        <div style={{ marginBottom:'40px' }}>
-          <p style={{ ...S.eyebrow, textAlign:'center', marginBottom:'8px' }}>Inspiración de Vestuario</p>
-          <Divider />
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:'14px', marginTop:'20px' }}>
-            {VESTUARIO.map((v, i) => {
-              const [h, setH] = useState(false);
-              return (
-                <div key={i} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{ ...S.card, padding:'18px', transition:'all 0.3s', background: h?'rgba(201,168,76,0.07)':'linear-gradient(135deg,#1a1508,#0f0b04)', borderColor: h?G.gold:G.goldDim }}>
-                  <div style={{ display:'flex', gap:'6px', marginBottom:'10px' }}>
-                    {v.colores.map((c,j) => <div key={j} style={{ width:'22px', height:'22px', background:c, borderRadius:'50%', border:`1px solid rgba(201,168,76,0.25)` }} />)}
-                  </div>
-                  <p style={{ ...S.eyebrow, marginBottom:'7px', fontSize:'0.6rem' }}>{v.titulo}</p>
-                  <p style={{ ...S.body, fontSize:'0.87rem', opacity:0.72 }}>{v.desc}</p>
+        <div style={{ marginBottom:'44px' }}>
+          <div style={{ ...S.label, textAlign:'center', marginBottom:'12px' }}>INSPIRACIÓN DE VESTUARIO</div>
+          <DecoLine />
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))', gap:'18px', marginTop:'24px' }}>
+            {VESTUARIO.map((v, i) => (
+              <div key={i} style={{ ...S.ticket, padding:'20px' }}>
+                <div style={{ display:'flex', gap:'8px', marginBottom:'12px' }}>
+                  {v.colores.map((c,j) => <div key={j} style={{ width:'26px', height:'26px', background:c, borderRadius:'50%', border:`2px solid ${V.border}` }} />)}
                 </div>
-              );
-            })}
+                <div style={{ ...S.label, marginBottom:'8px', fontSize:'0.65rem' }}>{v.titulo}</div>
+                <div style={{ ...S.body, fontSize:'0.88rem', lineHeight:1.6 }}>{v.desc}</div>
+              </div>
+            ))}
           </div>
         </div>
 
         <div style={{ textAlign:'center' }}>
-          <Divider />
-          <p style={{ ...S.body, fontStyle:'italic', opacity:0.5, marginBottom:'16px', fontSize:'0.9rem' }}>Los cupos son limitados. Confirma tu asistencia pronto.</p>
-          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia ✦</Btn>
+          <DecoLine />
+          <div style={{ ...S.body, fontStyle:'italic', opacity:0.6, marginBottom:'20px', fontSize:'0.92rem' }}>
+            Los cupos son limitados. Confirma tu asistencia pronto.
+          </div>
+          <Btn onClick={() => navigate('rsvp')} filled>RESERVAR ASIENTO ★</Btn>
         </div>
       </div>
     </div>
@@ -284,60 +369,91 @@ function RSVP({ navigate, setRsvpData }) {
     }
   };
 
-  const Campo = ({ k, label, tipo='text', placeholder='' }) => (
-    <div style={{ marginBottom:'18px' }}>
-      <label style={S.label}>{label}</label>
-      <input type={tipo} value={form[k]} placeholder={placeholder} onChange={e => set(k, e.target.value)}
-        style={{ ...S.input, borderColor: errors[k] ? G.red : G.goldDim }} />
-      {errors[k] && <p style={{ color:'#e74c3c', fontSize:'0.78rem', marginTop:'4px', fontStyle:'italic' }}>{errors[k]}</p>}
-    </div>
-  );
-
   return (
-    <div style={{ ...S.page, paddingTop:'68px' }}>
+    <div style={{ ...S.page, paddingTop:'80px' }}>
       <Nav navigate={navigate} current="rsvp" />
-      <div style={{ maxWidth:'520px', margin:'0 auto', padding:'40px 18px 70px' }}>
+      <div style={{ maxWidth:'580px', margin:'0 auto', padding:'40px 20px 80px' }}>
 
-        <div style={{ textAlign:'center', marginBottom:'30px' }}>
-          <p style={S.eyebrow}>✦ &nbsp; Confirmar Asistencia &nbsp; ✦</p>
-          <Divider />
-          <div style={{ ...S.title, fontSize:'clamp(1.3rem,4vw,1.9rem)', marginBottom:'8px' }}>¿Nos Acompañas?</div>
-          <p style={{ ...S.body, opacity:0.55, fontSize:'0.88rem', marginBottom:'8px' }}>{stats.libres} lugares disponibles de {EVENTO.cupo}</p>
-          <div style={{ width:'220px', height:'4px', background:'rgba(255,255,255,0.08)', margin:'0 auto', borderRadius:'2px', overflow:'hidden' }}>
-            <div style={{ width:`${((EVENTO.cupo-stats.libres)/EVENTO.cupo)*100}%`, height:'100%', background:`linear-gradient(90deg,${G.gold},${G.goldLight})` }} />
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
+          <div style={{ ...S.label, marginBottom:'8px' }}>★ RESERVACIÓN DE ASIENTOS ★</div>
+          <DecoLine />
+          <div style={{ ...S.marquee, fontSize:'clamp(1.6rem,5vw,2.4rem)', marginBottom:'12px' }}>¿Nos Acompañas?</div>
+          <div style={{ ...S.body, opacity:0.7, fontSize:'0.92rem', marginBottom:'12px' }}>
+            {stats.libres} asientos disponibles de {EVENTO.cupo}
+          </div>
+          <div style={{ width:'280px', height:'8px', background:V.cream, margin:'0 auto', borderRadius:'4px', overflow:'hidden', border:`2px solid ${V.border}` }}>
+            <div style={{ width:`${((EVENTO.cupo-stats.libres)/EVENTO.cupo)*100}%`, height:'100%', background:V.burgundy, borderRadius:'2px', transition:'width 1s ease' }} />
           </div>
         </div>
 
-        <div style={S.card}>
+        <div style={{ ...S.ticket, position:'relative' }}>
+          <PerforatedEdge side="left" />
+          <PerforatedEdge side="right" />
+
           {errors.general && (
-            <div style={{ background:'rgba(192,57,43,0.1)', border:'1px solid rgba(192,57,43,0.3)', padding:'12px', borderRadius:'2px', marginBottom:'18px' }}>
-              <p style={{ color:'#e74c3c', fontSize:'0.85rem' }}>⚠️ {errors.general}</p>
+            <div style={{ background:'rgba(107,31,38,0.1)', border:`2px solid ${V.burgundy}`, padding:'14px', borderRadius:'3px', marginBottom:'20px' }}>
+              <div style={{ color:V.burgundy, fontSize:'0.88rem', fontWeight:600 }}>⚠️ {errors.general}</div>
             </div>
           )}
 
-          <Campo k="nombre" label="Nombre Completo" placeholder="Tu nombre y apellido" />
-          <Campo k="email" label="Correo Electrónico" tipo="email" placeholder="tucorreo@ejemplo.com" />
-          <Campo k="telefono" label="Teléfono (Opcional)" tipo="tel" placeholder="+502 0000-0000" />
+          <Campo 
+            k="nombre" 
+            value={form.nombre}
+            onChange={e => set('nombre', e.target.value)}
+            label="NOMBRE COMPLETO" 
+            placeholder="Tu nombre y apellido" 
+            error={errors.nombre}
+          />
+          
+          <Campo 
+            k="email"
+            value={form.email}
+            onChange={e => set('email', e.target.value)}
+            label="CORREO ELECTRÓNICO" 
+            tipo="email" 
+            placeholder="tucorreo@ejemplo.com" 
+            error={errors.email}
+          />
+          
+          <Campo 
+            k="telefono"
+            value={form.telefono}
+            onChange={e => set('telefono', e.target.value)}
+            label="TELÉFONO (OPCIONAL)" 
+            tipo="tel" 
+            placeholder="+502 0000-0000"
+          />
 
-          <div style={{ marginBottom:'18px' }}>
-            <div onClick={() => set('acompanante', !form.acompanante)} style={{ display:'flex', alignItems:'center', gap:'12px', cursor:'pointer' }}>
-              <div style={{ width:'42px', height:'22px', borderRadius:'11px', background: form.acompanante ? G.gold : 'rgba(255,255,255,0.1)', position:'relative', transition:'background 0.3s', flexShrink:0 }}>
-                <div style={{ position:'absolute', top:'3px', left: form.acompanante ? '22px' : '3px', width:'16px', height:'16px', borderRadius:'50%', background: form.acompanante ? G.black : G.goldDim, transition:'left 0.3s' }} />
+          <div style={{ marginBottom:'20px' }}>
+            <div onClick={() => set('acompanante', !form.acompanante)} style={{ display:'flex', alignItems:'center', gap:'14px', cursor:'pointer', padding:'14px', border:`2px solid ${form.acompanante ? V.burgundy : V.border}`, borderRadius:'3px', background: form.acompanante ? 'rgba(107,31,38,0.05)' : V.cream, transition:'all 0.25s' }}>
+              <div style={{ width:'48px', height:'26px', borderRadius:'13px', background: form.acompanante ? V.burgundy : V.border, position:'relative', transition:'background 0.3s', flexShrink:0 }}>
+                <div style={{ position:'absolute', top:'3px', left: form.acompanante ? '24px' : '3px', width:'20px', height:'20px', borderRadius:'50%', background: V.cream, transition:'left 0.3s', boxShadow:`0 2px 4px ${V.shadow}` }} />
               </div>
-              <span style={{ ...S.body, fontSize:'0.93rem' }}>Llevaré un acompañante <span style={{ opacity:0.5 }}>(máx. 1)</span></span>
+              <span style={{ ...S.body, fontSize:'0.96rem', fontWeight:600 }}>
+                Llevaré un acompañante <span style={{ opacity:0.55, fontWeight:400 }}>(máx. 1)</span>
+              </span>
             </div>
           </div>
 
-          {form.acompanante && <Campo k="nombreAcomp" label="Nombre del Acompañante" placeholder="Nombre y apellido" />}
+          {form.acompanante && (
+            <Campo 
+              k="nombreAcomp"
+              value={form.nombreAcomp}
+              onChange={e => set('nombreAcomp', e.target.value)}
+              label="NOMBRE DEL ACOMPAÑANTE" 
+              placeholder="Nombre y apellido" 
+              error={errors.nombreAcomp}
+            />
+          )}
 
-          <div style={{ background:'rgba(201,168,76,0.05)', border:`1px solid rgba(201,168,76,0.2)`, padding:'14px', borderRadius:'2px', marginBottom:'22px' }}>
-            <p style={{ ...S.body, fontSize:'0.82rem', opacity:0.7, lineHeight:1.6 }}>
-              💛 &nbsp; Tras confirmar, recibirás un <strong style={{color:G.gold}}>enlace especial</strong> para subir una foto o mensaje de video para Zandra.
-            </p>
+          <div style={{ background:`linear-gradient(135deg, ${V.cream}, ${V.paper})`, border:`2px dashed ${V.burgundy}`, padding:'18px', borderRadius:'4px', marginBottom:'26px' }}>
+            <div style={{ ...S.body, fontSize:'0.88rem', lineHeight:1.7, textAlign:'center' }}>
+              💛 &nbsp; Tras confirmar, recibirás un <strong style={{color:V.burgundy}}>enlace especial</strong> para subir una foto o mensaje de video para Zandra.
+            </div>
           </div>
 
-          <Btn onClick={enviar} filled disabled={submitting} style={{ width:'100%', textAlign:'center', display:'block' }}>
-            {submitting ? 'Confirmando...' : 'Confirmar Asistencia ✦'}
+          <Btn onClick={enviar} filled disabled={submitting} style={{ width:'100%', textAlign:'center', display:'block', fontSize:'0.75rem' }}>
+            {submitting ? 'CONFIRMANDO...' : 'CONFIRMAR ASISTENCIA ★'}
           </Btn>
         </div>
       </div>
@@ -350,33 +466,37 @@ function Confirmacion({ navigate, rsvpData }) {
   const uploadUrl = `${window.location.origin}?upload=${rsvpData?.uploadToken || ''}`;
 
   return (
-    <div style={{ ...S.page, paddingTop:'68px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
+    <div style={{ ...S.page, paddingTop:'80px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
       <Nav navigate={navigate} current="" />
-      <div style={{ ...S.card, maxWidth:'540px', width:'95vw', textAlign:'center', padding:'48px 36px', margin:'40px auto', overflow:'hidden', position:'relative' }}>
-        {['top','bottom'].map(p => (
-          <div key={p} style={{ position:'absolute', [p]:0, left:0, right:0, height:'4px', background:`repeating-linear-gradient(90deg,${G.gold} 0,${G.gold} 2px,transparent 2px,transparent 12px,${G.gold} 12px,${G.gold} 14px)`, opacity:0.5 }} />
-        ))}
-        <div style={{ fontSize:'2.8rem', marginBottom:'14px' }}>🥂</div>
-        <p style={S.eyebrow}>✦ &nbsp; ¡Confirmación Recibida! &nbsp; ✦</p>
-        <Divider />
-        <div style={{ ...S.title, fontSize:'clamp(1.2rem,4vw,1.7rem)', marginBottom:'10px' }}>¡Nos alegra contar contigo!</div>
-        <div style={{ ...S.name, fontSize:'clamp(1.3rem,4vw,1.9rem)', marginBottom:'18px' }}>{rsvpData?.nombre || 'Estimado Invitado'}</div>
-        <p style={{ ...S.body, opacity:0.68, marginBottom:'16px', fontSize:'0.93rem' }}>
-          Tu asistencia ha sido registrada{rsvpData?.acompanante && rsvpData.nombreAcomp ? ` junto con ${rsvpData.nombreAcomp}` : ''} para la celebración de los 60 años de Zandra.
-        </p>
-        <div style={{ background:'rgba(201,168,76,0.06)', border:`1px solid rgba(201,168,76,0.22)`, padding:'18px', borderRadius:'2px', margin:'0 0 20px' }}>
-          <p style={{ ...S.eyebrow, marginBottom:'10px', fontSize:'0.6rem' }}>Tu Enlace Personal</p>
-          <input readOnly value={uploadUrl} onClick={e => e.target.select()}
-            style={{ ...S.input, fontSize:'0.75rem', textAlign:'center', cursor:'pointer', marginBottom:'10px' }} />
-          <p style={{ ...S.body, fontSize:'0.82rem', opacity:0.72, lineHeight:1.6 }}>
-            📧 Usa este enlace para subir una foto o video para Zandra. Guárdalo bien — será parte de la sorpresa.
-          </p>
+      <div style={{ ...S.ticket, maxWidth:'600px', width:'95vw', textAlign:'center', padding:'44px 40px', margin:'40px auto', position:'relative' }}>
+        <PerforatedEdge side="left" />
+        <PerforatedEdge side="right" />
+        
+        <div style={{ fontSize:'3.5rem', marginBottom:'16px' }}>🎟️</div>
+        <div style={{ ...S.label, marginBottom:'8px' }}>★ ¡ASIENTO RESERVADO! ★</div>
+        <DecoLine />
+        <div style={{ ...S.marquee, fontSize:'clamp(1.4rem,4vw,2rem)', marginBottom:'12px' }}>¡Nos Alegra Contar Contigo!</div>
+        <div style={{ ...S.serif, fontSize:'clamp(1.2rem,3.5vw,1.7rem)', marginBottom:'20px', color:V.burgundy }}>
+          {rsvpData?.nombre || 'Estimado Invitado'}
         </div>
-        <Divider />
-        <p style={{ ...S.body, fontStyle:'italic', opacity:0.45, fontSize:'0.82rem', marginBottom:'20px' }}>
+        <div style={{ ...S.body, opacity:0.75, marginBottom:'20px', fontSize:'0.95rem', lineHeight:1.75 }}>
+          Tu asistencia ha sido registrada{rsvpData?.acompanante && rsvpData.nombreAcomp ? ` junto con ${rsvpData.nombreAcomp}` : ''} para la celebración de los 60 años de Zandra.
+        </div>
+        
+        <div style={{ background:V.cream, border:`3px double ${V.burgundy}`, padding:'22px', borderRadius:'4px', margin:'0 0 24px' }}>
+          <div style={{ ...S.label, marginBottom:'12px' }}>TU ENLACE PERSONAL</div>
+          <input readOnly value={uploadUrl} onClick={e => e.target.select()}
+            style={{ ...S.input, fontSize:'0.76rem', textAlign:'center', cursor:'pointer', marginBottom:'12px', fontFamily:"'Courier New',monospace", background:V.paper }} />
+          <div style={{ ...S.body, fontSize:'0.86rem', lineHeight:1.7 }}>
+            📧 Usa este enlace para subir una foto o video para Zandra. Guárdalo bien — será parte de la sorpresa.
+          </div>
+        </div>
+        
+        <DecoLine />
+        <div style={{ ...S.body, fontStyle:'italic', opacity:0.5, fontSize:'0.85rem', marginBottom:'24px' }}>
           {EVENTO.fecha} &nbsp;·&nbsp; {EVENTO.hora}<br/>{EVENTO.lugar}
-        </p>
-        <Btn onClick={() => navigate('landing')}>← Volver al Inicio</Btn>
+        </div>
+        <Btn onClick={() => navigate('landing')}>← VOLVER AL PLAYBILL</Btn>
       </div>
     </div>
   );
@@ -422,7 +542,6 @@ function SubirArchivo({ navigate, uploadToken }) {
     setUploading(true);
 
     try {
-      // Subir a Cloudinary
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
@@ -437,7 +556,6 @@ function SubirArchivo({ navigate, uploadToken }) {
       if (!res.ok) throw new Error('Error subiendo archivo');
       const cloudData = await res.json();
 
-      // Guardar en Supabase
       const { error } = await supabase.from('uploads').insert([{
         nombre_persona: nombre,
         tipo_archivo: tipoArchivo,
@@ -456,31 +574,35 @@ function SubirArchivo({ navigate, uploadToken }) {
   };
 
   if (done) return (
-    <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
-      <div style={{ ...S.card, maxWidth:'460px', width:'95vw', textAlign:'center', padding:'48px 36px' }}>
-        <div style={{ fontSize:'3rem', marginBottom:'14px' }}>💛</div>
-        <p style={S.eyebrow}>✦ &nbsp; ¡Recibido con Amor! &nbsp; ✦</p>
-        <Divider />
-        <p style={{ ...S.body, opacity:0.72, marginBottom:'20px' }}>Tu mensaje fue enviado exitosamente. Será parte de la sorpresa especial el día de la celebración de Zandra.</p>
-        <Btn onClick={() => navigate('landing')}>← Volver al Inicio</Btn>
+    <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'20px' }}>
+      <div style={{ ...S.ticket, maxWidth:'520px', width:'95vw', textAlign:'center', padding:'48px 40px', position:'relative' }}>
+        <PerforatedEdge side="left" />
+        <PerforatedEdge side="right" />
+        <div style={{ fontSize:'3.5rem', marginBottom:'16px' }}>💛</div>
+        <div style={{ ...S.label, marginBottom:'8px' }}>★ ¡RECIBIDO CON AMOR! ★</div>
+        <DecoLine />
+        <div style={{ ...S.body, opacity:0.8, marginBottom:'24px', fontSize:'0.96rem', lineHeight:1.75 }}>
+          Tu mensaje fue enviado exitosamente. Será parte de la sorpresa especial el día de la celebración de Zandra.
+        </div>
+        <Btn onClick={() => navigate('landing')}>← VOLVER AL PLAYBILL</Btn>
       </div>
     </div>
   );
 
   return (
     <div style={{ ...S.page, paddingTop:'40px' }}>
-      <div style={{ maxWidth:'560px', margin:'0 auto', padding:'40px 18px 70px' }}>
+      <div style={{ maxWidth:'640px', margin:'0 auto', padding:'40px 20px 80px' }}>
 
-        <div style={{ textAlign:'center', marginBottom:'28px' }}>
-          <p style={S.eyebrow}>✦ &nbsp; Tu Mensaje Especial &nbsp; ✦</p>
-          <Divider />
-          <div style={{ ...S.title, fontSize:'clamp(1.2rem,4vw,1.7rem)', marginBottom:'8px' }}>Un Regalo para Zandra</div>
-          <p style={{ ...S.body, opacity:0.58, fontSize:'0.9rem', maxWidth:'460px', margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
+          <div style={{ ...S.label, marginBottom:'8px' }}>★ TU MENSAJE ESPECIAL ★</div>
+          <DecoLine />
+          <div style={{ ...S.marquee, fontSize:'clamp(1.4rem,4vw,2rem)', marginBottom:'10px' }}>Un Regalo para Zandra</div>
+          <div style={{ ...S.body, opacity:0.7, fontSize:'0.93rem', maxWidth:'480px', margin:'0 auto' }}>
             Comparte un recuerdo especial. Se presentará como sorpresa el día de su celebración. 💛
-          </p>
+          </div>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px', marginBottom:'22px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'26px' }}>
           {[
             { k:'foto-con-ella', i:'🤝', t:'Foto con Ella', d:'Una foto tuya junto a Zandra' },
             { k:'recuerdo', i:'🕰️', t:'Recuerdo', d:'Foto de infancia u otro momento especial' },
@@ -489,29 +611,32 @@ function SubirArchivo({ navigate, uploadToken }) {
             const sel = tipoArchivo === o.k;
             return (
               <div key={o.k} onClick={() => { setTipoArchivo(o.k); setFile(null); setPreview(null); setVideoError(''); }}
-                style={{ ...S.card, padding:'14px 10px', textAlign:'center', cursor:'pointer', borderColor: sel ? G.gold : 'rgba(122,95,42,0.32)', background: sel ? 'rgba(201,168,76,0.08)' : 'linear-gradient(135deg,#1a1508,#0f0b04)', transition:'all 0.25s' }}>
-                <div style={{ fontSize:'1.6rem', marginBottom:'6px' }}>{o.i}</div>
-                <p style={{ ...S.eyebrow, fontSize:'0.55rem', marginBottom:'4px', color: sel ? G.gold : G.goldDim }}>{o.t}</p>
-                <p style={{ ...S.body, fontSize:'0.7rem', opacity:0.48, lineHeight:1.35 }}>{o.d}</p>
-                {sel && <div style={{ width:'18px', height:'2px', background:G.gold, margin:'7px auto 0' }} />}
+                style={{ ...S.ticket, padding:'16px 12px', textAlign:'center', cursor:'pointer', borderColor: sel ? V.burgundy : V.border, borderWidth: sel ? '3px' : '2px', background: sel ? 'rgba(107,31,38,0.05)' : V.paper, transition:'all 0.25s' }}>
+                <div style={{ fontSize:'1.8rem', marginBottom:'8px' }}>{o.i}</div>
+                <div style={{ ...S.label, fontSize:'0.58rem', marginBottom:'5px', color: sel ? V.burgundy : V.border }}>{o.t}</div>
+                <div style={{ ...S.body, fontSize:'0.72rem', opacity:0.65, lineHeight:1.4 }}>{o.d}</div>
+                {sel && <div style={{ width:'24px', height:'3px', background:V.burgundy, margin:'10px auto 0' }} />}
               </div>
             );
           })}
         </div>
 
-        <div style={S.card}>
-          <div style={{ marginBottom:'18px' }}>
-            <label style={S.label}>Tu Nombre Completo</label>
+        <div style={{ ...S.ticket, position:'relative' }}>
+          <PerforatedEdge side="left" />
+          <PerforatedEdge side="right" />
+
+          <div style={{ marginBottom:'20px' }}>
+            <label style={S.label}>TU NOMBRE COMPLETO</label>
             <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="¿Cómo te llamas?" style={S.input} />
           </div>
 
           {tipoArchivo && (
-            <div style={{ background:'rgba(201,168,76,0.05)', border:`1px solid rgba(201,168,76,0.18)`, padding:'12px 16px', borderRadius:'2px', marginBottom:'18px' }}>
-              <p style={{ ...S.body, fontSize:'0.82rem', opacity:0.75, lineHeight:1.6 }}>
+            <div style={{ background:V.cream, border:`2px dashed ${V.burgundy}`, padding:'14px 18px', borderRadius:'4px', marginBottom:'20px' }}>
+              <div style={{ ...S.body, fontSize:'0.86rem', lineHeight:1.65 }}>
                 {tipoArchivo === 'foto-con-ella' && '📸 Sube una foto donde aparezcas junto a Zandra — puede ser reciente o de cualquier época.'}
                 {tipoArchivo === 'recuerdo' && '🕰️ Sube una foto que capture un recuerdo de Zandra — de su infancia, juventud o cualquier momento que quieras compartir.'}
                 {tipoArchivo === 'video' && '🎬 Graba un video con tus felicitaciones de cumpleaños. Máximo 1 minuto (60 segundos). ¡Habla desde el corazón!'}
-              </p>
+              </div>
             </div>
           )}
 
@@ -520,54 +645,54 @@ function SubirArchivo({ navigate, uploadToken }) {
             onDragLeave={() => setDrag(false)}
             onDrop={e => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files[0]); }}
             onClick={() => tipoArchivo && document.getElementById('fileInput').click()}
-            style={{ border:`2px dashed ${drag?G.gold:tipoArchivo?G.goldDim:'rgba(122,95,42,0.2)'}`, borderRadius:'2px', padding:'34px 20px', textAlign:'center', cursor:tipoArchivo?'pointer':'not-allowed', marginBottom:'8px', background:drag?'rgba(201,168,76,0.05)':'transparent', transition:'all 0.3s', opacity:tipoArchivo?1:0.4 }}
+            style={{ border:`3px dashed ${drag?V.burgundy:tipoArchivo?V.border:'rgba(139,111,71,0.3)'}`, borderRadius:'4px', padding:'38px 24px', textAlign:'center', cursor:tipoArchivo?'pointer':'not-allowed', marginBottom:'12px', background:drag?'rgba(107,31,38,0.05)':V.cream, transition:'all 0.3s', opacity:tipoArchivo?1:0.5 }}
           >
             <input id="fileInput" type="file" accept={tipoArchivo==='video'?'video/*':'image/*'} style={{ display:'none' }} onChange={e => handleFile(e.target.files[0])} />
-            <div style={{ fontSize:'2rem', marginBottom:'8px' }}>{file ? '✅' : tipoArchivo==='video' ? '🎬' : '🖼️'}</div>
-            <p style={{ ...S.eyebrow, marginBottom:'5px', fontSize:'0.58rem' }}>
-              {file ? file.name : tipoArchivo ? (tipoArchivo==='video'?'Video — MP4 · MOV':'Imagen — JPG · PNG') : 'Primero elige un tipo arriba'}
-            </p>
-            <p style={{ ...S.body, opacity:0.38, fontSize:'0.78rem' }}>
+            <div style={{ fontSize:'2.4rem', marginBottom:'10px' }}>{file ? '✅' : tipoArchivo==='video' ? '🎬' : '🖼️'}</div>
+            <div style={{ ...S.label, marginBottom:'6px', fontSize:'0.62rem' }}>
+              {file ? file.name : tipoArchivo ? (tipoArchivo==='video'?'VIDEO — MP4 · MOV':'IMAGEN — JPG · PNG') : 'PRIMERO ELIGE UN TIPO ARRIBA'}
+            </div>
+            <div style={{ ...S.body, opacity:0.5, fontSize:'0.82rem' }}>
               {file ? 'Haz clic para cambiar el archivo' : 'Arrastra aquí o haz clic para seleccionar'}
-            </p>
+            </div>
             {tipoArchivo === 'video' && !file && (
-              <p style={{ ...S.body, fontSize:'0.74rem', color:G.gold, opacity:0.75, marginTop:'6px' }}>⏱ Máximo 60 segundos</p>
+              <div style={{ ...S.label, fontSize:'0.7rem', color:V.burgundy, marginTop:'8px' }}>⏱ MÁXIMO 60 SEGUNDOS</div>
             )}
           </div>
 
           {videoError && (
-            <div style={{ background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.3)', padding:'10px 14px', borderRadius:'2px', marginBottom:'12px' }}>
-              <p style={{ color:'#e74c3c', fontSize:'0.82rem', fontStyle:'italic' }}>⚠️ {videoError}</p>
+            <div style={{ background:'rgba(107,31,38,0.1)', border:`2px solid ${V.burgundy}`, padding:'12px 16px', borderRadius:'4px', marginBottom:'16px' }}>
+              <div style={{ color:V.burgundy, fontSize:'0.86rem', fontStyle:'italic', fontWeight:600 }}>⚠️ {videoError}</div>
             </div>
           )}
 
           {preview && !videoError && (
-            <div style={{ marginBottom:'18px', textAlign:'center', borderRadius:'2px', overflow:'hidden', border:`1px solid ${G.goldDim}` }}>
+            <div style={{ marginBottom:'20px', textAlign:'center', borderRadius:'4px', overflow:'hidden', border:`3px solid ${V.border}` }}>
               {preview.tipo === 'imagen'
-                ? <img src={preview.url} alt="preview" style={{ maxWidth:'100%', maxHeight:'220px', display:'block', margin:'0 auto' }} />
-                : <video src={preview.url} controls style={{ maxWidth:'100%', maxHeight:'220px', display:'block', margin:'0 auto' }} />}
+                ? <img src={preview.url} alt="preview" style={{ maxWidth:'100%', maxHeight:'240px', display:'block', margin:'0 auto' }} />
+                : <video src={preview.url} controls style={{ maxWidth:'100%', maxHeight:'240px', display:'block', margin:'0 auto' }} />}
             </div>
           )}
 
-          <div style={{ marginBottom:'22px', marginTop:'10px' }}>
-            <label style={S.label}>Mensaje Escrito para Zandra <span style={{ opacity:0.38 }}>(Opcional)</span></label>
+          <div style={{ marginBottom:'26px', marginTop:'12px' }}>
+            <label style={S.label}>MENSAJE ESCRITO PARA ZANDRA <span style={{ opacity:0.45 }}>(OPCIONAL)</span></label>
             <textarea value={msg} onChange={e => setMsg(e.target.value)}
               placeholder="Escribe unas palabras de cariño para Zandra en su día especial..." rows={3}
-              style={{ ...S.input, resize:'vertical', lineHeight:1.6 }} />
+              style={{ ...S.input, resize:'vertical', lineHeight:1.65, fontFamily:"'Libre Baskerville','Georgia',serif" }} />
           </div>
 
           {(!tipoArchivo || !file || !nombre.trim()) && (
-            <p style={{ ...S.body, fontSize:'0.76rem', opacity:0.38, textAlign:'center', marginBottom:'12px' }}>
+            <div style={{ ...S.body, fontSize:'0.8rem', opacity:0.45, textAlign:'center', marginBottom:'16px', fontWeight:600 }}>
               {!tipoArchivo ? '① Elige el tipo de archivo arriba'
                 : !nombre.trim() ? '② Ingresa tu nombre'
                 : '③ Selecciona tu archivo'}
-            </p>
+            </div>
           )}
 
           <Btn onClick={enviar} filled
             disabled={!file || !nombre.trim() || uploading || !!videoError || !tipoArchivo}
-            style={{ width:'100%', display:'block', textAlign:'center' }}>
-            {uploading ? 'Enviando con Amor...' : 'Enviar mi Regalo ✦'}
+            style={{ width:'100%', display:'block', textAlign:'center', fontSize:'0.75rem' }}>
+            {uploading ? 'ENVIANDO CON AMOR...' : 'ENVIAR MI REGALO ★'}
           </Btn>
         </div>
       </div>
@@ -602,22 +727,24 @@ function Admin({ navigate }) {
 
   if (!auth) return (
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
-      <div style={{ ...S.card, maxWidth:'340px', width:'94vw', textAlign:'center', padding:'40px 28px' }}>
-        <p style={S.eyebrow}>✦ &nbsp; Panel de Administración &nbsp; ✦</p>
-        <Divider />
-        <p style={{ ...S.body, opacity:0.45, marginBottom:'22px', fontSize:'0.88rem' }}>Acceso restringido</p>
-        <label style={S.label}>Contraseña</label>
-        <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&intentar()} style={{ ...S.input, textAlign:'center', marginBottom:'8px', letterSpacing:'0.2em' }} placeholder="••••••••" />
-        {err && <p style={{ color:'#e74c3c', fontSize:'0.78rem', marginBottom:'8px' }}>{err}</p>}
-        <Btn onClick={intentar} filled style={{ width:'100%', display:'block', textAlign:'center', marginTop:'10px' }}>Ingresar</Btn>
-        <Btn onClick={() => navigate('landing')} style={{ width:'100%', display:'block', textAlign:'center', marginTop:'10px', fontSize:'0.58rem' }}>← Volver</Btn>
+      <div style={{ ...S.ticket, maxWidth:'380px', width:'94vw', textAlign:'center', padding:'42px 32px', position:'relative' }}>
+        <PerforatedEdge side="left" />
+        <PerforatedEdge side="right" />
+        <div style={{ ...S.label, marginBottom:'8px' }}>★ PANEL DE ADMINISTRACIÓN ★</div>
+        <DecoLine />
+        <div style={{ ...S.body, opacity:0.5, marginBottom:'24px', fontSize:'0.9rem' }}>Acceso restringido</div>
+        <label style={S.label}>CONTRASEÑA</label>
+        <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&intentar()} style={{ ...S.input, textAlign:'center', marginBottom:'10px', letterSpacing:'0.25em', fontFamily:"'Courier New',monospace" }} placeholder="••••••••" />
+        {err && <div style={{ color:V.burgundy, fontSize:'0.82rem', marginBottom:'10px', fontWeight:600 }}>{err}</div>}
+        <Btn onClick={intentar} filled style={{ width:'100%', display:'block', textAlign:'center', marginTop:'12px' }}>INGRESAR</Btn>
+        <Btn onClick={() => navigate('landing')} style={{ width:'100%', display:'block', textAlign:'center', marginTop:'12px', fontSize:'0.62rem' }}>← VOLVER</Btn>
       </div>
     </div>
   );
 
   if (loading) return (
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
-      <p style={{ ...S.body, opacity:0.5 }}>Cargando datos...</p>
+      <div style={{ ...S.body, opacity:0.6 }}>Cargando datos...</div>
     </div>
   );
 
@@ -637,64 +764,64 @@ function Admin({ navigate }) {
   };
 
   return (
-    <div style={{ ...S.page, paddingTop:'20px' }}>
-      <div style={{ maxWidth:'900px', margin:'0 auto', padding:'24px 16px 70px' }}>
+    <div style={{ ...S.page, paddingTop:'24px' }}>
+      <div style={{ maxWidth:'960px', margin:'0 auto', padding:'28px 20px 80px' }}>
 
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'24px', flexWrap:'wrap', gap:'12px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'28px', flexWrap:'wrap', gap:'14px' }}>
           <div>
-            <p style={{ ...S.eyebrow, marginBottom:'4px' }}>Panel de Administración</p>
-            <div style={{ ...S.title, fontSize:'1.5rem' }}>60 Años — Zandra Veliz</div>
+            <div style={{ ...S.label, marginBottom:'4px' }}>PANEL DE ADMINISTRACIÓN</div>
+            <div style={{ ...S.marquee, fontSize:'1.8rem' }}>60 AÑOS — ZANDRA VELIZ</div>
           </div>
-          <Btn onClick={() => navigate('landing')} style={{ fontSize:'0.58rem', padding:'8px 16px' }}>← Salir</Btn>
+          <Btn onClick={() => navigate('landing')} style={{ fontSize:'0.62rem', padding:'10px 20px' }}>← SALIR</Btn>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(145px,1fr))', gap:'12px', marginBottom:'28px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:'14px', marginBottom:'32px' }}>
           {[
             { l:'Confirmados', v:confirmados, s:'invitados' },
             { l:'Total Personas', v:totalPersonas, s:`de ${EVENTO.cupo}` },
             { l:'Archivos Recibidos', v:conMedia, s:'fotos/videos' },
             { l:'Cupos Libres', v:EVENTO.cupo-totalPersonas, s:'disponibles' },
           ].map(stat => (
-            <div key={stat.l} style={{ ...S.card, padding:'16px', textAlign:'center' }}>
-              <p style={{ ...S.eyebrow, marginBottom:'4px', fontSize:'0.58rem' }}>{stat.l}</p>
-              <div style={{ ...S.title, fontSize:'2.2rem', margin:'4px 0' }}>{stat.v}</div>
-              <p style={{ ...S.body, fontSize:'0.72rem', opacity:0.45 }}>{stat.s}</p>
+            <div key={stat.l} style={{ ...S.ticket, padding:'18px', textAlign:'center' }}>
+              <div style={{ ...S.label, marginBottom:'6px', fontSize:'0.6rem' }}>{stat.l}</div>
+              <div style={{ ...S.marquee, fontSize:'2.6rem', margin:'6px 0', color:V.burgundy }}>{stat.v}</div>
+              <div style={{ ...S.body, fontSize:'0.76rem', opacity:0.55 }}>{stat.s}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ marginBottom:'28px' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
-            <p style={{ ...S.eyebrow, fontSize:'0.58rem' }}>Capacidad Utilizada</p>
-            <p style={{ ...S.eyebrow, fontSize:'0.58rem' }}>{Math.round((totalPersonas/EVENTO.cupo)*100)}%</p>
+        <div style={{ marginBottom:'32px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px' }}>
+            <div style={{ ...S.label, fontSize:'0.6rem' }}>CAPACIDAD UTILIZADA</div>
+            <div style={{ ...S.label, fontSize:'0.6rem' }}>{Math.round((totalPersonas/EVENTO.cupo)*100)}%</div>
           </div>
-          <div style={{ height:'5px', background:'rgba(255,255,255,0.08)', borderRadius:'3px', overflow:'hidden' }}>
-            <div style={{ width:`${(totalPersonas/EVENTO.cupo)*100}%`, height:'100%', background:`linear-gradient(90deg,${G.gold},${G.goldLight})`, borderRadius:'3px', transition:'width 1s ease' }} />
+          <div style={{ height:'8px', background:V.cream, borderRadius:'4px', overflow:'hidden', border:`2px solid ${V.border}` }}>
+            <div style={{ width:`${(totalPersonas/EVENTO.cupo)*100}%`, height:'100%', background:V.burgundy, borderRadius:'2px', transition:'width 1s ease' }} />
           </div>
         </div>
 
-        <div style={{ ...S.card, padding:0, overflow:'hidden', marginBottom:'20px' }}>
-          <div style={{ padding:'14px 20px', borderBottom:`1px solid rgba(201,168,76,0.15)`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <p style={S.eyebrow}>Lista de Confirmaciones</p>
-            <span style={{ ...S.eyebrow, fontSize:'0.55rem', opacity:0.55 }}>{confirmados} registros</span>
+        <div style={{ ...S.ticket, padding:0, overflow:'hidden', marginBottom:'24px' }}>
+          <div style={{ padding:'16px 24px', borderBottom:`2px solid ${V.border}`, background:V.cream, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={S.label}>LISTA DE CONFIRMACIONES</div>
+            <span style={{ ...S.label, fontSize:'0.58rem', opacity:0.6 }}>{confirmados} registros</span>
           </div>
           <div style={{ overflowX:'auto' }}>
             <table style={{ width:'100%', borderCollapse:'collapse' }}>
               <thead>
-                <tr style={{ borderBottom:`1px solid rgba(201,168,76,0.12)` }}>
+                <tr style={{ borderBottom:`2px solid ${V.border}`, background:V.paper }}>
                   {['Nombre','Email','Teléfono','Acompañante','Fecha'].map(h => (
-                    <th key={h} style={{ ...S.eyebrow, padding:'10px 16px', textAlign:'left', fontWeight:'normal', whiteSpace:'nowrap', fontSize:'0.58rem' }}>{h}</th>
+                    <th key={h} style={{ ...S.label, padding:'12px 18px', textAlign:'left', fontWeight:700, whiteSpace:'nowrap', fontSize:'0.6rem' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {rsvps.map((r,i) => (
-                  <tr key={i} style={{ borderBottom:`1px solid rgba(255,255,255,0.04)`, background: i%2===0?'rgba(255,255,255,0.012)':'transparent' }}>
-                    <td style={{ ...S.body, padding:'10px 16px', fontSize:'0.88rem', whiteSpace:'nowrap' }}>{r.nombre}</td>
-                    <td style={{ ...S.body, padding:'10px 16px', fontSize:'0.78rem', opacity:0.55 }}>{r.email}</td>
-                    <td style={{ ...S.body, padding:'10px 16px', fontSize:'0.75rem', opacity:0.45 }}>{r.telefono || '—'}</td>
-                    <td style={{ padding:'10px 16px', fontSize:'0.82rem', color: r.acompanante?G.gold:G.goldDim }}>{r.acompanante?`✦ ${r.nombre_acomp}`:'—'}</td>
-                    <td style={{ ...S.body, padding:'10px 16px', fontSize:'0.75rem', opacity:0.45, whiteSpace:'nowrap' }}>{new Date(r.created_at).toLocaleDateString()}</td>
+                  <tr key={i} style={{ borderBottom:`1px solid ${V.sepia}`, background: i%2===0?V.cream:V.paper }}>
+                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.9rem', whiteSpace:'nowrap', fontWeight:600 }}>{r.nombre}</td>
+                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.8rem', opacity:0.65 }}>{r.email}</td>
+                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.78rem', opacity:0.55 }}>{r.telefono || '—'}</td>
+                    <td style={{ padding:'12px 18px', fontSize:'0.85rem', color: r.acompanante?V.burgundy:V.border, fontWeight:600 }}>{r.acompanante?`★ ${r.nombre_acomp}`:'—'}</td>
+                    <td style={{ ...S.body, padding:'12px 18px', fontSize:'0.78rem', opacity:0.5, whiteSpace:'nowrap' }}>{new Date(r.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -702,26 +829,26 @@ function Admin({ navigate }) {
           </div>
         </div>
 
-        <div style={{ ...S.card, padding:0, overflow:'hidden', marginBottom:'20px' }}>
-          <div style={{ padding:'14px 20px', borderBottom:`1px solid rgba(201,168,76,0.15)` }}>
-            <p style={S.eyebrow}>Archivos Recibidos ({uploads.length})</p>
+        <div style={{ ...S.ticket, padding:0, overflow:'hidden', marginBottom:'24px' }}>
+          <div style={{ padding:'16px 24px', borderBottom:`2px solid ${V.border}`, background:V.cream }}>
+            <div style={S.label}>ARCHIVOS RECIBIDOS ({uploads.length})</div>
           </div>
-          <div style={{ padding:'20px', display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:'14px' }}>
+          <div style={{ padding:'24px', display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:'16px' }}>
             {uploads.map((u,i) => (
-              <div key={i} style={{ border:`1px solid ${G.goldDim}`, borderRadius:'2px', padding:'12px', background:'rgba(255,255,255,0.02)' }}>
-                <p style={{ ...S.eyebrow, fontSize:'0.6rem', marginBottom:'6px' }}>{u.nombre_persona}</p>
-                <p style={{ ...S.body, fontSize:'0.75rem', opacity:0.5, marginBottom:'8px' }}>{u.tipo_archivo}</p>
-                <a href={u.archivo_url} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.55rem', padding:'6px 12px', display:'inline-block' }}>
-                  Ver Archivo ↗
+              <div key={i} style={{ border:`2px solid ${V.border}`, borderRadius:'4px', padding:'14px', background:V.cream }}>
+                <div style={{ ...S.label, fontSize:'0.62rem', marginBottom:'7px' }}>{u.nombre_persona}</div>
+                <div style={{ ...S.body, fontSize:'0.78rem', opacity:0.6, marginBottom:'10px' }}>{u.tipo_archivo}</div>
+                <a href={u.archivo_url} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.58rem', padding:'8px 16px', display:'inline-block', textDecoration:'none' }}>
+                  VER ARCHIVO ↗
                 </a>
               </div>
             ))}
-            {uploads.length === 0 && <p style={{ ...S.body, opacity:0.4, gridColumn:'1/-1', textAlign:'center' }}>No hay archivos todavía</p>}
+            {uploads.length === 0 && <div style={{ ...S.body, opacity:0.4, gridColumn:'1/-1', textAlign:'center', padding:'20px' }}>No hay archivos todavía</div>}
           </div>
         </div>
 
-        <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
-          <Btn onClick={exportCSV} filled>⬇ Exportar Lista CSV</Btn>
+        <div style={{ display:'flex', gap:'14px', flexWrap:'wrap' }}>
+          <Btn onClick={exportCSV} filled>⬇ EXPORTAR LISTA CSV</Btn>
         </div>
 
       </div>
@@ -737,14 +864,13 @@ export default function App() {
 
   useEffect(() => {
     const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=IM+Fell+English+SC&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
     const style = document.createElement('style');
-    style.textContent = '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0a0805; } button:focus { outline: none; } input:focus, textarea:focus { border-color: #C9A84C !important; } input::placeholder, textarea::placeholder { color: rgba(245,237,214,0.28); }';
+    style.textContent = '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } body { background: #f4e8d0; } button:focus { outline: none; } input:focus, textarea:focus { border-color: #6b1f26 !important; } input::placeholder, textarea::placeholder { color: rgba(43,24,16,0.3); }';
     document.head.appendChild(style);
 
-    // Check for upload token in URL
     const params = new URLSearchParams(window.location.search);
     const token = params.get('upload');
     if (token) {
@@ -757,7 +883,7 @@ export default function App() {
   const props = { navigate, rsvpData, setRsvpData, uploadToken };
 
   return (
-    <div style={{ background:'#0a0805', minHeight:'100vh' }}>
+    <div style={{ background:'#c9b896', minHeight:'100vh' }}>
       {page === 'landing'      && <Invitacion {...props} />}
       {page === 'detalles'     && <Detalles {...props} />}
       {page === 'rsvp'         && <RSVP {...props} />}
