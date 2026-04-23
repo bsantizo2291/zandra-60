@@ -210,7 +210,7 @@ function Invitacion({ navigate }) {
         <OrnateBorder />
 
         <div style={{ textAlign:'center', marginBottom:'16px' }}>
-          <div style={{ ...S.label, opacity:0.8, marginBottom:'12px' }}>◆ UNA CELEBRACIÓN DE ESPLENDOR ◆</div>
+          <div style={{ ...S.label, opacity:0.8, marginBottom:'12px' }}> UNA CELEBRACIÓN DE ESPLENDOR </div>
           <div style={{ ...S.ornate, ...S.goldText, fontSize:'clamp(0.9rem,2.5vw,1.2rem)', marginBottom:'8px', ...S.embossed }}>
             Te Invitamos a Celebrar a
           </div>
@@ -251,9 +251,9 @@ function Invitacion({ navigate }) {
 
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:'20px', margin:'32px 0' }}>
           {[
-            { i:'◆', l:'Fecha', v:'Sábado\n5 de Septiembre, 2026' },
-            { i:'◆', l:'Horario', v:'19:00 – 00:00 hrs' },
-            { i:'◆', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
+            { i:'', l:'Fecha', v:'Sábado\n5 de Septiembre, 2026' },
+            { i:'', l:'Horario', v:'19:00 – 00:00 hrs' },
+            { i:'', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
           ].map(d => (
             <div key={d.l} style={{ textAlign:'center', padding:'20px', background:'rgba(212,175,55,0.05)', border:`1px solid ${F.bronze}`, borderRadius:'6px' }}>
               <div style={{ color:F.pureGold, fontSize:'1.5rem', marginBottom:'12px' }}>{d.i}</div>
@@ -267,14 +267,14 @@ function Invitacion({ navigate }) {
           <div style={{ ...S.label, marginBottom:'8px' }}>DIRECCIÓN</div>
           <div style={{ ...S.body, fontSize:'0.96rem', marginBottom:'14px', opacity:0.8 }}>{EVENTO.direccion}</div>
           <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.65rem', padding:'12px 28px', textDecoration:'none' }}>
-            ◆ ABRIR MAPA ◆
+             ABRIR MAPA 
           </a>
         </div>
 
         <GoldDivider />
 
         <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ ...S.label, marginBottom:'10px' }}>◆ CÓDIGO DE VESTIMENTA ◆</div>
+          <div style={{ ...S.label, marginBottom:'10px' }}> CÓDIGO DE VESTIMENTA </div>
           <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.1rem,3vw,1.6rem)', marginBottom:'14px', ...S.embossed }}>
             Etiqueta Rigurosa & Glamour Gatsby
           </div>
@@ -287,7 +287,7 @@ function Invitacion({ navigate }) {
 
         <div style={{ display:'flex', gap:'16px', justifyContent:'center', flexWrap:'wrap' }}>
           <Btn onClick={() => navigate('detalles')}>Ver Detalles</Btn>
-          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia ◆</Btn>
+          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia </Btn>
         </div>
       </div>
 
@@ -318,7 +318,7 @@ function Detalles({ navigate }) {
       <div style={{ maxWidth:'900px', margin:'0 auto', padding:'50px 20px 90px' }}>
 
         <div style={{ textAlign:'center', marginBottom:'48px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>◆ PROGRAMA DEL EVENTO ◆</div>
+          <div style={{ ...S.label, marginBottom:'12px' }}> PROGRAMA DEL EVENTO </div>
           <GoldDivider />
           <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(2rem,6vw,3.5rem)', marginBottom:'12px', ...S.embossed }}>
             Una Velada Gatsby
@@ -330,10 +330,10 @@ function Detalles({ navigate }) {
 
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:'20px', marginBottom:'48px' }}>
           {[
-            { i:'◆', l:'Fecha', v:'Sábado, 5 de Septiembre, 2026' },
-            { i:'◆', l:'Horario', v:'19:00 – 00:00 hrs' },
-            { i:'◆', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
-            { i:'◆', l:'Dirección', v:'Calzada Roosevelt Km. 13.5\nZona 7 de Mixco, Guatemala' },
+            { i:'', l:'Fecha', v:'Sábado, 5 de Septiembre, 2026' },
+            { i:'', l:'Horario', v:'19:00 – 00:00 hrs' },
+            { i:'', l:'Lugar', v:'El Club Español\nÁrea Fuentecilla' },
+            { i:'', l:'Dirección', v:'Calzada Roosevelt Km. 13.5\nZona 7 de Mixco, Guatemala' },
           ].map(d => (
             <div key={d.l} style={{ ...S.card, padding:'24px', textAlign:'center' }}>
               <div style={{ color:F.pureGold, fontSize:'2.2rem', marginBottom:'14px' }}>{d.i}</div>
@@ -346,12 +346,12 @@ function Detalles({ navigate }) {
         <div style={{ ...S.card, textAlign:'center', marginBottom:'48px' }}>
           <div style={{ ...S.label, marginBottom:'16px' }}>UBICACIÓN DEL EVENTO</div>
           <a href={EVENTO.mapsUrl} target="_blank" rel="noreferrer" style={{ ...S.btn, ...S.btnFill }}>
-            ◆ ABRIR EN GOOGLE MAPS ◆
+             ABRIR EN GOOGLE MAPS 
           </a>
         </div>
 
         <div style={{ textAlign:'center', marginBottom:'44px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>◆ CÓDIGO DE VESTIMENTA ◆</div>
+          <div style={{ ...S.label, marginBottom:'12px' }}> CÓDIGO DE VESTIMENTA </div>
           <GoldDivider />
           <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.3rem,4vw,2rem)', marginBottom:'18px', ...S.embossed }}>
             Etiqueta Rigurosa & Glamour Gatsby
@@ -389,7 +389,7 @@ function Detalles({ navigate }) {
           <div style={{ ...S.body, fontStyle:'italic', opacity:0.6, marginBottom:'24px', fontSize:'0.98rem' }}>
             Los cupos son limitados. Confirma tu asistencia pronto.
           </div>
-          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia ◆</Btn>
+          <Btn onClick={() => navigate('rsvp')} filled>Confirmar Asistencia </Btn>
         </div>
       </div>
     </div>
@@ -457,7 +457,7 @@ function RSVP({ navigate, setRsvpData }) {
       <div style={{ maxWidth:'640px', margin:'0 auto', padding:'50px 20px 90px' }}>
 
         <div style={{ textAlign:'center', marginBottom:'40px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>◆ CONFIRMAR ASISTENCIA ◆</div>
+          <div style={{ ...S.label, marginBottom:'12px' }}> CONFIRMAR ASISTENCIA </div>
           <GoldDivider />
           <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.8rem,5vw,2.8rem)', marginBottom:'16px', ...S.embossed }}>
             ¿Nos Acompañas?
@@ -531,12 +531,12 @@ function RSVP({ navigate, setRsvpData }) {
 
           <div style={{ background:`linear-gradient(135deg, rgba(212,175,55,0.12), rgba(205,127,50,0.08))`, border:`2px solid ${F.pureGold}`, padding:'20px', borderRadius:'6px', marginBottom:'32px' }}>
             <p style={{ ...S.body, fontSize:'0.92rem', textAlign:'center', lineHeight:1.8 }}>
-              ◆ &nbsp; Tras confirmar, recibirás un <strong style={{color:F.pureGold}}>enlace especial</strong> para subir una foto o mensaje de video para Zandra.
+               &nbsp; Tras confirmar, recibirás un <strong style={{color:F.pureGold}}>enlace especial</strong> para subir una foto o mensaje de video para Zandra.
             </p>
           </div>
 
           <Btn onClick={enviar} filled disabled={submitting} style={{ width:'100%', textAlign:'center', display:'block' }}>
-            {submitting ? 'CONFIRMANDO...' : 'CONFIRMAR ASISTENCIA ◆'}
+            {submitting ? 'CONFIRMANDO...' : 'CONFIRMAR ASISTENCIA '}
           </Btn>
         </div>
       </div>
@@ -555,7 +555,7 @@ function Confirmacion({ navigate, rsvpData }) {
         <OrnateBorder />
         
         <div style={{ fontSize:'4rem', marginBottom:'20px' }}>🥂</div>
-        <div style={{ ...S.label, marginBottom:'12px' }}>◆ ¡CONFIRMACIÓN RECIBIDA! ◆</div>
+        <div style={{ ...S.label, marginBottom:'12px' }}> ¡CONFIRMACIÓN RECIBIDA! </div>
         <GoldDivider />
         <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.6rem,5vw,2.4rem)', marginBottom:'16px', ...S.embossed }}>
           ¡Nos Alegra Contar Contigo!
@@ -572,7 +572,7 @@ function Confirmacion({ navigate, rsvpData }) {
           <input readOnly value={uploadUrl} onClick={e => e.target.select()}
             style={{ ...S.input, fontSize:'0.8rem', textAlign:'center', cursor:'pointer', marginBottom:'14px', fontFamily:"'Courier New',monospace" }} />
           <p style={{ ...S.body, fontSize:'0.9rem', lineHeight:1.8 }}>
-            ◆ Usa este enlace para subir una foto o video para Zandra. Guárdalo bien — será parte de la sorpresa.
+             Usa este enlace para subir una foto o video para Zandra. Guárdalo bien — será parte de la sorpresa.
           </p>
         </div>
         
@@ -661,7 +661,7 @@ function SubirArchivo({ navigate, uploadToken }) {
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', padding:'20px' }}>
       <div style={{ ...S.card, maxWidth:'580px', width:'95vw', textAlign:'center', padding:'52px 44px', position:'relative' }}>
         <OrnateBorder />
-        <div style={{ fontSize:'4rem', marginBottom:'20px' }}>◆</div>
+        <div style={{ fontSize:'4rem', marginBottom:'20px' }}></div>
         <div style={{ ...S.label, marginBottom:'12px' }}>¡RECIBIDO CON AMOR!</div>
         <GoldDivider />
         <p style={{ ...S.body, opacity:0.85, marginBottom:'28px', fontSize:'1rem' }}>
@@ -677,21 +677,21 @@ function SubirArchivo({ navigate, uploadToken }) {
       <div style={{ maxWidth:'720px', margin:'0 auto', padding:'50px 20px 90px' }}>
 
         <div style={{ textAlign:'center', marginBottom:'40px' }}>
-          <div style={{ ...S.label, marginBottom:'12px' }}>◆ TU MENSAJE ESPECIAL ◆</div>
+          <div style={{ ...S.label, marginBottom:'12px' }}> TU MENSAJE ESPECIAL </div>
           <GoldDivider />
           <div style={{ ...S.goldText, ...S.ornate, fontSize:'clamp(1.6rem,5vw,2.4rem)', marginBottom:'14px', ...S.embossed }}>
             Un Regalo para Zandra
           </div>
           <p style={{ ...S.body, opacity:0.75, fontSize:'0.98rem', maxWidth:'540px', margin:'0 auto' }}>
-            Comparte un recuerdo especial. Se presentará como sorpresa el día de su celebración. ◆
+            Comparte un recuerdo especial. Se presentará como sorpresa el día de su celebración. 
           </p>
         </div>
 
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px', marginBottom:'32px' }}>
           {[
-            { k:'foto-con-ella', i:'◆', t:'Foto con Ella', d:'Una foto tuya junto a Zandra' },
-            { k:'recuerdo', i:'◆', t:'Recuerdo', d:'Foto de infancia u otro momento especial' },
-            { k:'video', i:'◆', t:'Video Mensaje', d:'Felicitación en video (máx. 1 min)' },
+            { k:'foto-con-ella', i:'', t:'Foto con Ella', d:'Una foto tuya junto a Zandra' },
+            { k:'recuerdo', i:'', t:'Recuerdo', d:'Foto de infancia u otro momento especial' },
+            { k:'video', i:'', t:'Video Mensaje', d:'Felicitación en video (máx. 1 min)' },
           ].map(o => {
             const sel = tipoArchivo === o.k;
             return (
@@ -717,9 +717,9 @@ function SubirArchivo({ navigate, uploadToken }) {
           {tipoArchivo && (
             <div style={{ background:'rgba(212,175,55,0.08)', border:`2px solid ${F.pureGold}`, padding:'18px 22px', borderRadius:'6px', marginBottom:'24px' }}>
               <p style={{ ...S.body, fontSize:'0.9rem', textAlign:'center', lineHeight:1.75 }}>
-                {tipoArchivo === 'foto-con-ella' && '◆ Sube una foto donde aparezcas junto a Zandra — puede ser reciente o de cualquier época.'}
-                {tipoArchivo === 'recuerdo' && '◆ Sube una foto que capture un recuerdo de Zandra — de su infancia, juventud o cualquier momento que quieras compartir.'}
-                {tipoArchivo === 'video' && '◆ Graba un video con tus felicitaciones de cumpleaños. Máximo 1 minuto (60 segundos). ¡Habla desde el corazón!'}
+                {tipoArchivo === 'foto-con-ella' && ' Sube una foto donde aparezcas junto a Zandra — puede ser reciente o de cualquier época.'}
+                {tipoArchivo === 'recuerdo' && ' Sube una foto que capture un recuerdo de Zandra — de su infancia, juventud o cualquier momento que quieras compartir.'}
+                {tipoArchivo === 'video' && ' Graba un video con tus felicitaciones de cumpleaños. Máximo 1 minuto (60 segundos). ¡Habla desde el corazón!'}
               </p>
             </div>
           )}
@@ -732,7 +732,7 @@ function SubirArchivo({ navigate, uploadToken }) {
             style={{ border:`3px dashed ${drag?F.pureGold:tipoArchivo?F.bronze:'rgba(205,127,50,0.3)'}`, borderRadius:'6px', padding:'44px 28px', textAlign:'center', cursor:tipoArchivo?'pointer':'not-allowed', marginBottom:'16px', background:drag?'rgba(212,175,55,0.08)':'rgba(255,255,255,0.02)', transition:'all 0.3s', opacity:tipoArchivo?1:0.5, boxShadow: drag?`0 0 30px ${F.shadow}`:'none' }}
           >
             <input id="fileInput" type="file" accept={tipoArchivo==='video'?'video/*':'image/*'} style={{ display:'none' }} onChange={e => handleFile(e.target.files[0])} />
-            <div style={{ fontSize:'3rem', marginBottom:'14px', color:F.pureGold }}>{file ? '◆' : tipoArchivo==='video' ? '◆' : '◆'}</div>
+            <div style={{ fontSize:'3rem', marginBottom:'14px', color:F.pureGold }}>{file ? '' : tipoArchivo==='video' ? '' : ''}</div>
             <div style={{ ...S.label, marginBottom:'8px', fontSize:'0.65rem' }}>
               {file ? file.name : tipoArchivo ? (tipoArchivo==='video'?'VIDEO — MP4 · MOV':'IMAGEN — JPG · PNG') : 'PRIMERO ELIGE UN TIPO ARRIBA'}
             </div>
@@ -776,7 +776,7 @@ function SubirArchivo({ navigate, uploadToken }) {
           <Btn onClick={enviar} filled
             disabled={!file || !nombre.trim() || uploading || !!videoError || !tipoArchivo}
             style={{ width:'100%', display:'block', textAlign:'center' }}>
-            {uploading ? 'ENVIANDO CON AMOR...' : 'ENVIAR MI REGALO ◆'}
+            {uploading ? 'ENVIANDO CON AMOR...' : 'ENVIAR MI REGALO '}
           </Btn>
         </div>
       </div>
@@ -813,7 +813,7 @@ function Admin({ navigate }) {
     <div style={{ ...S.page, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh' }}>
       <div style={{ ...S.card, maxWidth:'420px', width:'94vw', textAlign:'center', padding:'48px 40px', position:'relative' }}>
         <OrnateBorder />
-        <p style={S.label}>◆ PANEL DE ADMINISTRACIÓN ◆</p>
+        <p style={S.label}> PANEL DE ADMINISTRACIÓN </p>
         <GoldDivider />
         <p style={{ ...S.body, opacity:0.6, marginBottom:'28px', fontSize:'0.94rem' }}>Acceso restringido</p>
         <label style={S.label}>CONTRASEÑA</label>
@@ -903,7 +903,7 @@ function Admin({ navigate }) {
                     <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.94rem', whiteSpace:'nowrap' }}>{r.nombre}</td>
                     <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.84rem', opacity:0.7 }}>{r.email}</td>
                     <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.8rem', opacity:0.6 }}>{r.telefono || '—'}</td>
-                    <td style={{ padding:'14px 20px', fontSize:'0.88rem', color: r.acompanante?F.pureGold:F.bronze }}>{r.acompanante?`◆ ${r.nombre_acomp}`:'—'}</td>
+                    <td style={{ padding:'14px 20px', fontSize:'0.88rem', color: r.acompanante?F.pureGold:F.bronze }}>{r.acompanante?` ${r.nombre_acomp}`:'—'}</td>
                     <td style={{ ...S.body, padding:'14px 20px', fontSize:'0.8rem', opacity:0.55, whiteSpace:'nowrap' }}>{new Date(r.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
@@ -922,7 +922,7 @@ function Admin({ navigate }) {
                 <p style={{ ...S.label, fontSize:'0.64rem', marginBottom:'9px' }}>{u.nombre_persona}</p>
                 <p style={{ ...S.body, fontSize:'0.82rem', opacity:0.65, marginBottom:'12px' }}>{u.tipo_archivo}</p>
                 <a href={u.archivo_url} target="_blank" rel="noreferrer" style={{ ...S.btn, fontSize:'0.6rem', padding:'10px 20px', display:'inline-block', textDecoration:'none' }}>
-                  VER ARCHIVO ◆
+                  VER ARCHIVO 
                 </a>
               </div>
             ))}
@@ -931,7 +931,7 @@ function Admin({ navigate }) {
         </div>
 
         <div style={{ display:'flex', gap:'16px', flexWrap:'wrap' }}>
-          <Btn onClick={exportCSV} filled>◆ EXPORTAR LISTA CSV</Btn>
+          <Btn onClick={exportCSV} filled> EXPORTAR LISTA CSV</Btn>
         </div>
 
       </div>
