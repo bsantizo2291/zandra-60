@@ -238,12 +238,10 @@ function PhotoGallery() {
   const fetchPhotos = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/list/${GALLERY_TAG}.json`)
+      const res = await fetch('/api/list-photos')
       if (res.ok) {
         const d = await res.json()
-        setPhotos((d.resources || [])
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .map(r => ({ public_id: r.public_id, url: `${CLOUDINARY_FETCH_URL}/w_400,h_400,c_fill,q_auto/${r.public_id}` })))
+        setPhotos((d.photos || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
       }
     } catch (_) {}
     setLoading(false)
