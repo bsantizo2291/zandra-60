@@ -639,12 +639,12 @@ export default function App() {
       <ChampagneBubbles />
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-        style={{ background: 'linear-gradient(180deg, #080808 0%, #0d0b05 100%)' }}>
+      <section className="relative flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, #080808 0%, #0d0b05 100%)', minHeight: '100vh', paddingTop: '60px', paddingBottom: '60px' }}>
 
         {/* Hero background image */}
         <div className="absolute inset-0"
-          style={{ backgroundImage: 'url(/hero_bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.55 }} />
+          style={{ backgroundImage: 'url(/hero_bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center center', backgroundAttachment: 'scroll', opacity: 0.6 }} />
 
         {/* Gradient overlay */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(8,8,8,0.3) 0%, rgba(8,8,8,0.1) 40%, rgba(8,8,8,0.5) 100%)' }} />
@@ -683,7 +683,7 @@ export default function App() {
         {/* Content */}
         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2 }}
-          className="relative z-10 text-center px-4 max-w-5xl mx-auto w-full" style={{ overflow: 'visible' }}>
+          className="relative z-10 text-center px-6 md:px-12 w-full" style={{ overflow: 'visible', maxWidth: '900px', margin: '0 auto' }}>
 
           <motion.p initial={{ opacity: 0, letterSpacing: '0.05em' }} animate={{ opacity: 1, letterSpacing: '0.4em' }}
             transition={{ delay: 0.3, duration: 1 }}
@@ -695,7 +695,7 @@ export default function App() {
           <motion.h1 initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 1, type: 'spring', stiffness: 60 }}
             className="shimmer-text font-serif font-black leading-none mb-2 w-full"
-            style={{ fontSize: 'clamp(3.2rem, 14vw, 9rem)', fontFamily: 'Cinzel, serif', letterSpacing: '0.08em', paddingLeft: '0.04em', paddingRight: '0.04em', overflow: 'visible', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
+            style={{ fontSize: 'clamp(4rem, 15vw, 10rem)', fontFamily: 'Cinzel, serif', letterSpacing: '0.1em', overflow: 'visible', wordBreak: 'keep-all', whiteSpace: 'nowrap', display: 'block', textAlign: 'center' }}>
             ZANDRA
           </motion.h1>
 
@@ -710,12 +710,12 @@ export default function App() {
           {/* Medallion + 60 */}
           <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.9, duration: 0.9, type: 'spring' }}
-            className="flex flex-col items-center mb-6 md:mb-8">
+            className="flex flex-col items-center mb-6 md:mb-10">
             <div className="relative inline-flex items-center justify-center">
-              <Medallion size={typeof window !== 'undefined' && window.innerWidth < 640 ? 140 : 180} />
+              <Medallion size={220} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="shimmer-text font-serif font-black leading-none"
-                  style={{ fontSize: 'clamp(2.2rem, 7vw, 3.5rem)', fontFamily: 'Cinzel, serif' }}>60</span>
+                  style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontFamily: 'Cinzel, serif' }}>60</span>
                 <span className="font-serif text-xs uppercase tracking-[0.3em]" style={{ color: 'rgba(212,160,23,0.6)' }}>Anos</span>
               </div>
             </div>
