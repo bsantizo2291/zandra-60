@@ -890,7 +890,7 @@ export default function App() {
             {[
               { icon: Calendar, title: 'Fecha', lines: ['Sábado', '5 de Septiembre', '2026'], url: null },
               { icon: Clock, title: 'Horario', lines: ['19:00 — 24:00', 'Cinco horas de', 'pura celebración'], url: null },
-              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Área Fuentecilla', 'Guatemala 🇬🇹'], url: 'https://share.google/FDmBZPdqd5IKUHSazP' },
+              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Área Fuentecilla', 'Guatemala 🇬🇹'], url: 'https://www.google.com/maps/place/Club+Espa%C3%B1ol/@14.6341,-90.5857,17z/data=!3m1!4b1!4m6!3m5!1s0x8589a13878a4f411:0x7295032f17ead494!8m2!3d14.6341!4d-90.5831!16s%2Fg%2F1tdv4y5b' },
             ].map(({ icon: Icon, title, lines, url }, i) => (
               <motion.div
                 key={title}
