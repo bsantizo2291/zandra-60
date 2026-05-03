@@ -377,6 +377,10 @@ function AdminPanel() {
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [activeTab, setActiveTab] = useState('photos')
+  const [rsvps, setRsvps] = useState([])
+  const [rsvpLoading, setRsvpLoading] = useState(false)
+  const [deletingRsvp, setDeletingRsvp] = useState(null)
 
   const login = (e) => {
     e.preventDefault()
@@ -411,7 +415,33 @@ function AdminPanel() {
     setDeleting(null)
   }
 
-  useEffect(() => { if (auth) fetchPhotos() }, [auth])
+  const fetchRSVPs = async () => {
+    setRsvpLoading(true)
+    try {
+      const res = await fetch(`/api/rsvp?password=${encodeURIComponent(ADMIN_PASSWORD)}`)
+      if (res.ok) { const d = await res.json(); setRsvps(d.rsvps || []) }
+      else toast.error('Error al cargar RSVPs')
+    } catch (_) { toast.error('Error de conexion') }
+    setRsvpLoading(false)
+  }
+
+  const deleteRSVP = async (id) => {
+    setDeletingRsvp(id)
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, password: ADMIN_PASSWORD }),
+      })
+      if (res.ok) {
+        toast.success('RSVP eliminado')
+        setRsvps(p => p.filter(r => r.id !== id))
+      } else toast.error('No se pudo eliminar')
+    } catch (_) { toast.error('Error de conexion') }
+    setDeletingRsvp(null)
+  }
+
+  useEffect(() => { if (auth) { fetchPhotos(); fetchRSVPs() } }, [auth])
 
   if (!auth) return (
     <div className="min-h-screen noir-section flex items-center justify-center p-4">
@@ -435,22 +465,25 @@ function AdminPanel() {
     </div>
   )
 
+  const totalGuests = rsvps.reduce((sum, r) => sum + (r.total || 1), 0)
+
   return (
     <div className="min-h-screen noir-section p-4">
       <Toaster position="top-center" richColors />
       <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <div className="flex items-center justify-between py-6 mb-6" style={{ borderBottom: '1px solid rgba(212,160,23,0.2)' }}>
           <div>
             <h1 className="font-serif text-2xl" style={{ color: '#d4a017' }}>Panel de Administracion</h1>
             <p className="font-serif text-xs tracking-widest uppercase mt-1" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              {photos.length} foto{photos.length !== 1 ? 's' : ''} en la galeria
+              Celebracion Zandra Veliz · 60 Anos
             </p>
           </div>
           <div className="flex gap-3">
-            <button onClick={fetchPhotos} disabled={loading}
+            <button onClick={() => { fetchPhotos(); fetchRSVPs() }} disabled={loading || rsvpLoading}
               className="flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-4 py-2 rounded-xl transition-colors"
               style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.7)' }}>
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${(loading || rsvpLoading) ? 'animate-spin' : ''}`} />
               Actualizar
             </button>
             <button onClick={() => window.location.href = '/'}
@@ -461,27 +494,100 @@ function AdminPanel() {
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {photos.map(photo => (
-            <motion.div key={photo.public_id} layout
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
-              className="relative group rounded-xl overflow-hidden aspect-square"
-              style={{ border: '1px solid rgba(212,160,23,0.2)' }}>
-              <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
-                  className="flex items-center gap-1 bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-full font-serif uppercase tracking-wide">
-                  <Trash2 className="w-3 h-3" />
-                  {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
-                </button>
-              </div>
-            </motion.div>
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8">
+          {[['photos', `Fotos (${photos.length})`], ['rsvps', `Invitados (${rsvps.length})`]].map(([tab, label]) => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className="font-serif text-sm uppercase tracking-widest px-6 py-2 rounded-xl transition-all"
+              style={activeTab === tab
+                ? { background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#0a0a0a', fontWeight: 700 }
+                : { border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.6)' }}>
+              {label}
+            </button>
           ))}
         </div>
-        {photos.length === 0 && !loading && (
-          <div className="text-center py-20">
-            <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>No hay fotos aun</p>
-          </div>
+
+        {/* Photos Tab */}
+        {activeTab === 'photos' && (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {photos.map(photo => (
+                <motion.div key={photo.public_id} layout
+                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
+                  className="relative group rounded-xl overflow-hidden aspect-square"
+                  style={{ border: '1px solid rgba(212,160,23,0.2)' }}>
+                  <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
+                      className="flex items-center gap-1 bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-full font-serif uppercase tracking-wide">
+                      <Trash2 className="w-3 h-3" />
+                      {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            {photos.length === 0 && !loading && (
+              <div className="text-center py-20">
+                <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>No hay fotos aun</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* RSVPs Tab */}
+        {activeTab === 'rsvps' && (
+          <>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {[
+                { label: 'Confirmaciones', value: rsvps.length },
+                { label: 'Total Invitados', value: totalGuests },
+                { label: 'Con Acompanante', value: rsvps.filter(r => r.plusOne).length },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-xl p-5 text-center gold-card">
+                  <p className="font-serif text-4xl font-bold shimmer-text" style={{ fontFamily: 'Cinzel, serif' }}>{value}</p>
+                  <p className="font-serif text-xs uppercase tracking-widest mt-1" style={{ color: 'rgba(212,160,23,0.6)' }}>{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Guest List */}
+            <div className="space-y-3">
+              {rsvps.length === 0 && !rsvpLoading && (
+                <div className="text-center py-20">
+                  <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>Aun no hay confirmaciones</p>
+                </div>
+              )}
+              {rsvps.map((r, i) => (
+                <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                  className="flex items-center justify-between rounded-xl px-5 py-4"
+                  style={{ border: '1px solid rgba(212,160,23,0.2)', background: 'rgba(212,160,23,0.04)' }}>
+                  <div className="flex-1">
+                    <p className="font-serif font-semibold" style={{ color: '#d4a017' }}>{r.name}</p>
+                    {r.plusOne && (
+                      <p className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.6)' }}>
+                        +1{r.plusOneName ? `: ${r.plusOneName}` : ' (acompanante)'}
+                      </p>
+                    )}
+                    <p className="font-serif text-xs mt-1" style={{ color: 'rgba(212,160,23,0.35)' }}>
+                      {new Date(r.confirmedAt).toLocaleDateString('es-GT', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 ml-4">
+                    <span className="font-serif text-xs px-3 py-1 rounded-full" style={{ background: 'rgba(212,160,23,0.15)', color: '#d4a017' }}>
+                      {r.total || 1} persona{(r.total || 1) !== 1 ? 's' : ''}
+                    </span>
+                    <button onClick={() => deleteRSVP(r.id)} disabled={deletingRsvp === r.id}
+                      className="text-red-500 hover:text-red-400 transition-colors disabled:opacity-40">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -619,9 +725,22 @@ function RSVPForm() {
     e.preventDefault()
     if (!name.trim()) { toast.error('Por favor ingresa tu nombre'); return }
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 900))
-    setSubmitting(false); setSubmitted(true)
-    toast.success('Confirmacion recibida. Te esperamos.')
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), plusOne, plusOneName: plusOneName.trim() }),
+      })
+      if (res.ok) {
+        setSubmitted(true)
+        toast.success('Confirmacion recibida. Te esperamos.')
+      } else {
+        toast.error('Error al confirmar. Intenta de nuevo.')
+      }
+    } catch (_) {
+      toast.error('Error de conexion. Intenta de nuevo.')
+    }
+    setSubmitting(false)
   }
 
   if (submitted) return (
