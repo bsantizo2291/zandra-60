@@ -76,7 +76,7 @@ function ChampagneBubbles() {
       const left = Math.random() * 100
       const duration = Math.random() * 5 + 4
       const drift = (Math.random() - 0.5) * 80
-      setBubbles(prev => [...prev.slice(-50), { id, size, left, duration, drift }])
+      setBubbles(prev => [...prev.slice(-30), { id, size, left, duration, drift }])
       setTimeout(() => setBubbles(prev => prev.filter(b => b.id !== id)), duration * 1000)
     }
 
@@ -86,12 +86,12 @@ function ChampagneBubbles() {
       const duration = Math.random() * 2 + 1.2
       const w = Math.random() * 3 + 1.5
       const h = w * 3
-      setDrops(prev => [...prev.slice(-35), { id, left, duration, w, h }])
+      setDrops(prev => [...prev.slice(-20), { id, left, duration, w, h }])
       setTimeout(() => setDrops(prev => prev.filter(d => d.id !== id)), duration * 1000)
     }
 
-    const bi = setInterval(createBubble, 180)
-    const di = setInterval(createDrop, 100)
+    const bi = setInterval(createBubble, 400)
+    const di = setInterval(createDrop, 250)
     return () => { clearInterval(bi); clearInterval(di) }
   }, [])
 
@@ -1064,7 +1064,7 @@ export default function App() {
           <ArtDecoOrnament className="max-w-sm mx-auto mb-6" />
           <p className="shimmer-text font-serif text-2xl font-bold mb-2">Zandra Veliz · 60 Años</p>
           <p className="text-amber-600 text-sm tracking-widest uppercase">5 de Septiembre · 2026 · Club Español · Fuentecilla, Guatemala</p>
-          <p className="text-amber-800 text-xs mt-4">Una noche de elegancia, amistad y nostalgia · The Great Gatsby Experience</p>
+          <p className="text-amber-800 text-xs mt-4">Una noche de elegancia, amistad y nostalgia · Estilo Gran Gatsby</p>
         </div>
       </footer>
     </div>
