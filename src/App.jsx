@@ -890,7 +890,7 @@ export default function App() {
             {[
               { icon: Calendar, title: 'Fecha', lines: ['Sábado', '5 de Septiembre', '2026'], url: null },
               { icon: Clock, title: 'Horario', lines: ['19:00 — 24:00', 'Cinco horas de', 'pura celebración'], url: null },
-              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Área Fuentecilla', 'Guatemala 🇬🇹'], url: 'https://www.google.com/maps/place/Club+Espa%C3%B1ol/@14.6341,-90.5857,17z/data=!3m1!4b1!4m6!3m5!1s0x8589a13878a4f411:0x7295032f17ead494!8m2!3d14.6341!4d-90.5831!16s%2Fg%2F1tdv4y5b' },
+              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Calzada Roosevelt Km.13.5', 'Zona 7, Guatemala 🇬🇹'], url: null },
             ].map(({ icon: Icon, title, lines, url }, i) => (
               <motion.div
                 key={title}
@@ -908,15 +908,25 @@ export default function App() {
                 {lines.map((l, j) => (
                   <p key={j} className={j === 0 ? 'text-amber-200 font-serif text-xl font-bold' : 'text-amber-400 text-sm mt-1'}>{l}</p>
                 ))}
-                {url && (
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 mt-4 text-amber-400 hover:text-amber-300 text-xs border border-amber-600/40 hover:border-amber-400 rounded-full px-3 py-1.5 transition-all"
-                  >
-                    <MapPin className="w-3 h-3" /> Ver en Google Maps
-                  </a>
+                {title === 'Lugar' && (
+                  <div className="flex flex-col gap-2 mt-4">
+                    <a
+                      href="https://www.google.com/maps/dir/?api=1&destination=14.6341,-90.5831&destination_place_id=ChIJEfSofjigiYURlNTqFywDlXI"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs border border-amber-600/40 hover:border-amber-400 rounded-full px-3 py-1.5 transition-all"
+                    >
+                      <MapPin className="w-3 h-3" /> Google Maps
+                    </a>
+                    <a
+                      href="https://waze.com/ul?ll=14.6341,-90.5831&navigate=yes&zoom=17"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs border border-amber-600/40 hover:border-amber-400 rounded-full px-3 py-1.5 transition-all"
+                    >
+                      <MapPin className="w-3 h-3" /> Waze
+                    </a>
+                  </div>
                 )}
               </motion.div>
             ))}
