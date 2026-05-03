@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, Calendar, MapPin, Clock, Camera, Star, ChevronDown } from 'lucide-react'
+import { Upload, Calendar, MapPin, Clock, Camera, Star, ChevronDown, Trash2, Lock, LogOut, RefreshCw } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 
 // ─── Cloudinary Config ────────────────────────────────────────────────────────
@@ -265,10 +265,14 @@ function PhotoGallery() {
           continue
         }
 
+        // Generate a guest token valid for 10 minutes so they can delete their own photo
+        const guestToken = btoa(`${d.public_id}|${Date.now()}`)
         setPhotos(prev => [{
           id: d.public_id,
           url: `${CLOUDINARY_FETCH_URL}/w_900,h_900,c_fill,q_auto/${d.public_id}`,
           thumb: `${CLOUDINARY_FETCH_URL}/w_350,h_350,c_fill,q_auto/${d.public_id}`,
+          guestToken,
+          uploadedAt: Date.now(),
         }, ...prev])
         ok++
       } catch (e) {
@@ -296,6 +300,26 @@ function PhotoGallery() {
   }
 
   const rotations = [-4, 3, -2, 5, -3, 2, -5, 4, -1, 3]
+
+  const handleGuestDelete = async (photo, e) => {
+    e.stopPropagation()
+    if (!window.confirm('¿Eliminar esta foto?')) return
+    try {
+      const res = await fetch('/api/delete-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicId: photo.id, guestToken: photo.guestToken }),
+      })
+      if (res.ok) {
+        setPhotos(prev => prev.filter(p => p.id !== photo.id))
+        toast.success('Foto eliminada ✓')
+      } else {
+        toast.error('No se pudo eliminar. El tiempo límite puede haber expirado.')
+      }
+    } catch {
+      toast.error('Error de conexión.')
+    }
+  }
 
   return (
     <div>
@@ -362,11 +386,20 @@ function PhotoGallery() {
               transition={{ delay: Math.min(idx * 0.04, 0.5), type: 'spring' }}
               whileHover={{ scale: 1.04, rotate: rotations[idx % rotations.length], zIndex: 10 }}
               onClick={() => setLightbox(photo)}
-              className="break-inside-avoid cursor-pointer relative overflow-hidden rounded-xl border-2 border-amber-500/20 shadow-lg hover:border-amber-400 hover:shadow-amber-500/30 transition-all"
+              className="break-inside-avoid cursor-pointer relative overflow-hidden rounded-xl border-2 border-amber-500/20 shadow-lg hover:border-amber-400 hover:shadow-amber-500/30 transition-all group"
             >
               <img src={photo.thumb} alt="Recuerdo" className="w-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-2">
                 <Star className="w-4 h-4 text-amber-400" />
+                {photo.guestToken && (Date.now() - photo.uploadedAt) < 600000 && (
+                  <button
+                    onClick={(e) => handleGuestDelete(photo, e)}
+                    className="bg-red-900/80 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors"
+                    title="Eliminar mi foto"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </motion.div>
           ))}
@@ -405,6 +438,158 @@ function PhotoGallery() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── Admin Panel ─────────────────────────────────────────────────────────────
+function AdminPanel() {
+  const [password, setPassword] = useState('')
+  const [authed, setAuthed] = useState(false)
+  const [photos, setPhotos] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [deleting, setDeleting] = useState(null)
+
+  const login = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const res = await fetch('/api/list-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: password }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPhotos(data.resources || [])
+        setAuthed(true)
+      } else {
+        toast.error('Contraseña incorrecta')
+      }
+    } catch {
+      toast.error('Error de conexión')
+    }
+    setLoading(false)
+  }
+
+  const refresh = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/list-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: password }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPhotos(data.resources || [])
+        toast.success(`${data.resources?.length || 0} fotos cargadas`)
+      }
+    } catch { toast.error('Error al actualizar') }
+    setLoading(false)
+  }
+
+  const deletePhoto = async (publicId) => {
+    if (!window.confirm('¿Eliminar esta foto permanentemente?')) return
+    setDeleting(publicId)
+    try {
+      const res = await fetch('/api/delete-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicId, adminPassword: password }),
+      })
+      if (res.ok) {
+        setPhotos(prev => prev.filter(p => p.public_id !== publicId))
+        toast.success('Foto eliminada ✓')
+      } else {
+        toast.error('Error al eliminar')
+      }
+    } catch { toast.error('Error de conexión') }
+    setDeleting(null)
+  }
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <Toaster position="top-center" richColors />
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-2xl p-10 w-full max-w-sm text-center"
+        >
+          <Lock className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-amber-300 font-serif text-2xl font-bold mb-2">Panel de Admin</h1>
+          <p className="text-amber-600 text-sm mb-8">Zandra 60 · Gestión de Fotos</p>
+          <form onSubmit={login} className="space-y-4">
+            <input
+              type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="Contraseña" required
+              className="w-full bg-black/50 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-700 focus:outline-none focus:border-amber-400 text-center"
+            />
+            <motion.button
+              type="submit" disabled={loading}
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              className="w-full bg-gradient-to-r from-amber-600 to-amber-500 text-black font-bold py-3 rounded-xl disabled:opacity-50"
+            >
+              {loading ? 'Entrando...' : '✦ Entrar ✦'}
+            </motion.button>
+          </form>
+        </motion.div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <Toaster position="top-center" richColors />
+      <div className="sticky top-0 z-50 bg-black/95 border-b border-amber-800/30 px-4 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-amber-300 font-serif text-xl font-bold">Panel de Admin</h1>
+          <p className="text-amber-600 text-xs">{photos.length} fotos subidas</p>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={refresh} disabled={loading} className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-sm border border-amber-700/40 rounded-full px-3 py-1.5 transition-colors">
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Actualizar
+          </button>
+          <button onClick={() => { setAuthed(false); setPassword(''); setPhotos([]) }} className="flex items-center gap-1.5 text-amber-600 hover:text-amber-400 text-sm border border-amber-800/40 rounded-full px-3 py-1.5 transition-colors">
+            <LogOut className="w-3.5 h-3.5" /> Salir
+          </button>
+        </div>
+      </div>
+
+      <div className="p-4 max-w-6xl mx-auto">
+        {photos.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-amber-600 text-lg">No hay fotos aún 📸</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-6">
+            {photos.map(photo => (
+              <motion.div
+                key={photo.public_id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
+                className="relative group rounded-xl overflow-hidden border border-amber-800/30 aspect-square"
+              >
+                <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                  <p className="text-amber-400 text-xs text-center truncate w-full px-1">{photo.public_id.split('/').pop()}</p>
+                  <p className="text-amber-600 text-xs">{photo.created_at ? new Date(photo.created_at).toLocaleDateString('es-GT') : ''}</p>
+                  <button
+                    onClick={() => deletePhoto(photo.public_id)}
+                    disabled={deleting === photo.public_id}
+                    className="flex items-center gap-1 bg-red-700 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -569,6 +754,7 @@ function RSVPForm() {
 export default function App() {
   const params = new URLSearchParams(window.location.search)
   if (params.get('slideshow') === '1') return <Slideshow />
+  if (params.get('admin') === '1') return <AdminPanel />
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
