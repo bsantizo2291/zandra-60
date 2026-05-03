@@ -283,7 +283,7 @@ function PhotoGallery() {
 
     setUploading(false)
     setUploadProgress('')
-    if (ok > 0) toast.success(`¡${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''}! 🥂`)
+    if (ok > 0) toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente`)
     else if (ok === 0) toast.error('No se pudo subir ninguna foto. Intenta de nuevo.')
   }, [uploaderName])
 
@@ -356,7 +356,7 @@ function PhotoGallery() {
         />
         <Camera className="w-14 h-14 text-amber-400 mx-auto mb-4" />
         <p className="text-xl text-amber-300 font-semibold font-serif mb-2">
-          {uploading ? `✨ ${uploadProgress || 'Procesando...'}` : 'Comparte un recuerdo con Zandra'}
+          {uploading ? (uploadProgress || 'Procesando...') : 'Comparte un recuerdo con Zandra'}
         </p>
         {uploading ? (
           <div className="mt-3">
@@ -407,7 +407,7 @@ function PhotoGallery() {
       ) : (
         !uploading && (
           <div className="text-center py-16">
-            <p className="text-amber-600 text-lg">¡Sé el primero en compartir un recuerdo! 📸</p>
+            <p className="text-amber-600 text-lg">Sé el primero en compartir un recuerdo</p>
           </div>
         )
       )}
@@ -560,7 +560,7 @@ function AdminPanel() {
       <div className="p-4 max-w-6xl mx-auto">
         {photos.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-amber-600 text-lg">No hay fotos aún 📸</p>
+            <p className="text-amber-600 text-lg">No hay fotos aún</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-6">
@@ -637,7 +637,7 @@ function Slideshow() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-amber-400 text-3xl font-serif text-center px-8">
-              Esperando fotos de los invitados... 🥂<br />
+              Esperando fotos de los invitados...<br />
               <span className="text-lg text-amber-600 mt-4 block">Escanea el código QR para subir fotos</span>
             </p>
           </div>
@@ -675,13 +675,13 @@ function RSVPForm() {
     await new Promise(r => setTimeout(r, 900))
     setSubmitting(false)
     setSubmitted(true)
-    toast.success('¡Confirmación recibida! Te esperamos. 🥂')
+    toast.success('¡Confirmación recibida! Te esperamos.')
   }
 
   if (submitted) {
     return (
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-6">
-        <div className="text-5xl mb-4">🥂</div>
+        <div className="text-amber-400 font-serif text-4xl mb-4">✦</div>
         <p className="text-amber-200 font-serif text-2xl font-bold mb-2">¡Nos vemos el 5 de Septiembre!</p>
         <p className="text-amber-500 text-sm">
           {name}{plusOne && plusOneName ? ` y ${plusOneName}` : plusOne ? ' y acompañante' : ''} — confirmado{plusOne ? 's' : ''}
@@ -744,7 +744,7 @@ function RSVPForm() {
       <div className="pt-4 border-t border-amber-800/40 text-center">
         <p className="text-amber-700 text-xs mb-2">¿Preguntas? Contacta al organizador</p>
         <p className="text-amber-300 font-semibold text-sm">Brayan Santizo</p>
-        <a href="tel:+12015987303" className="text-amber-500 hover:text-amber-300 text-sm transition-colors">📞 +1 (201) 598-7303</a>
+        <a href="tel:+12015987303" className="text-amber-500 hover:text-amber-300 text-sm transition-colors">+1 (201) 598-7303</a>
       </div>
     </form>
   )
@@ -861,7 +861,7 @@ export default function App() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <p className="text-amber-500 uppercase tracking-[0.3em] text-xs mb-3">⏳ Cuenta Regresiva</p>
+            <p className="text-amber-500 uppercase tracking-[0.3em] text-xs mb-3">Cuenta Regresiva</p>
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-amber-300 mb-12">
               La Gran Noche se Acerca
             </h2>
@@ -890,7 +890,7 @@ export default function App() {
             {[
               { icon: Calendar, title: 'Fecha', lines: ['Sábado', '5 de Septiembre', '2026'], url: null },
               { icon: Clock, title: 'Horario', lines: ['19:00 — 24:00', 'Cinco horas de', 'pura celebración'], url: null },
-              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Calzada Roosevelt Km.13.5', 'Zona 7, Guatemala 🇬🇹'], url: null },
+              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Calzada Roosevelt Km. 13.5', 'Zona 7 · Guatemala'], url: null },
             ].map(({ icon: Icon, title, lines, url }, i) => (
               <motion.div
                 key={title}
@@ -973,11 +973,11 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                 <div className="bg-amber-900/20 rounded-xl p-5 border border-amber-700/20">
-                  <p className="text-amber-300 font-semibold mb-2">👗 Damas</p>
+                  <p className="text-amber-300 font-semibold mb-2">Damas</p>
                   <p className="text-amber-200 text-sm leading-relaxed">Vestidos largos o cóctel con flecos, lentejuelas o plumas. Guantes, tocados, diademas y accesorios de los años 20.</p>
                 </div>
                 <div className="bg-amber-900/20 rounded-xl p-5 border border-amber-700/20">
-                  <p className="text-amber-300 font-semibold mb-2">🤵 Caballeros</p>
+                  <p className="text-amber-300 font-semibold mb-2">Caballeros</p>
                   <p className="text-amber-200 text-sm leading-relaxed">Traje oscuro o smoking con corbata o moño. Sombrero fedora o bombín. Chaleco y pañuelo de bolsillo.</p>
                 </div>
               </div>
@@ -1001,7 +1001,7 @@ export default function App() {
               Recuerdos con Zandra
             </h2>
             <p className="text-amber-400 text-base max-w-xl mx-auto">
-              Sube tus fotos favoritas con la festejada. El día del evento se proyectarán en pantalla grande durante la fiesta. 🎉
+              Sube tus fotos favoritas con la festejada. El día del evento se proyectarán en pantalla grande durante la fiesta.
             </p>
             <ArtDecoOrnament className="mt-8" />
           </motion.div>
