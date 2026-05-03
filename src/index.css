@@ -2,96 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
   width: 100%;
-  height: 100%;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  background: #f5e6c8;
-  color: #1a2744;
+  background: #0a0a0a;
+  color: #d4a017;
   font-size: 16px;
-  letter-spacing: 0.01em;
-}
-
-body {
-  background-color: #f5e6c8;
-  color: #1a2744;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Cinzel', serif;
-  font-weight: 600;
   letter-spacing: 0.08em;
 }
 
-.font-serif {
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.06em;
-}
-
-.font-cormorant {
-  font-family: 'Cormorant Garamond', serif;
-}
-
 /* ── Scrollbar ─────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #f5e6c8; }
-::-webkit-scrollbar-thumb { background: #b8860b; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #d4a017; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #b8860b; border-radius: 3px; }
 
 /* ── Keyframes ─────────────────────────────────────────────── */
 @keyframes shimmer-gold {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
-
-@keyframes float-gentle {
-  0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
-  50%       { transform: translateY(-12px) rotate(var(--rot, 0deg)); }
-}
-
 @keyframes bubble-rise {
   0%   { transform: translateY(0) translateX(0) scale(0.3); opacity: 0; }
-  10%  { opacity: 0.7; }
-  90%  { opacity: 0.5; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.4; }
   100% { transform: translateY(-100vh) translateX(var(--drift, 0px)) scale(1); opacity: 0; }
 }
-
 @keyframes champagne-drop {
   0%   { transform: translateY(-20px); opacity: 0; }
-  10%  { opacity: 0.8; }
+  10%  { opacity: 0.9; }
   100% { transform: translateY(100vh); opacity: 0; }
 }
-
 @keyframes count-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(180, 134, 11, 0.3); }
-  50%       { box-shadow: 0 0 0 16px rgba(180, 134, 11, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212,160,23,0.3); }
+  50%       { box-shadow: 0 0 0 14px rgba(212,160,23,0); }
+}
+@keyframes medallion-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(212,160,23,0.4)); }
+  50%       { filter: drop-shadow(0 0 24px rgba(212,160,23,0.9)) drop-shadow(0 0 48px rgba(212,160,23,0.4)); }
+}
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes border-glow {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
 }
 
-@keyframes feather-sway {
-  0%, 100% { transform: rotate(-3deg) translateY(0); }
-  50%       { transform: rotate(3deg) translateY(-8px); }
-}
-
-@keyframes glow-navy {
-  0%, 100% { text-shadow: 0 0 8px rgba(26, 39, 68, 0.3); }
-  50%       { text-shadow: 0 0 24px rgba(26, 39, 68, 0.7), 0 0 48px rgba(180, 134, 11, 0.4); }
-}
-
-@keyframes border-shimmer {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* ── Utility classes ───────────────────────────────────────── */
+/* ── Gold shimmer text ─────────────────────────────────────── */
 .shimmer-text {
-  background: linear-gradient(90deg, #8B6914, #d4a017, #f5d76e, #d4a017, #8B6914);
+  background: linear-gradient(90deg, #8B6914 0%, #d4a017 25%, #f5d76e 50%, #d4a017 75%, #8B6914 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -99,111 +65,60 @@ h1, h2, h3, h4, h5, h6 {
   animation: shimmer-gold 4s linear infinite;
 }
 
-.shimmer-navy {
-  background: linear-gradient(90deg, #1a2744, #2d4a8a, #1a2744);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer-gold 5s linear infinite;
+/* ── Cards ─────────────────────────────────────────────────── */
+.gold-card {
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid rgba(212, 160, 23, 0.5);
+  box-shadow: 0 0 0 1px rgba(212,160,23,0.1), inset 0 0 40px rgba(212,160,23,0.03);
+}
+.gold-card-light {
+  background: rgba(18, 14, 4, 0.98);
+  border: 1px solid rgba(212, 160, 23, 0.4);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), inset 0 0 30px rgba(212,160,23,0.04);
 }
 
-.glow-text {
-  animation: glow-navy 3s ease-in-out infinite;
-}
-
-/* Champagne card — ivory/silk background with navy border */
-.glass-card {
-  background: rgba(245, 230, 200, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(180, 134, 11, 0.5);
-  box-shadow: 0 8px 32px rgba(26, 39, 68, 0.12), inset 0 1px 0 rgba(255,255,255,0.6);
-}
-
-/* Dark navy card for contrast sections */
-.navy-card {
-  background: rgba(26, 39, 68, 0.92);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(180, 134, 11, 0.4);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-
+/* ── Countdown box ─────────────────────────────────────────── */
 .countdown-box {
   animation: count-pulse 2.5s ease-in-out infinite;
+  background: rgba(10,10,10,0.98);
+  border: 1px solid rgba(212,160,23,0.5);
 }
 
+/* ── Bubble ────────────────────────────────────────────────── */
 .bubble {
   position: fixed;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(212, 160, 23, 0.7), rgba(180, 134, 11, 0.3));
+  background: radial-gradient(circle at 30% 30%, rgba(212,160,23,0.8), rgba(180,134,11,0.2));
   pointer-events: none;
   z-index: 9999;
 }
 
-/* Art Deco divider */
-.art-deco-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0;
-}
-.art-deco-divider::before,
-.art-deco-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #b8860b, #d4a017, #b8860b, transparent);
+/* ── Medallion glow ────────────────────────────────────────── */
+.medallion-glow {
+  animation: medallion-glow 3s ease-in-out infinite;
 }
 
-/* Peacock hero background */
-.peacock-hero {
-  background-image: url('/hero_bg.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
+/* ── Section backgrounds ───────────────────────────────────── */
+.noir-section {
+  background: linear-gradient(180deg, #080808 0%, #0d0d0d 50%, #080808 100%);
+}
+.noir-section-alt {
+  background: linear-gradient(180deg, #0d0b05 0%, #100e06 50%, #0d0b05 100%);
 }
 
-/* Art Deco tile pattern for section backgrounds */
-.deco-tile {
-  background-color: #f0ddb8;
-  background-image:
-    linear-gradient(45deg, rgba(26,39,68,0.04) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(26,39,68,0.04) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(26,39,68,0.04) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(26,39,68,0.04) 75%);
-  background-size: 30px 30px;
-  background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
-}
+/* ── Border glow animation ─────────────────────────────────── */
+.border-glow { animation: border-glow 2s ease-in-out infinite; }
 
-/* Navy section */
-.navy-section {
-  background: linear-gradient(135deg, #0f1829 0%, #1a2744 50%, #0f1829 100%);
+/* ── Input styles ──────────────────────────────────────────── */
+.gatsby-input {
+  background: rgba(20, 16, 4, 0.9);
+  border: 1px solid rgba(212,160,23,0.35);
+  color: #f5d76e;
+  transition: border-color 0.3s;
 }
-
-/* Gold filigree oval frame */
-.oval-frame {
-  border: 3px solid #b8860b;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 6px rgba(184,134,11,0.15),
-    0 0 0 12px rgba(184,134,11,0.08),
-    inset 0 0 30px rgba(245,215,110,0.1);
-  position: relative;
+.gatsby-input:focus {
+  outline: none;
+  border-color: rgba(212,160,23,0.8);
+  box-shadow: 0 0 0 2px rgba(212,160,23,0.1);
 }
-.oval-frame::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  border: 1px solid rgba(184,134,11,0.4);
-}
-
-/* Peacock feather decorative element */
-.feather-left {
-  animation: feather-sway 6s ease-in-out infinite;
-  transform-origin: bottom center;
-}
-.feather-right {
-  animation: feather-sway 6s ease-in-out infinite reverse;
-  transform-origin: bottom center;
-}
+.gatsby-input::placeholder { color: rgba(212,160,23,0.3); }

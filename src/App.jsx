@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 
-// ─── Cloudinary Config ────────────────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`
 const CLOUDINARY_FETCH_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`
@@ -11,34 +11,26 @@ const UPLOAD_PRESET = 'zandra60'
 const GALLERY_TAG = 'zandra60party'
 const ADMIN_PASSWORD = 'zandra60party'
 
-// ─── Client-side image compression ───────────────────────────────────────────
-async function compressImage(file, maxSizeMB = 8, maxDimension = 2400) {
+// ─── Image compression ────────────────────────────────────────────────────────
+async function compressImage(file, maxSizeMB = 8, maxDim = 2400) {
   return new Promise((resolve) => {
-    if (file.size <= maxSizeMB * 1024 * 1024 && file.type === 'image/jpeg') {
-      resolve(file); return
-    }
+    if (file.size <= maxSizeMB * 1024 * 1024 && file.type === 'image/jpeg') { resolve(file); return }
     const img = new Image()
     const url = URL.createObjectURL(file)
     img.onload = () => {
       URL.revokeObjectURL(url)
-      let { width, height } = img
-      if (width > maxDimension || height > maxDimension) {
-        const ratio = Math.min(maxDimension / width, maxDimension / height)
-        width = Math.round(width * ratio)
-        height = Math.round(height * ratio)
-      }
+      let { width: w, height: h } = img
+      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r) }
       const canvas = document.createElement('canvas')
-      canvas.width = width; canvas.height = height
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
-      const tryQuality = (q) => {
-        canvas.toBlob((blob) => {
-          if (!blob) { resolve(file); return }
-          if (blob.size <= maxSizeMB * 1024 * 1024 || q <= 0.3)
-            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-          else tryQuality(q - 0.1)
-        }, 'image/jpeg', q)
-      }
-      tryQuality(0.85)
+      canvas.width = w; canvas.height = h
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+      const tryQ = (q) => canvas.toBlob((blob) => {
+        if (!blob) { resolve(file); return }
+        if (blob.size <= maxSizeMB*1024*1024 || q <= 0.3)
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
+        else tryQ(q - 0.1)
+      }, 'image/jpeg', q)
+      tryQ(0.85)
     }
     img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
     img.src = url
@@ -49,41 +41,34 @@ async function compressImage(file, maxSizeMB = 8, maxDimension = 2400) {
 function ChampagneBubbles() {
   const [bubbles, setBubbles] = useState([])
   const [drops, setDrops] = useState([])
-
   useEffect(() => {
-    const createBubble = () => {
+    const bi = setInterval(() => {
       const id = Math.random().toString(36).slice(2)
-      const size = Math.random() * 14 + 4
+      const size = Math.random() * 12 + 3
       const left = Math.random() * 100
-      const duration = Math.random() * 5 + 4
-      const drift = (Math.random() - 0.5) * 60
-      setBubbles(prev => [...prev.slice(-25), { id, size, left, duration, drift }])
-      setTimeout(() => setBubbles(prev => prev.filter(b => b.id !== id)), duration * 1000)
-    }
-    const createDrop = () => {
+      const dur = Math.random() * 5 + 4
+      const drift = (Math.random() - 0.5) * 50
+      setBubbles(p => [...p.slice(-28), { id, size, left, dur, drift }])
+      setTimeout(() => setBubbles(p => p.filter(b => b.id !== id)), dur * 1000)
+    }, 420)
+    const di = setInterval(() => {
       const id = Math.random().toString(36).slice(2)
       const left = Math.random() * 100
-      const duration = Math.random() * 2 + 1.2
-      const w = Math.random() * 2.5 + 1
-      const h = w * 3
-      setDrops(prev => [...prev.slice(-18), { id, left, duration, w, h }])
-      setTimeout(() => setDrops(prev => prev.filter(d => d.id !== id)), duration * 1000)
-    }
-    const bi = setInterval(createBubble, 450)
-    const di = setInterval(createDrop, 280)
+      const dur = Math.random() * 2 + 1
+      const w = Math.random() * 2 + 1
+      setDrops(p => [...p.slice(-20), { id, left, dur, w, h: w * 3 }])
+      setTimeout(() => setDrops(p => p.filter(d => d.id !== id)), dur * 1000)
+    }, 260)
     return () => { clearInterval(bi); clearInterval(di) }
   }, [])
-
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 9999 }}>
       {bubbles.map(b => (
         <div key={b.id} className="bubble" style={{
           width: b.size, height: b.size, left: `${b.left}%`, bottom: 0,
           '--drift': `${b.drift}px`,
-          animationName: 'bubble-rise',
-          animationDuration: `${b.duration}s`,
-          animationTimingFunction: 'ease-out',
-          animationFillMode: 'forwards',
+          animationName: 'bubble-rise', animationDuration: `${b.dur}s`,
+          animationTimingFunction: 'ease-out', animationFillMode: 'forwards',
         }} />
       ))}
       {drops.map(d => (
@@ -91,116 +76,162 @@ function ChampagneBubbles() {
           position: 'absolute', left: `${d.left}%`, top: 0,
           width: d.w, height: d.h,
           borderRadius: '50% 50% 50% 50% / 30% 30% 70% 70%',
-          background: 'linear-gradient(180deg, rgba(212,160,23,0.6), rgba(180,134,11,0.2))',
+          background: 'linear-gradient(180deg, rgba(212,160,23,0.7), rgba(180,134,11,0.2))',
           pointerEvents: 'none',
-          animationName: 'champagne-drop',
-          animationDuration: `${d.duration}s`,
-          animationTimingFunction: 'linear',
-          animationFillMode: 'forwards',
+          animationName: 'champagne-drop', animationDuration: `${d.dur}s`,
+          animationTimingFunction: 'linear', animationFillMode: 'forwards',
         }} />
       ))}
     </div>
   )
 }
 
-// ─── Art Deco Divider ─────────────────────────────────────────────────────────
-function ArtDecoDivider({ dark = false }) {
-  const color = dark ? 'rgba(212,160,23,0.7)' : 'rgba(26,39,68,0.5)'
+// ─── Art Deco SVG Medallion ───────────────────────────────────────────────────
+function Medallion({ size = 180 }) {
+  const r = size / 2
+  const rays = 24
   return (
-    <div className="flex items-center justify-center gap-3 my-6">
-      <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${color})` }} />
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <polygon points="14,1 16,11 26,14 16,17 14,27 12,17 2,14 12,11" fill={dark ? '#d4a017' : '#1a2744'} opacity="0.8" />
-        <polygon points="14,5 15.5,11 21,14 15.5,17 14,23 12.5,17 7,14 12.5,11" fill={dark ? '#f5d76e' : '#2d4a8a'} opacity="0.6" />
-      </svg>
-      <div className="h-px flex-1" style={{ background: `linear-gradient(to left, transparent, ${color})` }} />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="medallion-glow">
+      {/* Outer ring */}
+      <circle cx={r} cy={r} r={r - 4} fill="none" stroke="#d4a017" strokeWidth="1.5" opacity="0.6" />
+      <circle cx={r} cy={r} r={r - 10} fill="none" stroke="#d4a017" strokeWidth="0.8" opacity="0.4" />
+      {/* Rays */}
+      {Array.from({ length: rays }).map((_, i) => {
+        const angle = (i * 360) / rays
+        const rad = (angle * Math.PI) / 180
+        const inner = r * 0.32
+        const outer = r * 0.78
+        const x1 = r + inner * Math.cos(rad)
+        const y1 = r + inner * Math.sin(rad)
+        const x2 = r + outer * Math.cos(rad)
+        const y2 = r + outer * Math.sin(rad)
+        const isMain = i % 3 === 0
+        return (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke="#d4a017" strokeWidth={isMain ? 1.5 : 0.8}
+            opacity={isMain ? 0.9 : 0.5} />
+        )
+      })}
+      {/* Art Deco spokes (every 6th) */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const angle = (i * 45 * Math.PI) / 180
+        const len = r * 0.55
+        const x2 = r + len * Math.cos(angle)
+        const y2 = r + len * Math.sin(angle)
+        return <line key={`spoke-${i}`} x1={r} y1={r} x2={x2} y2={y2}
+          stroke="#d4a017" strokeWidth="2" opacity="0.7" />
+      })}
+      {/* Center circle */}
+      <circle cx={r} cy={r} r={r * 0.22} fill="url(#goldGrad)" />
+      <circle cx={r} cy={r} r={r * 0.28} fill="none" stroke="#d4a017" strokeWidth="1.5" opacity="0.8" />
+      <defs>
+        <radialGradient id="goldGrad" cx="40%" cy="35%">
+          <stop offset="0%" stopColor="#f5d76e" />
+          <stop offset="50%" stopColor="#d4a017" />
+          <stop offset="100%" stopColor="#8B6914" />
+        </radialGradient>
+      </defs>
+    </svg>
+  )
+}
+
+// ─── Art Deco Border Frame ────────────────────────────────────────────────────
+function ArtDecoFrame({ children, className = '' }) {
+  return (
+    <div className={`relative ${className}`}>
+      {/* Outer border */}
+      <div className="absolute inset-0 border border-gold-500 border-glow pointer-events-none"
+        style={{ border: '1px solid rgba(212,160,23,0.6)' }} />
+      <div className="absolute inset-2 pointer-events-none"
+        style={{ border: '1px solid rgba(212,160,23,0.25)' }} />
+      {/* Corner fans */}
+      {[
+        { pos: 'top-0 left-0', rot: '0deg' },
+        { pos: 'top-0 right-0', rot: '90deg' },
+        { pos: 'bottom-0 right-0', rot: '180deg' },
+        { pos: 'bottom-0 left-0', rot: '270deg' },
+      ].map(({ pos, rot }) => (
+        <svg key={rot} width="40" height="40" viewBox="0 0 40 40"
+          className={`absolute ${pos}`}
+          style={{ transform: `rotate(${rot})` }}>
+          <path d="M2 2 L2 18 M2 2 L18 2" stroke="#d4a017" strokeWidth="1.5" opacity="0.8" />
+          <path d="M6 6 L6 14 M6 6 L14 6" stroke="#d4a017" strokeWidth="0.8" opacity="0.5" />
+          {/* Fan */}
+          {[0,15,30,45].map(a => {
+            const rad = (a * Math.PI) / 180
+            return <line key={a} x1="2" y1="2" x2={2 + 12*Math.cos(rad)} y2={2 + 12*Math.sin(rad)}
+              stroke="#d4a017" strokeWidth="0.8" opacity="0.6" />
+          })}
+          <circle cx="2" cy="2" r="2" fill="#d4a017" opacity="0.9" />
+        </svg>
+      ))}
+      {/* Side diamonds */}
+      {[
+        { style: { top: '50%', left: -6, transform: 'translateY(-50%) rotate(45deg)' } },
+        { style: { top: '50%', right: -6, transform: 'translateY(-50%) rotate(45deg)' } },
+        { style: { left: '50%', top: -6, transform: 'translateX(-50%) rotate(45deg)' } },
+        { style: { left: '50%', bottom: -6, transform: 'translateX(-50%) rotate(45deg)' } },
+      ].map((d, i) => (
+        <div key={i} className="absolute w-3 h-3 pointer-events-none"
+          style={{ ...d.style, background: '#d4a017', opacity: 0.8 }} />
+      ))}
+      {children}
     </div>
   )
 }
 
-// ─── Peacock SVG Feather ──────────────────────────────────────────────────────
-function PeacockFeather({ className = '', flip = false }) {
+// ─── Gold Divider ─────────────────────────────────────────────────────────────
+function GoldDivider() {
   return (
-    <img
-      src="/peacock_left.png"
-      alt=""
-      className={className}
-      style={{ transform: flip ? 'scaleX(-1)' : undefined, opacity: 0.85 }}
-    />
+    <div className="flex items-center gap-3 my-6 md:my-8">
+      <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, #d4a017, transparent)' }} />
+      <svg width="32" height="32" viewBox="0 0 32 32">
+        <polygon points="16,2 18,13 29,16 18,19 16,30 14,19 3,16 14,13" fill="#d4a017" opacity="0.9" />
+        <polygon points="16,6 17.5,13 23,16 17.5,19 16,26 14.5,19 9,16 14.5,13" fill="#f5d76e" opacity="0.6" />
+      </svg>
+      <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, #d4a017, transparent)' }} />
+    </div>
   )
 }
 
-// ─── Art Deco Corner ──────────────────────────────────────────────────────────
-function ArtDecoCorners({ dark = false }) {
-  const c = dark ? '#d4a017' : '#1a2744'
-  const Corner = ({ style }) => (
-    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={style} className="absolute">
-      <path d="M2 2 L2 20 M2 2 L20 2" stroke={c} strokeWidth="2" opacity="0.7"/>
-      <path d="M8 8 L8 16 M8 8 L16 8" stroke={c} strokeWidth="1" opacity="0.5"/>
-      <circle cx="2" cy="2" r="2" fill={c} opacity="0.8"/>
-    </svg>
-  )
-  return (
-    <>
-      <Corner style={{ top: 0, left: 0 }} />
-      <Corner style={{ top: 0, right: 0, transform: 'scaleX(-1)' }} />
-      <Corner style={{ bottom: 0, left: 0, transform: 'scaleY(-1)' }} />
-      <Corner style={{ bottom: 0, right: 0, transform: 'scale(-1,-1)' }} />
-    </>
-  )
-}
-
-// ─── Countdown Timer ──────────────────────────────────────────────────────────
+// ─── Countdown ────────────────────────────────────────────────────────────────
 function CountdownTimer() {
-  const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-
+  const [t, setT] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
   useEffect(() => {
     const calc = () => {
-      const target = new Date('2026-09-05T19:00:00').getTime()
-      const now = Date.now()
-      const diff = Math.max(0, target - now)
-      setTime({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      })
+      const diff = Math.max(0, new Date('2026-09-05T19:00:00').getTime() - Date.now())
+      setT({ days: Math.floor(diff/86400000), hours: Math.floor((diff%86400000)/3600000),
+             minutes: Math.floor((diff%3600000)/60000), seconds: Math.floor((diff%60000)/1000) })
     }
-    calc()
-    const id = setInterval(calc, 1000)
-    return () => clearInterval(id)
+    calc(); const id = setInterval(calc, 1000); return () => clearInterval(id)
   }, [])
-
-  const labels = ['Días', 'Horas', 'Minutos', 'Segundos']
-  const values = [time.days, time.hours, time.minutes, time.seconds]
-
+  const items = [['Días', t.days], ['Horas', t.hours], ['Minutos', t.minutes], ['Segundos', t.seconds]]
   return (
-    <div className="flex flex-wrap justify-center gap-4 md:gap-8">
-      {values.map((val, i) => (
-        <motion.div
-          key={labels[i]}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+    <div className="flex flex-wrap justify-center gap-3 md:gap-6">
+      {items.map(([label, val], i) => (
+        <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1 }}
-          className="countdown-box navy-card rounded-2xl px-6 py-5 text-center min-w-[90px]"
-        >
-          <div className="shimmer-text font-serif text-5xl md:text-6xl font-black leading-none mb-1">
+          className="countdown-box rounded-xl px-4 py-4 md:px-8 md:py-6 text-center min-w-[72px] md:min-w-[110px]">
+          <div className="shimmer-text font-serif font-black leading-none"
+            style={{ fontSize: 'clamp(2.2rem, 8vw, 3.5rem)', fontFamily: 'Cinzel, serif' }}>
             {String(val).padStart(2, '0')}
           </div>
-          <div className="text-amber-300 text-xs uppercase tracking-[0.2em] font-cormorant mt-2">{labels[i]}</div>
+          <div className="text-xs uppercase tracking-[0.2em] mt-2 font-serif" style={{ color: 'rgba(212,160,23,0.6)' }}>
+            {label}
+          </div>
         </motion.div>
       ))}
     </div>
   )
 }
 
-// ─── Photo Gallery (with guest delete token) ─────────────────────────────────
+// ─── Photo Gallery ────────────────────────────────────────────────────────────
 function PhotoGallery() {
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState('')
-  const [uploaderName, setUploaderName] = useState('')
+  const [progress, setProgress] = useState('')
+  const [name, setName] = useState('')
   const [deletable, setDeletable] = useState({})
   const [deleting, setDeleting] = useState(null)
 
@@ -212,11 +243,7 @@ function PhotoGallery() {
         const d = await res.json()
         setPhotos((d.resources || [])
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .map(r => ({
-            public_id: r.public_id,
-            url: `${CLOUDINARY_FETCH_URL}/w_400,h_400,c_fill,q_auto/${r.public_id}`,
-            created_at: r.created_at,
-          })))
+          .map(r => ({ public_id: r.public_id, url: `${CLOUDINARY_FETCH_URL}/w_400,h_400,c_fill,q_auto/${r.public_id}` })))
       }
     } catch (_) {}
     setLoading(false)
@@ -228,132 +255,101 @@ function PhotoGallery() {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     setUploading(true)
-    let ok = 0
-    const newDeletable = {}
+    let ok = 0; const nd = {}
     for (let i = 0; i < files.length; i++) {
-      setUploadProgress(`Preparando foto ${i + 1} de ${files.length}...`)
+      setProgress(`Preparando foto ${i+1} de ${files.length}...`)
       const compressed = await compressImage(files[i])
-      setUploadProgress(`Subiendo foto ${i + 1} de ${files.length}...`)
+      setProgress(`Subiendo foto ${i+1} de ${files.length}...`)
       const fd = new FormData()
-      fd.append('file', compressed)
-      fd.append('upload_preset', UPLOAD_PRESET)
+      fd.append('file', compressed); fd.append('upload_preset', UPLOAD_PRESET)
       fd.append('tags', GALLERY_TAG)
-      if (uploaderName.trim()) fd.append('context', `uploader=${uploaderName.trim()}`)
+      if (name.trim()) fd.append('context', `uploader=${name.trim()}`)
       try {
         const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: fd })
         const data = await res.json()
-        if (data.public_id) {
-          ok++
-          newDeletable[data.public_id] = Date.now() + 10 * 60 * 1000
-        } else {
-          toast.error(`Error: ${data.error?.message || 'No se pudo subir la foto'}`)
-        }
-      } catch (err) {
-        toast.error('Error de conexión al subir la foto')
-      }
+        if (data.public_id) { ok++; nd[data.public_id] = Date.now() + 10 * 60 * 1000 }
+        else toast.error(`Error: ${data.error?.message || 'No se pudo subir'}`)
+      } catch (_) { toast.error('Error de conexión') }
     }
-    setUploading(false)
-    setUploadProgress('')
+    setUploading(false); setProgress('')
     if (ok > 0) {
-      setDeletable(prev => ({ ...prev, ...newDeletable }))
+      setDeletable(p => ({ ...p, ...nd }))
       toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente`)
       fetchPhotos()
     }
-  }, [uploaderName, fetchPhotos])
+  }, [name, fetchPhotos])
 
   const handleChange = (e) => { handleUpload(e); e.target.value = '' }
 
-  const deletePhoto = async (publicId) => {
-    setDeleting(publicId)
+  const deletePhoto = async (id) => {
+    setDeleting(id)
     try {
       const res = await fetch('/api/delete-photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: publicId }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ public_id: id }),
       })
       if (res.ok) {
         toast.success('Foto eliminada')
-        setPhotos(prev => prev.filter(p => p.public_id !== publicId))
-        setDeletable(prev => { const n = { ...prev }; delete n[publicId]; return n })
-      } else {
-        toast.error('No se pudo eliminar')
-      }
+        setPhotos(p => p.filter(x => x.public_id !== id))
+        setDeletable(p => { const n = { ...p }; delete n[id]; return n })
+      } else toast.error('No se pudo eliminar')
     } catch (_) { toast.error('Error de conexión') }
     setDeleting(null)
   }
 
-  const canDelete = (id) => deletable[id] && Date.now() < deletable[id]
-
   return (
     <div className="space-y-8">
-      {/* Uploader name */}
       <div className="max-w-sm mx-auto">
-        <label className="block text-center font-serif text-xs uppercase tracking-widest text-amber-700 mb-2">Tu nombre (opcional)</label>
-        <input
-          type="text"
-          value={uploaderName}
-          onChange={e => setUploaderName(e.target.value)}
-          placeholder="Tu nombre"
-          className="w-full bg-amber-50/80 border border-amber-600/40 rounded-xl px-4 py-3 text-navy-800 placeholder-amber-400 focus:outline-none focus:border-amber-600 transition-colors text-center font-cormorant text-lg"
-          style={{ color: '#1a2744' }}
-        />
+        <label className="block text-center font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.7)' }}>
+          Tu nombre (opcional)
+        </label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)}
+          placeholder="Tu nombre" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
       </div>
 
-      {/* Upload area */}
       <label className="block cursor-pointer">
         <input type="file" accept="image/*" multiple onChange={handleChange} className="hidden" />
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          className="glass-card rounded-2xl p-10 text-center border-2 border-dashed border-amber-500/50 hover:border-amber-600 transition-colors relative overflow-hidden"
-        >
-          <ArtDecoCorners />
-          <Camera className="w-12 h-12 mx-auto mb-4" style={{ color: '#1a2744' }} />
-          <p className="font-serif text-xl mb-1" style={{ color: '#1a2744' }}>
-            {uploading ? (uploadProgress || 'Procesando...') : 'Comparte un recuerdo con Zandra'}
+        <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+          className="gold-card rounded-2xl p-8 md:p-12 text-center relative overflow-hidden"
+          style={{ borderStyle: 'dashed', borderColor: 'rgba(212,160,23,0.4)' }}>
+          <Camera className="w-10 h-10 md:w-14 md:h-14 mx-auto mb-4" style={{ color: '#d4a017' }} />
+          <p className="font-serif text-lg md:text-xl mb-1" style={{ color: '#d4a017' }}>
+            {uploading ? (progress || 'Procesando...') : 'Comparte un recuerdo con Zandra'}
           </p>
           {uploading ? (
-            <div className="mt-4">
-              <div className="w-48 h-1.5 bg-amber-200 rounded-full mx-auto overflow-hidden">
-                <div className="h-full bg-amber-600 rounded-full animate-pulse" style={{ width: '60%' }} />
-              </div>
+            <div className="mt-4 w-48 h-1 bg-yellow-900 rounded-full mx-auto overflow-hidden">
+              <div className="h-full bg-yellow-500 rounded-full animate-pulse" style={{ width: '60%' }} />
             </div>
           ) : (
-            <p className="font-cormorant text-amber-700 text-sm mt-1">Toca para seleccionar · JPG · PNG · HEIC · Múltiples fotos</p>
+            <p className="font-serif text-xs uppercase tracking-widest mt-2" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              JPG · PNG · HEIC · Multiples fotos
+            </p>
           )}
         </motion.div>
       </label>
 
-      {/* Refresh */}
       <div className="text-center">
         <button onClick={fetchPhotos} disabled={loading}
-          className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors disabled:opacity-50">
+          className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+          style={{ color: 'rgba(212,160,23,0.6)' }}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Cargando...' : 'Actualizar galería'}
+          {loading ? 'Cargando...' : 'Actualizar galeria'}
         </button>
       </div>
 
-      {/* Gallery grid */}
       {photos.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {photos.map((photo, i) => (
-            <motion.div
-              key={photo.public_id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
+            <motion.div key={photo.public_id} layout
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
               transition={{ delay: i * 0.03 }}
-              className="relative group rounded-xl overflow-hidden aspect-square border border-amber-400/30"
-              style={{ boxShadow: '0 4px 16px rgba(26,39,68,0.15)' }}
-            >
+              className="relative group rounded-xl overflow-hidden aspect-square"
+              style={{ border: '1px solid rgba(212,160,23,0.25)' }}>
               <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
-              {canDelete(photo.public_id) && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    onClick={() => deletePhoto(photo.public_id)}
-                    disabled={deleting === photo.public_id}
-                    className="flex items-center gap-1 bg-red-700 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 font-serif uppercase tracking-wide"
-                  >
+              {deletable[photo.public_id] && Date.now() < deletable[photo.public_id] && (
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
+                    className="flex items-center gap-1 bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-full font-serif uppercase tracking-wide transition-colors">
                     <Trash2 className="w-3 h-3" />
                     {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
                   </button>
@@ -362,12 +358,12 @@ function PhotoGallery() {
             </motion.div>
           ))}
         </div>
-      ) : (
-        !uploading && (
-          <div className="text-center py-16">
-            <p className="font-cormorant text-amber-700 text-lg italic">Sé el primero en compartir un recuerdo</p>
-          </div>
-        )
+      ) : !uploading && (
+        <div className="text-center py-16">
+          <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>
+            Se el primero en compartir un recuerdo
+          </p>
+        </div>
       )}
     </div>
   )
@@ -390,119 +386,107 @@ function AdminPanel() {
   const fetchPhotos = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/list-photos`)
-      if (res.ok) {
-        const d = await res.json()
-        setPhotos(d.photos || [])
-      }
+      const res = await fetch('/api/list-photos')
+      if (res.ok) { const d = await res.json(); setPhotos(d.photos || []) }
     } catch (_) { toast.error('Error al cargar fotos') }
     setLoading(false)
   }
 
-  const deletePhoto = async (publicId) => {
-    setDeleting(publicId)
+  const deletePhoto = async (id) => {
+    setDeleting(id)
     try {
       const res = await fetch('/api/delete-photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: publicId, admin: true }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ public_id: id, admin: true }),
       })
-      if (res.ok) {
-        toast.success('Foto eliminada')
-        setPhotos(prev => prev.filter(p => p.public_id !== publicId))
-      } else toast.error('No se pudo eliminar')
+      if (res.ok) { toast.success('Foto eliminada'); setPhotos(p => p.filter(x => x.public_id !== id)) }
+      else toast.error('No se pudo eliminar')
     } catch (_) { toast.error('Error de conexión') }
     setDeleting(null)
   }
 
   useEffect(() => { if (auth) fetchPhotos() }, [auth])
 
-  if (!auth) {
-    return (
-      <div className="min-h-screen navy-section flex items-center justify-center p-4">
-        <Toaster position="top-center" richColors />
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-          className="navy-card rounded-2xl p-10 w-full max-w-sm text-center relative">
-          <ArtDecoCorners dark />
-          <Lock className="w-10 h-10 mx-auto mb-4 text-amber-400" />
-          <h2 className="font-serif text-2xl text-amber-300 mb-2">Panel de Administración</h2>
-          <p className="font-cormorant text-amber-500 text-sm mb-8">Celebración Zandra Veliz · 60 Años</p>
-          <form onSubmit={login} className="space-y-4">
-            <input type="password" value={pw} onChange={e => setPw(e.target.value)}
-              placeholder="Contraseña"
-              className="w-full bg-black/40 border border-amber-600/40 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-700 focus:outline-none focus:border-amber-400 transition-colors text-center font-cormorant text-lg" />
-            <button type="submit"
-              className="w-full bg-gradient-to-r from-amber-700 to-amber-500 hover:from-amber-600 hover:to-amber-400 text-black font-serif font-bold py-3 rounded-xl transition-all tracking-widest text-sm uppercase">
-              {loading ? 'Entrando...' : '✦ Entrar ✦'}
-            </button>
-          </form>
-        </motion.div>
-      </div>
-    )
-  }
+  if (!auth) return (
+    <div className="min-h-screen noir-section flex items-center justify-center p-4">
+      <Toaster position="top-center" richColors />
+      <ArtDecoFrame className="w-full max-w-sm rounded-2xl p-10 gold-card text-center">
+        <Lock className="w-10 h-10 mx-auto mb-4" style={{ color: '#d4a017' }} />
+        <h2 className="font-serif text-2xl mb-1" style={{ color: '#d4a017' }}>Panel de Administracion</h2>
+        <p className="font-serif text-xs tracking-widest uppercase mb-8" style={{ color: 'rgba(212,160,23,0.5)' }}>
+          Celebracion Zandra Veliz · 60 Anos
+        </p>
+        <form onSubmit={login} className="space-y-4">
+          <input type="password" value={pw} onChange={e => setPw(e.target.value)}
+            placeholder="Contrasena" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
+          <button type="submit"
+            className="w-full font-serif font-bold py-3 rounded-xl transition-all tracking-widest text-sm uppercase text-black"
+            style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017, #f5d76e, #d4a017, #8B6914)' }}>
+            Entrar
+          </button>
+        </form>
+      </ArtDecoFrame>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen navy-section p-4">
+    <div className="min-h-screen noir-section p-4">
       <Toaster position="top-center" richColors />
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between py-6 mb-6 border-b border-amber-700/30">
+        <div className="flex items-center justify-between py-6 mb-6" style={{ borderBottom: '1px solid rgba(212,160,23,0.2)' }}>
           <div>
-            <h1 className="font-serif text-2xl text-amber-300">Panel de Administración</h1>
-            <p className="font-cormorant text-amber-600 text-sm">Celebración Zandra Veliz · 60 Años</p>
+            <h1 className="font-serif text-2xl" style={{ color: '#d4a017' }}>Panel de Administracion</h1>
+            <p className="font-serif text-xs tracking-widest uppercase mt-1" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              {photos.length} foto{photos.length !== 1 ? 's' : ''} en la galeria
+            </p>
           </div>
           <div className="flex gap-3">
             <button onClick={fetchPhotos} disabled={loading}
-              className="flex items-center gap-2 border border-amber-600/40 text-amber-400 hover:text-amber-300 px-4 py-2 rounded-xl text-sm font-serif uppercase tracking-wide transition-colors">
+              className="flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-4 py-2 rounded-xl transition-colors"
+              style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.7)' }}>
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
             </button>
             <button onClick={() => window.location.href = '/'}
-              className="flex items-center gap-2 border border-amber-600/40 text-amber-400 hover:text-amber-300 px-4 py-2 rounded-xl text-sm font-serif uppercase tracking-wide transition-colors">
+              className="flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-4 py-2 rounded-xl transition-colors"
+              style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.7)' }}>
               <LogOut className="w-4 h-4" />
               Salir
             </button>
           </div>
         </div>
-
-        <p className="text-amber-500 font-cormorant text-sm mb-6">{photos.length} foto{photos.length !== 1 ? 's' : ''} en la galería</p>
-
-        <div className="p-4 max-w-6xl mx-auto">
-          {photos.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-amber-600 font-cormorant text-lg italic">No hay fotos aún</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-6">
-              {photos.map(photo => (
-                <motion.div key={photo.public_id} layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
-                  className="relative group rounded-xl overflow-hidden border border-amber-800/30 aspect-square">
-                  <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
-                    <p className="text-amber-600 text-xs">{photo.created_at ? new Date(photo.created_at).toLocaleDateString('es-GT') : ''}</p>
-                    <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
-                      className="flex items-center gap-1 bg-red-700 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 font-serif uppercase tracking-wide">
-                      <Trash2 className="w-3 h-3" />
-                      {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {photos.map(photo => (
+            <motion.div key={photo.public_id} layout
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
+              className="relative group rounded-xl overflow-hidden aspect-square"
+              style={{ border: '1px solid rgba(212,160,23,0.2)' }}>
+              <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
+                  className="flex items-center gap-1 bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-full font-serif uppercase tracking-wide">
+                  <Trash2 className="w-3 h-3" />
+                  {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
+                </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
+        {photos.length === 0 && !loading && (
+          <div className="text-center py-20">
+            <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>No hay fotos aun</p>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-// ─── Slideshow Mode ───────────────────────────────────────────────────────────
+// ─── Slideshow ────────────────────────────────────────────────────────────────
 function Slideshow() {
   const [photos, setPhotos] = useState([])
   const [current, setCurrent] = useState(0)
-
-  const fetchPhotos = async () => {
+  const fetch_ = async () => {
     try {
       const res = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/list/${GALLERY_TAG}.json`)
       if (res.ok) {
@@ -511,54 +495,41 @@ function Slideshow() {
       }
     } catch (_) {}
   }
-
-  useEffect(() => {
-    fetchPhotos()
-    const id = setInterval(fetchPhotos, 20000)
-    return () => clearInterval(id)
-  }, [])
-
+  useEffect(() => { fetch_(); const id = setInterval(fetch_, 20000); return () => clearInterval(id) }, [])
   useEffect(() => {
     if (!photos.length) return
     const id = setInterval(() => setCurrent(c => (c + 1) % photos.length), 5000)
     return () => clearInterval(id)
   }, [photos.length])
-
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden">
       <AnimatePresence mode="wait">
         {photos.length > 0 ? (
           <motion.img key={current} src={photos[current]}
             initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 1.2 }}
+            exit={{ opacity: 0 }} transition={{ duration: 1.2 }}
             className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-amber-400 text-3xl font-serif text-center px-8">
-              Esperando fotos de los invitados...<br />
-              <span className="text-lg text-amber-600 mt-4 block font-cormorant italic">Escanea el código QR para subir fotos</span>
+            <p className="font-serif text-3xl text-center px-8" style={{ color: '#d4a017' }}>
+              Esperando fotos de los invitados...
             </p>
           </div>
         )}
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
       <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
-        <p className="text-amber-300 font-serif text-4xl glow-text mb-2">Celebración 60 Años · Zandra Veliz</p>
-        <p className="text-amber-500 text-lg tracking-widest uppercase font-cormorant">5 de Septiembre · 2026 · Club Español · Fuentecilla</p>
-        {photos.length > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
-            {photos.map((_, i) => (
-              <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === current ? 'bg-amber-400 w-8' : 'bg-amber-800 w-2'}`} />
-            ))}
-          </div>
-        )}
+        <p className="font-serif text-4xl md:text-6xl shimmer-text mb-2">Celebracion 60 Anos · Zandra Veliz</p>
+        <p className="font-serif text-sm md:text-lg tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.7)' }}>
+          5 de Septiembre · 2026 · Club Espanol · Fuentecilla
+        </p>
       </div>
       <ChampagneBubbles />
     </div>
   )
 }
 
-// ─── RSVP Form ────────────────────────────────────────────────────────────────
+// ─── RSVP ─────────────────────────────────────────────────────────────────────
 function RSVPForm() {
   const [name, setName] = useState('')
   const [plusOne, setPlusOne] = useState(false)
@@ -571,71 +542,80 @@ function RSVPForm() {
     if (!name.trim()) { toast.error('Por favor ingresa tu nombre'); return }
     setSubmitting(true)
     await new Promise(r => setTimeout(r, 900))
-    setSubmitting(false)
-    setSubmitted(true)
-    toast.success('Confirmación recibida. Te esperamos.')
+    setSubmitting(false); setSubmitted(true)
+    toast.success('Confirmacion recibida. Te esperamos.')
   }
 
-  if (submitted) {
-    return (
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-6">
-        <div className="shimmer-text font-serif text-4xl mb-4">✦</div>
-        <p className="font-serif text-2xl font-bold mb-2" style={{ color: '#1a2744' }}>Nos vemos el 5 de Septiembre</p>
-        <p className="font-cormorant text-amber-700 text-base italic">
-          {name}{plusOne && plusOneName ? ` y ${plusOneName}` : plusOne ? ' y acompañante' : ''} — confirmado{plusOne ? 's' : ''}
-        </p>
-      </motion.div>
-    )
-  }
+  if (submitted) return (
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-8">
+      <Medallion size={80} />
+      <p className="font-serif text-2xl font-bold mt-4 mb-2" style={{ color: '#d4a017' }}>
+        Nos vemos el 5 de Septiembre
+      </p>
+      <p className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.6)' }}>
+        {name}{plusOne && plusOneName ? ` y ${plusOneName}` : plusOne ? ' y acompanante' : ''} — confirmado{plusOne ? 's' : ''}
+      </p>
+    </motion.div>
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 text-left">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block font-serif text-xs uppercase tracking-widest mb-2" style={{ color: '#8B6914' }}>Tu nombre completo</label>
+        <label className="block font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.6)' }}>
+          Tu nombre completo
+        </label>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
-          placeholder="Nombre y apellido" required
-          className="w-full bg-amber-50/80 border border-amber-500/40 rounded-xl px-4 py-3 placeholder-amber-400 focus:outline-none focus:border-amber-600 transition-colors font-cormorant text-lg"
-          style={{ color: '#1a2744' }} />
+          placeholder="Nombre y apellido" required className="gatsby-input w-full rounded-xl px-4 py-3 font-serif text-lg" />
       </div>
 
       <div>
         <label className="flex items-center gap-3 cursor-pointer">
           <button type="button" onClick={() => setPlusOne(p => !p)}
-            className={`relative w-12 h-6 rounded-full transition-all duration-300 ${plusOne ? 'bg-amber-600' : 'bg-amber-200 border border-amber-400'}`}>
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-300 ${plusOne ? 'left-7' : 'left-1'}`} />
+            className={`relative w-12 h-6 rounded-full transition-all duration-300 ${plusOne ? '' : ''}`}
+            style={{ background: plusOne ? '#d4a017' : 'rgba(212,160,23,0.2)', border: '1px solid rgba(212,160,23,0.4)' }}>
+            <span className={`absolute top-1 w-4 h-4 rounded-full shadow transition-all duration-300 ${plusOne ? 'left-7' : 'left-1'}`}
+              style={{ background: plusOne ? '#0a0a0a' : '#d4a017' }} />
           </button>
-          <span className="font-cormorant text-base" style={{ color: '#1a2744' }}>Voy con acompañante <span className="text-amber-600">(+1)</span></span>
+          <span className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.8)' }}>
+            Voy con acompanante <span style={{ color: '#d4a017' }}>(+1)</span>
+          </span>
         </label>
       </div>
 
       <AnimatePresence>
         {plusOne && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <label className="block font-serif text-xs uppercase tracking-widest mb-2" style={{ color: '#8B6914' }}>Nombre de tu acompañante</label>
+            <label className="block font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.6)' }}>
+              Nombre de tu acompanante
+            </label>
             <input type="text" value={plusOneName} onChange={e => setPlusOneName(e.target.value)}
-              placeholder="Nombre y apellido"
-              className="w-full bg-amber-50/80 border border-amber-500/40 rounded-xl px-4 py-3 placeholder-amber-400 focus:outline-none focus:border-amber-600 transition-colors font-cormorant text-lg"
-              style={{ color: '#1a2744' }} />
+              placeholder="Nombre y apellido" className="gatsby-input w-full rounded-xl px-4 py-3 font-serif text-lg" />
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="text-center">
-        <span className="inline-block border border-amber-500/40 rounded-full px-4 py-1 font-cormorant text-amber-700 text-sm italic">
+        <span className="inline-block font-serif text-xs uppercase tracking-widest px-4 py-1 rounded-full"
+          style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.6)' }}>
           {plusOne ? 'Dos personas confirmadas' : 'Una persona confirmada'}
         </span>
       </div>
 
       <motion.button type="submit" disabled={submitting}
         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-        className="w-full bg-gradient-to-r from-amber-700 to-amber-500 hover:from-amber-600 hover:to-amber-400 text-black font-serif font-bold py-3 rounded-xl transition-all disabled:opacity-50 tracking-widest text-sm uppercase">
-        {submitting ? 'Confirmando...' : '✦ Confirmar Asistencia ✦'}
+        className="w-full font-serif font-bold py-4 rounded-xl transition-all disabled:opacity-50 tracking-widest text-sm uppercase text-black"
+        style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017, #f5d76e, #d4a017, #8B6914)' }}>
+        {submitting ? 'Confirmando...' : '✦  Confirmar Asistencia  ✦'}
       </motion.button>
 
-      <div className="pt-4 border-t border-amber-400/30 text-center">
-        <p className="font-cormorant text-amber-600 text-sm mb-1 italic">Preguntas — contacta al organizador</p>
-        <p className="font-serif font-semibold text-sm" style={{ color: '#1a2744' }}>Brayan Santizo</p>
-        <a href="tel:+12015987303" className="font-cormorant text-amber-700 hover:text-amber-900 text-base transition-colors">+1 (201) 598-7303</a>
+      <div className="pt-4 text-center" style={{ borderTop: '1px solid rgba(212,160,23,0.2)' }}>
+        <p className="font-serif text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(212,160,23,0.4)' }}>
+          Preguntas — contacta al organizador
+        </p>
+        <p className="font-serif font-semibold" style={{ color: '#d4a017' }}>Brayan Santizo</p>
+        <a href="tel:+12015987303" className="font-serif text-base transition-colors" style={{ color: 'rgba(212,160,23,0.7)' }}>
+          +1 (201) 598-7303
+        </a>
       </div>
     </form>
   )
@@ -648,118 +628,121 @@ export default function App() {
   if (params.get('admin') === '1') return <AdminPanel />
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: '#f5e6c8', color: '#1a2744' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#0a0a0a', color: '#d4a017' }}>
       <Toaster position="top-center" richColors />
       <ChampagneBubbles />
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center peacock-hero overflow-hidden">
-        {/* Overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-50/30 via-transparent to-amber-100/50 pointer-events-none" />
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, #080808 0%, #0d0b05 100%)' }}>
 
-        {/* Navy Art Deco border frame */}
-        <div className="absolute inset-4 md:inset-8 pointer-events-none"
-          style={{ border: '2px solid rgba(26,39,68,0.5)', borderRadius: '4px' }}>
-          <div className="absolute inset-2" style={{ border: '1px solid rgba(180,134,11,0.4)', borderRadius: '2px' }} />
+        {/* Hero background image */}
+        <div className="absolute inset-0"
+          style={{ backgroundImage: 'url(/hero_bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.55 }} />
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(8,8,8,0.3) 0%, rgba(8,8,8,0.1) 40%, rgba(8,8,8,0.5) 100%)' }} />
+
+        {/* Art Deco border frame overlay */}
+        <div className="absolute inset-4 md:inset-8 pointer-events-none" style={{ border: '1px solid rgba(212,160,23,0.5)' }}>
+          <div className="absolute inset-2" style={{ border: '1px solid rgba(212,160,23,0.2)' }} />
           {/* Corner diamonds */}
-          {[['top-0 left-0', '-translate-x-1/2 -translate-y-1/2'],
-            ['top-0 right-0', 'translate-x-1/2 -translate-y-1/2'],
-            ['bottom-0 left-0', '-translate-x-1/2 translate-y-1/2'],
-            ['bottom-0 right-0', 'translate-x-1/2 translate-y-1/2']].map(([pos, tr], i) => (
-            <div key={i} className={`absolute ${pos} w-3 h-3 bg-amber-600 rotate-45 transform ${tr}`} />
+          {[
+            { cls: 'top-0 left-0', t: '-translate-x-1/2 -translate-y-1/2' },
+            { cls: 'top-0 right-0', t: 'translate-x-1/2 -translate-y-1/2' },
+            { cls: 'bottom-0 left-0', t: '-translate-x-1/2 translate-y-1/2' },
+            { cls: 'bottom-0 right-0', t: 'translate-x-1/2 translate-y-1/2' },
+          ].map(({ cls, t }, i) => (
+            <div key={i} className={`absolute ${cls} w-3 h-3 rotate-45 transform ${t}`} style={{ background: '#d4a017', opacity: 0.9 }} />
+          ))}
+          {/* Corner fans */}
+          {[
+            { cls: 'top-0 left-0', rot: '0deg' },
+            { cls: 'top-0 right-0', rot: '90deg' },
+            { cls: 'bottom-0 right-0', rot: '180deg' },
+            { cls: 'bottom-0 left-0', rot: '270deg' },
+          ].map(({ cls, rot }) => (
+            <svg key={rot} width="50" height="50" viewBox="0 0 50 50" className={`absolute ${cls}`}
+              style={{ transform: `rotate(${rot})` }}>
+              <path d="M3 3 L3 22 M3 3 L22 3" stroke="#d4a017" strokeWidth="1.5" opacity="0.7" />
+              {[0,20,40,60].map(a => {
+                const rad = (a * Math.PI) / 180
+                return <line key={a} x1="3" y1="3" x2={3 + 16*Math.cos(rad)} y2={3 + 16*Math.sin(rad)}
+                  stroke="#d4a017" strokeWidth="0.8" opacity="0.5" />
+              })}
+            </svg>
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+        {/* Content */}
+        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2 }}
-          className="relative z-10 text-center px-6 max-w-3xl mx-auto"
-        >
-          {/* Invitation header */}
-          <motion.p
-            initial={{ opacity: 0, letterSpacing: '0.05em' }}
-            animate={{ opacity: 1, letterSpacing: '0.35em' }}
+          className="relative z-10 text-center px-6 max-w-4xl mx-auto w-full">
+
+          <motion.p initial={{ opacity: 0, letterSpacing: '0.05em' }} animate={{ opacity: 1, letterSpacing: '0.4em' }}
             transition={{ delay: 0.3, duration: 1 }}
-            className="font-serif text-xs uppercase mb-6"
-            style={{ color: '#1a2744', opacity: 0.8 }}
-          >
+            className="font-serif text-xs uppercase mb-6 md:mb-8" style={{ color: 'rgba(212,160,23,0.6)' }}>
             Con mucho amor te invita a celebrar
           </motion.p>
 
-          {/* Main name */}
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 1, type: 'spring', stiffness: 70 }}
-            className="shimmer-navy font-serif font-black leading-none mb-1"
-            style={{ fontSize: 'clamp(4rem, 16vw, 10rem)', fontFamily: 'Cinzel, serif' }}
-          >
+          {/* ZANDRA */}
+          <motion.h1 initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 1, type: 'spring', stiffness: 60 }}
+            className="shimmer-text font-serif font-black leading-none mb-2"
+            style={{ fontSize: 'clamp(4.5rem, 18vw, 11rem)', fontFamily: 'Cinzel, serif', letterSpacing: '0.15em' }}>
             ZANDRA
           </motion.h1>
 
-          <motion.h2
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="font-serif font-semibold tracking-[0.6em] mb-4"
-            style={{ fontSize: 'clamp(0.9rem, 3vw, 1.8rem)', color: '#1a2744', opacity: 0.75 }}
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+            className="font-serif tracking-[0.6em] mb-6 md:mb-8"
+            style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.4rem)', color: 'rgba(212,160,23,0.55)' }}>
             V E L I Z
-          </motion.h2>
+          </motion.p>
 
-          <ArtDecoDivider />
+          <GoldDivider />
 
-          {/* 60 medallion */}
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
+          {/* Medallion + 60 */}
+          <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.9, duration: 0.9, type: 'spring' }}
-            className="oval-frame inline-flex items-center justify-center w-36 h-36 md:w-44 md:h-44 rounded-full mb-6 relative"
-            style={{ background: 'rgba(245,230,200,0.7)' }}
-          >
-            <div className="text-center">
-              <div className="shimmer-text font-serif font-black" style={{ fontSize: '4rem', lineHeight: 1 }}>60</div>
-              <div className="font-serif text-xs tracking-[0.3em] uppercase mt-1" style={{ color: '#1a2744' }}>Años</div>
+            className="flex flex-col items-center mb-6 md:mb-8">
+            <div className="relative inline-flex items-center justify-center">
+              <Medallion size={typeof window !== 'undefined' && window.innerWidth < 640 ? 140 : 180} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="shimmer-text font-serif font-black leading-none"
+                  style={{ fontSize: 'clamp(2.2rem, 7vw, 3.5rem)', fontFamily: 'Cinzel, serif' }}>60</span>
+                <span className="font-serif text-xs uppercase tracking-[0.3em]" style={{ color: 'rgba(212,160,23,0.6)' }}>Anos</span>
+              </div>
             </div>
           </motion.div>
 
-          {/* Tagline card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.8 }}
-            className="glass-card rounded-2xl px-8 py-5 inline-block max-w-lg relative"
-          >
-            <ArtDecoCorners />
-            <p className="font-serif text-lg md:text-xl glow-text" style={{ color: '#1a2744' }}>
-              ✦ &nbsp; Una noche de elegancia y celebración &nbsp; ✦
+          {/* Tagline */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
+            className="gold-card rounded-2xl px-6 py-4 md:px-10 md:py-6 inline-block max-w-lg relative">
+            <p className="font-serif text-base md:text-xl" style={{ color: '#d4a017' }}>
+              ✦ &nbsp; Una noche de elegancia y celebracion &nbsp; ✦
             </p>
-            <p className="font-cormorant text-amber-700 text-sm mt-2 tracking-widest italic">Sábado · 5 de Septiembre · 2026</p>
+            <p className="font-serif text-xs tracking-widest uppercase mt-2" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              Sabado · 5 de Septiembre · 2026
+            </p>
           </motion.div>
         </motion.div>
 
         <motion.div animate={{ y: [0, 12, 0] }} transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-50">
-          <ChevronDown className="w-8 h-8" style={{ color: '#1a2744' }} />
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-40">
+          <ChevronDown className="w-8 h-8" style={{ color: '#d4a017' }} />
         </motion.div>
       </section>
 
       {/* ══ COUNTDOWN ═════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 navy-section relative overflow-hidden">
-        {/* Decorative peacock feathers in background */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 md:w-48 opacity-10 pointer-events-none overflow-hidden">
-          <PeacockFeather className="h-full w-auto feather-left" />
-        </div>
-        <div className="absolute right-0 top-0 bottom-0 w-32 md:w-48 opacity-10 pointer-events-none overflow-hidden">
-          <PeacockFeather className="h-full w-auto feather-right" flip />
-        </div>
-
+      <section className="py-20 md:py-28 px-4 noir-section-alt relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }} viewport={{ once: true }}>
-            <p className="font-serif text-xs uppercase tracking-[0.3em] text-amber-400 mb-3">Cuenta Regresiva</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-amber-300 mb-12">
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              ✦ Cuenta Regresiva ✦
+            </p>
+            <h2 className="font-serif font-bold mb-10 md:mb-14"
+              style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
               La Gran Noche se Acerca
             </h2>
             <CountdownTimer />
@@ -768,54 +751,62 @@ export default function App() {
       </section>
 
       {/* ══ EVENT DETAILS ═════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 deco-tile relative">
+      <section className="py-20 md:py-28 px-4 noir-section">
         <div className="max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-16">
-            <p className="font-serif text-xs uppercase tracking-[0.3em] text-amber-700 mb-3">✦ Detalles del Evento ✦</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold mb-2" style={{ color: '#1a2744' }}>La Invitación</h2>
-            <ArtDecoDivider />
+            transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              ✦ Detalles del Evento ✦
+            </p>
+            <h2 className="font-serif font-bold" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
+              La Invitacion
+            </h2>
+            <GoldDivider />
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
             {[
-              { icon: Calendar, title: 'Fecha', lines: ['Sábado', '5 de Septiembre', '2026'] },
-              { icon: Clock, title: 'Horario', lines: ['19:00 — 24:00', 'Cinco horas de', 'pura celebración'] },
-              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Calzada Roosevelt Km. 13.5', 'Zona 7 · Guatemala'] },
+              { icon: Calendar, title: 'Fecha', lines: ['Sabado', '5 de Septiembre', '2026'] },
+              { icon: Clock, title: 'Horario', lines: ['19:00 — 24:00', 'Cinco horas de', 'pura celebracion'] },
+              { icon: MapPin, title: 'Lugar', lines: ['Club Espanol', 'Calzada Roosevelt Km. 13.5', 'Zona 7 · Guatemala'] },
             ].map(({ icon: Icon, title, lines }, i) => (
               <motion.div key={title}
                 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15, duration: 0.8 }} viewport={{ once: true }}
-                className="glass-card rounded-2xl p-8 text-center relative overflow-hidden">
-                <ArtDecoCorners />
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-amber-500/50 mb-4"
-                  style={{ background: 'rgba(26,39,68,0.08)' }}>
-                  <Icon className="w-6 h-6" style={{ color: '#1a2744' }} />
-                </div>
-                <h3 className="font-serif text-sm uppercase tracking-widest mb-3 text-amber-700">{title}</h3>
-                {lines.map((l, j) => (
-                  <p key={j} className={`font-cormorant ${j === 0 ? 'text-xl font-semibold' : 'text-base'}`}
-                    style={{ color: '#1a2744', opacity: j === 0 ? 1 : 0.75 }}>{l}</p>
-                ))}
+                transition={{ delay: i * 0.15, duration: 0.8 }} viewport={{ once: true }}>
+                <ArtDecoFrame className="gold-card-light rounded-2xl p-8 text-center h-full">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4"
+                    style={{ border: '1px solid rgba(212,160,23,0.4)', background: 'rgba(212,160,23,0.06)' }}>
+                    <Icon className="w-6 h-6" style={{ color: '#d4a017' }} />
+                  </div>
+                  <h3 className="font-serif text-xs uppercase tracking-widest mb-4" style={{ color: 'rgba(212,160,23,0.6)' }}>
+                    {title}
+                  </h3>
+                  {lines.map((l, j) => (
+                    <p key={j} className={`font-serif ${j === 0 ? 'text-xl font-semibold' : 'text-sm'} leading-relaxed`}
+                      style={{ color: j === 0 ? '#d4a017' : 'rgba(212,160,23,0.55)' }}>
+                      {l}
+                    </p>
+                  ))}
+                </ArtDecoFrame>
               </motion.div>
             ))}
           </div>
 
           {/* Maps buttons */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }} viewport={{ once: true }}
+            transition={{ delay: 0.5 }} viewport={{ once: true }}
             className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
             <a href="https://www.google.com/maps/search/?api=1&query=Club+Español+Calzada+Roosevelt+Km+13.5+Zona+7+Guatemala"
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 font-serif text-sm uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105"
-              style={{ background: '#1a2744', color: '#f5e6c8', border: '1px solid rgba(180,134,11,0.4)' }}>
+              className="inline-flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105 text-black"
+              style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017, #f5d76e)' }}>
               <MapPin className="w-4 h-4" />
               Google Maps
             </a>
             <a href="https://waze.com/ul?q=Club+Español+Calzada+Roosevelt+Km+13.5+Zona+7+Guatemala&navigate=yes"
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 font-serif text-sm uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105"
-              style={{ background: 'rgba(26,39,68,0.08)', color: '#1a2744', border: '1px solid rgba(26,39,68,0.3)' }}>
+              className="inline-flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105"
+              style={{ border: '1px solid rgba(212,160,23,0.5)', color: '#d4a017' }}>
               <Navigation className="w-4 h-4" />
               Waze
             </a>
@@ -824,73 +815,74 @@ export default function App() {
       </section>
 
       {/* ══ DRESS CODE ════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 navy-section relative overflow-hidden">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-40 opacity-8 pointer-events-none">
-          <PeacockFeather className="w-full feather-left" />
-        </div>
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-40 opacity-8 pointer-events-none">
-          <PeacockFeather className="w-full feather-right" flip />
-        </div>
-
-        <div className="max-w-3xl mx-auto text-center relative z-10">
+      <section className="py-20 md:py-28 px-4 noir-section-alt">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }} viewport={{ once: true }}>
-            <p className="font-serif text-xs uppercase tracking-[0.3em] text-amber-400 mb-3">✦ Vestimenta ✦</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-amber-300 mb-4">Código de Vestimenta</h2>
-            <ArtDecoDivider dark />
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              ✦ Vestimenta ✦
+            </p>
+            <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
+              Codigo de Vestimenta
+            </h2>
+            <GoldDivider />
 
-            <motion.div whileHover={{ scale: 1.005 }} className="navy-card rounded-2xl p-10 relative">
-              <ArtDecoCorners dark />
-              <p className="font-cormorant text-amber-200 text-2xl italic mb-1">
-                "Viste con el esplendor de los años dorados"
+            <ArtDecoFrame className="gold-card-light rounded-2xl p-8 md:p-12">
+              <p className="font-serif italic text-xl md:text-2xl mb-2" style={{ color: 'rgba(212,160,23,0.8)' }}>
+                "Viste con el esplendor de los anos dorados"
               </p>
-              <p className="font-serif text-xs tracking-widest text-amber-500 mb-8 uppercase">Colores Gatsby</p>
+              <p className="font-serif text-xs tracking-widest uppercase mb-10" style={{ color: 'rgba(212,160,23,0.4)' }}>
+                Colores Gatsby
+              </p>
 
-              <div className="flex flex-wrap justify-center gap-5 mb-8">
+              <div className="flex flex-wrap justify-center gap-5 md:gap-8 mb-10">
                 {[
                   { color: '#d97706', name: 'Dorado' },
-                  { color: '#111111', name: 'Negro' },
+                  { color: '#111111', name: 'Negro', border: '#333' },
                   { color: '#b0b0b0', name: 'Plateado' },
-                  { color: '#8B6914', name: 'Champán' },
+                  { color: '#8B6914', name: 'Champan' },
                   { color: '#fef3c7', name: 'Marfil' },
                   { color: '#1e3a5f', name: 'Azul Noche' },
-                ].map(({ color, name }) => (
+                ].map(({ color, name, border }) => (
                   <div key={name} className="flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 rounded-full border-2 border-amber-500/40 shadow-lg"
-                      style={{ background: color }} />
-                    <span className="font-cormorant text-amber-400 text-sm">{name}</span>
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg"
+                      style={{ background: color, border: `2px solid ${border || 'rgba(212,160,23,0.4)'}` }} />
+                    <span className="font-serif text-xs" style={{ color: 'rgba(212,160,23,0.6)' }}>{name}</span>
                   </div>
                 ))}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                <div className="rounded-xl p-5 border border-amber-700/20" style={{ background: 'rgba(180,134,11,0.08)' }}>
-                  <p className="font-serif text-amber-300 text-sm uppercase tracking-widest mb-2">Damas</p>
-                  <p className="font-cormorant text-amber-200 text-base leading-relaxed">Vestidos largos o cóctel con flecos, lentejuelas o plumas. Guantes, tocados, diademas y accesorios de los años 20.</p>
-                </div>
-                <div className="rounded-xl p-5 border border-amber-700/20" style={{ background: 'rgba(180,134,11,0.08)' }}>
-                  <p className="font-serif text-amber-300 text-sm uppercase tracking-widest mb-2">Caballeros</p>
-                  <p className="font-cormorant text-amber-200 text-base leading-relaxed">Traje oscuro o smoking con corbata o moño. Sombrero fedora o bombín. Chaleco y pañuelo de bolsillo.</p>
-                </div>
+                {[
+                  { title: 'Damas', desc: 'Vestidos largos o coctel con flecos, lentejuelas o plumas. Guantes, tocados, diademas y accesorios de los anos 20.' },
+                  { title: 'Caballeros', desc: 'Traje oscuro o smoking con corbata o mono. Sombrero fedora o bombin. Chaleco y panuelo de bolsillo.' },
+                ].map(({ title, desc }) => (
+                  <div key={title} className="rounded-xl p-5" style={{ background: 'rgba(212,160,23,0.05)', border: '1px solid rgba(212,160,23,0.15)' }}>
+                    <p className="font-serif text-xs uppercase tracking-widest mb-2" style={{ color: '#d4a017' }}>{title}</p>
+                    <p className="font-serif text-sm leading-relaxed" style={{ color: 'rgba(212,160,23,0.6)' }}>{desc}</p>
+                  </div>
+                ))}
               </div>
-            </motion.div>
+            </ArtDecoFrame>
           </motion.div>
         </div>
       </section>
 
       {/* ══ PHOTO GALLERY ═════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 deco-tile">
+      <section className="py-20 md:py-28 px-4 noir-section">
         <div className="max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-16">
-            <p className="font-serif text-xs uppercase tracking-[0.3em] text-amber-700 mb-3">✦ Galería ✦</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4" style={{ color: '#1a2744' }}>
+            transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              ✦ Galeria ✦
+            </p>
+            <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
               Recuerdos con Zandra
             </h2>
-            <p className="font-cormorant text-amber-700 text-lg max-w-xl mx-auto italic">
-              Sube tus fotos favoritas con la festejada. El día del evento se proyectarán en pantalla grande durante la fiesta.
+            <p className="font-serif italic text-base md:text-lg max-w-xl mx-auto" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              Sube tus fotos favoritas con la festejada. El dia del evento se proyectaran en pantalla grande durante la fiesta.
             </p>
-            <ArtDecoDivider />
+            <GoldDivider />
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
@@ -899,45 +891,52 @@ export default function App() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }} viewport={{ once: true }}
-            className="mt-14 text-center">
+            transition={{ delay: 0.3 }} viewport={{ once: true }} className="mt-12 text-center">
             <a href="?slideshow=1" target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 font-serif text-sm uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105 shadow-lg"
-              style={{ background: '#1a2744', color: '#f5e6c8', border: '1px solid rgba(180,134,11,0.4)' }}>
+              className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105"
+              style={{ border: '1px solid rgba(212,160,23,0.5)', color: '#d4a017' }}>
               <Camera className="w-5 h-5" />
               Modo Pantalla Grande — Fiesta
             </a>
-            <p className="font-cormorant text-amber-700 text-sm mt-2 italic">Abre este enlace en la pantalla del evento para el slideshow</p>
+            <p className="font-serif text-xs mt-2 italic" style={{ color: 'rgba(212,160,23,0.4)' }}>
+              Abre este enlace en la pantalla del evento para el slideshow
+            </p>
           </motion.div>
         </div>
       </section>
 
       {/* ══ RSVP ══════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 navy-section">
-        <div className="max-w-md mx-auto text-center">
+      <section className="py-20 md:py-28 px-4 noir-section-alt">
+        <div className="max-w-md mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }} viewport={{ once: true }}>
-            <p className="font-serif text-xs uppercase tracking-[0.3em] text-amber-400 mb-3">✦ Confirmación ✦</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-amber-300 mb-4">
+            transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-10">
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
+              ✦ Confirmacion ✦
+            </p>
+            <h2 className="font-serif font-bold" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
               Confirma tu Asistencia
             </h2>
-            <ArtDecoDivider dark />
-            <motion.div whileHover={{ scale: 1.005 }} className="navy-card rounded-2xl p-10 relative">
-              <ArtDecoCorners dark />
-              <RSVPForm />
-            </motion.div>
+            <GoldDivider />
           </motion.div>
+          <ArtDecoFrame className="gold-card-light rounded-2xl p-8 md:p-10">
+            <RSVPForm />
+          </ArtDecoFrame>
         </div>
       </section>
 
       {/* ══ FOOTER ════════════════════════════════════════════════════════════ */}
-      <footer className="relative py-12 px-4 text-center deco-tile border-t-2 border-amber-500/30 overflow-hidden">
-        <div className="relative z-10">
-          <ArtDecoDivider />
-          <p className="shimmer-navy font-serif text-2xl font-bold mb-2">Zandra Veliz · 60 Años</p>
-          <p className="font-serif text-xs tracking-widest uppercase text-amber-700">5 de Septiembre · 2026 · Club Español · Fuentecilla, Guatemala</p>
-          <p className="font-cormorant text-amber-600 text-sm mt-3 italic">Una noche de elegancia, amistad y nostalgia · Estilo Gran Gatsby</p>
-        </div>
+      <footer className="py-12 px-4 text-center noir-section relative overflow-hidden"
+        style={{ borderTop: '1px solid rgba(212,160,23,0.2)' }}>
+        <GoldDivider />
+        <p className="shimmer-text font-serif font-bold mb-2" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)' }}>
+          Zandra Veliz · 60 Anos
+        </p>
+        <p className="font-serif text-xs tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.5)' }}>
+          5 de Septiembre · 2026 · Club Espanol · Fuentecilla, Guatemala
+        </p>
+        <p className="font-serif italic text-sm mt-3" style={{ color: 'rgba(212,160,23,0.35)' }}>
+          Una noche de elegancia, amistad y nostalgia · Estilo Gran Gatsby
+        </p>
       </footer>
     </div>
   )
