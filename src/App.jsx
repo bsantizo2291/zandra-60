@@ -1,616 +1,302 @@
-import { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { Upload, Calendar, MapPin, Heart } from 'lucide-react'
+import { Toaster, toast } from 'sonner'
 
-const SUPABASE_URL = 'https://ndwheqxeuykmsfbhsvvp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kd2hlcXhldXlrbXNmYmhzdnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODkxMzYsImV4cCI6MjA5MjQ2NTEzNn0.yJ3prriU3vpS9Aa8zoAzjXcdjjAL8HqvTXw0f9bzkjg';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const EVENTO = {
-  nombre: 'Zandra B. Veliz Ortiz',
-  fecha: 'Sábado, 5 de Septiembre de 2026',
-  fechaCorta: 'Sábado · 5 Sep · 2026',
-  hora: '19:00 - 00:00 hrs',
-  lugar: 'El Club Español',
-  area: 'Área Fuentecilla',
-  direccion: 'Calzada Roosevelt Km. 13.5, 40-20 Zona 7 de Mixco, Guatemala',
-  mapsUrl: 'https://maps.google.com/?q=Calzada+Roosevelt+Km+13.5+Zona+7+Mixco+Guatemala',
-  cupo: 80
-};
-
-const VESTUARIO = [
-  { titulo: 'Señoras · Vestido de Gala', desc: 'Vestido largo en dorado, negro o champagne con lentejuelas o encaje. Tocado, diadema o plumas. Joyería art déco.', colores: ['#d4af37', '#1a1208', '#f5edd6'] },
-  { titulo: 'Señoras · Conjunto de Noche', desc: 'Pantalón y blusa con brillos o brocado. Bolso clutch dorado o negro. Guantes de encaje opcionales.', colores: ['#2a2015', '#d4af37', '#8b6f2e'] },
-  { titulo: 'Caballeros · Esmoquin', desc: 'Esmoquin negro o blanco con corbatín y fajín. Pañuelo dorado. Zapatos de charol.', colores: ['#1a1208', '#f5edd6', '#d4af37'] },
-  { titulo: 'Caballeros · Traje Completo', desc: 'Traje 3 piezas en negro, gris carbón o azul noche. Chaleco, sombrero de ala y bastón elegante.', colores: ['#2d3142', '#d4af37', '#f5edd6'] },
-  { titulo: 'Accesorios · Señoras', desc: 'Collar de perlas, aretes largos, pulsera dorada. Portacigarros decorativo o abanico de plumas como prop.', colores: ['#f5edd6', '#d4af37', '#f0e0a0'] },
-  { titulo: 'Accesorios · Caballeros', desc: 'Gemelos dorados, reloj de bolsillo con cadena. Sombrero Fedora o Bowler. Broche de solapa art déco.', colores: ['#d4af37', '#1a1208', '#8b6f2e'] }
-];
-
-function ChampagneBubbles() {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let W = canvas.width = window.innerWidth;
-    let H = canvas.height = window.innerHeight;
-    let bubbles = [];
-    let animationId;
-
-    const resize = () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-
-    class Bubble {
-      constructor(init = false) { this.reset(init); }
-      reset(init = false) {
-        this.x = Math.random() * W;
-        this.y = init ? Math.random() * H : H + Math.random() * 100;
-        this.baseVy = -Math.random() * 1.2 - 0.6;
-        this.vy = this.baseVy;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.size = Math.random() * 4 + 2;
-        this.alpha = Math.random() * 0.4 + 0.4;
-        this.wobble = Math.random() * Math.PI * 2;
-        this.wobbleSpeed = Math.random() * 0.03 + 0.02;
-        this.hue = Math.random() * 15 + 40;
-      }
-      update() {
-        this.wobble += this.wobbleSpeed;
-        this.vy = this.baseVy + Math.sin(this.wobble) * 0.2;
-        this.x += this.vx + Math.cos(this.wobble) * 0.5;
-        this.y += this.vy;
-        if (this.y + this.size < 0 || this.x < -this.size || this.x > W + this.size) this.reset();
-      }
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        const g = ctx.createRadialGradient(this.x - this.size * 0.3, this.y - this.size * 0.3, 0, this.x, this.y, this.size);
-        g.addColorStop(0, 'hsla(' + this.hue + ', 70%, 85%, 0.9)');
-        g.addColorStop(0.5, 'hsla(' + this.hue + ', 65%, 70%, 0.6)');
-        g.addColorStop(1, 'hsla(' + this.hue + ', 60%, 60%, 0.1)');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = 'hsla(' + this.hue + ', 70%, 75%, 0.4)';
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-
-    for (let i = 0; i < 60; i++) bubbles.push(new Bubble(true));
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
-      bubbles.forEach(b => { b.update(); b.draw(); });
-      animationId = requestAnimationFrame(animate);
-    }
-    animate();
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  return React.createElement('canvas', { 
-    ref: canvasRef, 
-    style: { 
-      position: 'fixed', 
-      inset: 0, 
-      width: '100%', 
-      height: '100%', 
-      pointerEvents: 'none', 
-      zIndex: 1 
-    } 
-  });
-}
-
-function BulbRow({ count = 12, style = {} }) {
-  const bulbs = Array.from({ length: count }, (_, i) => i);
-  return React.createElement('div', { 
-    style: { display: 'flex', justifyContent: 'space-between', ...style } 
-  }, bulbs.map(i =>
-    React.createElement('span', {
-      key: i,
-      style: {
-        width: '12px',
-        height: '12px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, #fff8d0 0%, #d4af37 40%, #8b6f1f 100%)',
-        boxShadow: '0 0 10px #d4af37, 0 0 20px rgba(212,175,55,0.6), inset -1px -1px 2px rgba(0,0,0,0.3)',
-        animation: 'bulbFlicker 2s ease-in-out infinite',
-        animationDelay: (i * 0.15) + 's'
-      }
-    })
-  ));
-}
-
-function CountdownTimer() {
-  const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    const target = new Date('2026-09-05T19:00:00-06:00');
-    const tick = () => {
-      const diff = target - new Date();
-      if (diff > 0) {
-        setTime({
-          days: Math.floor(diff / 86400000),
-          hours: Math.floor((diff / 3600000) % 24),
-          minutes: Math.floor((diff / 60000) % 60),
-          seconds: Math.floor((diff / 1000) % 60)
-        });
-      }
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const labels = { days: 'Días', hours: 'Horas', minutes: 'Min', seconds: 'Seg' };
-
-  return React.createElement('div', { 
-    style: { 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(4, 1fr)', 
-      gap: '8px', 
-      maxWidth: '480px', 
-      margin: '32px auto' 
-    } 
-  }, Object.entries(time).map(([key, value]) =>
-    React.createElement('div', {
-      key: key,
-      style: {
-        textAlign: 'center',
-        background: 'rgba(212,175,55,0.04)',
-        border: '1px solid rgba(212,175,55,0.4)',
-        padding: '20px 8px',
-        position: 'relative'
-      }
-    }, [
-      React.createElement('div', {
-        key: 'num',
-        style: {
-          fontFamily: 'Limelight, cursive',
-          fontSize: 'clamp(1.8rem, 5vw, 2.4rem)',
-          background: 'linear-gradient(180deg, #fff8d0 0%, #d4af37 70%, #8b6f1f 100%)',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          color: 'transparent',
-          lineHeight: 1,
-          marginBottom: '8px'
-        }
-      }, String(value).padStart(2, '0')),
-      React.createElement('div', {
-        key: 'label',
-        style: {
-          fontFamily: 'Cinzel, serif',
-          fontSize: '0.55rem',
-          letterSpacing: '0.35em',
-          color: '#f7e7ce',
-          textTransform: 'uppercase',
-          opacity: 0.7,
-          fontWeight: 500
-        }
-      }, labels[key])
-    ])
-  ));
-}
-
-function HairlineDivider({ label = '' }) {
-  return React.createElement('div', { 
-    style: { 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      gap: '16px', 
-      margin: '32px 0' 
-    } 
-  }, [
-    React.createElement('div', { 
-      key: 'line1', 
-      style: { 
-        flex: 1, 
-        maxWidth: '80px', 
-        height: '1px', 
-        background: 'linear-gradient(90deg, transparent, #d4af37, transparent)' 
-      } 
-    }),
-    label && React.createElement('div', {
-      key: 'label',
-      style: {
-        fontFamily: 'Cinzel, serif',
-        fontSize: '0.6rem',
-        letterSpacing: '0.45em',
-        color: '#d4af37',
-        textTransform: 'uppercase',
-        fontWeight: 500,
-        whiteSpace: 'nowrap'
-      }
-    }, label),
-    React.createElement('div', { 
-      key: 'line2', 
-      style: { 
-        flex: 1, 
-        maxWidth: '80px', 
-        height: '1px', 
-        background: 'linear-gradient(90deg, transparent, #d4af37, transparent)' 
-      } 
-    })
-  ]);
-}
-
-function Nav({ navigate, current }) {
-  const links = [
-    { k: 'invitacion', l: 'Invitación' },
-    { k: 'detalles', l: 'Detalles' },
-    { k: 'rsvp', l: 'Confirmar' }
-  ];
-
-  return React.createElement('nav', {
-    style: {
-      position: 'fixed',
-      top: 0, left: 0, right: 0,
-      zIndex: 100,
-      background: 'rgba(10,9,8,0.92)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(212,175,55,0.3)',
-      display: 'flex',
-      alignItems: 'center',
-      padding: '0 20px',
-      height: '60px'
-    }
-  }, [
-    React.createElement('div', {
-      key: 'logo',
-      style: {
-        fontFamily: 'Limelight, cursive',
-        fontSize: '1rem',
-        letterSpacing: '0.2em',
-        color: '#d4af37',
-        marginRight: 'auto',
-        textShadow: '0 0 12px rgba(212,175,55,0.4)'
-      }
-    }, 'Z · 60'),
-    React.createElement('div', {
-      key: 'links',
-      style: { display: 'flex', gap: '4px' }
-    }, links.map(l =>
-      React.createElement('button', {
-        key: l.k,
-        onClick: () => navigate(l.k),
-        style: {
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '8px 16px',
-          fontFamily: 'Cinzel, serif',
-          fontSize: '0.65rem',
-          letterSpacing: '0.3em',
-          textTransform: 'uppercase',
-          color: current === l.k ? '#d4af37' : '#f7e7ce',
-          opacity: current === l.k ? 1 : 0.7,
-          fontWeight: 500,
-          transition: 'all 0.3s'
-        }
-      }, l.l)
-    ).concat(
-      React.createElement('button', {
-        key: 'admin',
-        onClick: () => navigate('admin'),
-        style: {
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '8px 12px',
-          fontFamily: 'Cinzel, serif',
-          fontSize: '0.55rem',
-          letterSpacing: '0.25em',
-          color: 'rgba(212,175,55,0.4)',
-          textTransform: 'uppercase'
-        }
-      }, 'Admin')
-    ))
-  ]);
-}
-
-function Invitacion({ navigate }) {
-  return React.createElement('div', {
-    style: {
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse at top, #1a1612 0%, #0a0908 70%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px 16px',
-      position: 'relative',
-      overflow: 'hidden'
-    }
-  }, [
-    React.createElement(ChampagneBubbles, { key: 'bubbles' }),
-    React.createElement('div', {
-      key: 'content',
-      style: {
-        maxWidth: '720px',
-        width: '100%',
-        position: 'relative',
-        zIndex: 10
-      }
-    }, 
-      React.createElement('div', {
-        style: {
-          position: 'relative',
-          background: 'linear-gradient(180deg, rgba(26,22,18,0.92) 0%, rgba(13,12,10,0.96) 100%)',
-          border: '1px solid #d4af37',
-          padding: '0',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 80px rgba(212,175,55,0.15)'
-        }
-      }, [
-        React.createElement(BulbRow, {
-          key: 'bulbs-top',
-          count: 14,
-          style: {
-            position: 'absolute',
-            top: '-7px',
-            left: '20px',
-            right: '20px'
-          }
-        }),
-        React.createElement('div', {
-          key: 'inner',
-          style: { padding: '60px 40px 50px' }
-        }, [
-          React.createElement('div', {
-            key: 'now-showing',
-            style: { textAlign: 'center', marginBottom: '32px' }
-          },
-            React.createElement('div', {
-              style: {
-                display: 'inline-block',
-                fontFamily: 'Limelight, cursive',
-                fontSize: '0.85rem',
-                letterSpacing: '0.5em',
-                color: '#fff8d0',
-                textTransform: 'uppercase',
-                animation: 'bulbFlicker 3s ease-in-out infinite',
-                textShadow: '0 0 20px rgba(212,175,55,0.6)'
-              }
-            }, '★ NOW SHOWING ★')
-          ),
-          React.createElement(HairlineDivider, { key: 'div1', label: 'Una velada extraordinaria' }),
-          React.createElement('div', {
-            key: 'starring',
-            style: {
-              fontFamily: 'Cinzel, serif',
-              fontSize: '0.7rem',
-              letterSpacing: '0.5em',
-              color: '#d4af37',
-              textTransform: 'uppercase',
-              textAlign: 'center',
-              marginTop: '40px',
-              marginBottom: '20px',
-              fontWeight: 500
-            }
-          }, 'PROUDLY PRESENTS'),
-          React.createElement('div', {
-            key: 'name',
-            style: {
-              fontFamily: 'Limelight, cursive',
-              fontSize: 'clamp(3.5rem, 11vw, 5.5rem)',
-              textAlign: 'center',
-              lineHeight: 0.95,
-              letterSpacing: '0.04em',
-              background: 'linear-gradient(180deg, #fff8d0 0%, #d4af37 50%, #b8860b 100%)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-              filter: 'drop-shadow(0 0 30px rgba(212,175,55,0.4))',
-              marginBottom: '12px'
-            }
-          }, 'ZANDRA'),
-          React.createElement('div', {
-            key: 'surname',
-            style: {
-              fontFamily: 'Cinzel, serif',
-              fontSize: 'clamp(0.95rem, 2.8vw, 1.2rem)',
-              letterSpacing: '0.4em',
-              color: '#d4af37',
-              textTransform: 'uppercase',
-              textAlign: 'center',
-              fontWeight: 400
-            }
-          }, 'B · VELIZ · ORTIZ'),
-          React.createElement('div', {
-            key: 'sixty',
-            style: { textAlign: 'center', margin: '50px 0 30px', position: 'relative' }
-          }, [
-            React.createElement('div', {
-              key: 'label1',
-              style: {
-                fontFamily: 'Cinzel, serif',
-                fontSize: '0.7rem',
-                letterSpacing: '0.55em',
-                color: '#d4af37',
-                textTransform: 'uppercase',
-                marginBottom: '8px',
-                fontWeight: 500
-              }
-            }, 'EN SUS ESPECTACULARES'),
-            React.createElement('div', {
-              key: 'num',
-              style: {
-                fontFamily: 'Limelight, cursive',
-                fontSize: 'clamp(8rem, 26vw, 14rem)',
-                lineHeight: 0.85,
-                background: 'linear-gradient(180deg, #fff8d0 0%, #f4e4c1 25%, #d4af37 60%, #8b6f1f 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-                filter: 'drop-shadow(0 0 60px rgba(212,175,55,0.5))',
-                display: 'block'
-              }
-            }, '60'),
-            React.createElement('div', {
-              key: 'tagline',
-              style: {
-                fontFamily: 'Cormorant Garamond, serif',
-                fontStyle: 'italic',
-                fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)',
-                color: '#f7e7ce',
-                marginTop: '12px',
-                opacity: 0.95,
-                fontWeight: 400
-              }
-            }, 'Años de Brillantez')
-          ]),
-          React.createElement(HairlineDivider, { key: 'div2' }),
-          React.createElement(CountdownTimer, { key: 'countdown' }),
-          React.createElement('div', {
-            key: 'ticket',
-            style: {
-              background: 'rgba(212,175,55,0.04)',
-              border: '1px dashed rgba(212,175,55,0.5)',
-              padding: '28px 24px',
-              margin: '32px 0',
-              position: 'relative'
-            }
-          }, [
-            React.createElement('div', {
-              key: 'hole1',
-              style: {
-                position: 'absolute',
-                left: '-12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '24px',
-                height: '24px',
-                background: '#0a0908',
-                borderRadius: '50%'
-              }
-            }),
-            React.createElement('div', {
-              key: 'hole2',
-              style: {
-                position: 'absolute',
-                right: '-12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '24px',
-                height: '24px',
-                background: '#0a0908',
-                borderRadius: '50%'
-              }
-            }),
-            React.createElement('div', {
-              key: 'grid',
-              style: {
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '20px'
-              }
-            }, [
-              { l: 'FECHA', v: 'Sábado · 5 Sep · 2026' },
-              { l: 'FUNCIÓN', v: '19:00 hrs' },
-              { l: 'LOCAL', v: 'El Club Español' },
-              { l: 'CIUDAD', v: 'Mixco · Guatemala' }
-            ].map((d, i) =>
-              React.createElement('div', { key: i, style: { textAlign: 'center' } }, [
-                React.createElement('div', {
-                  key: 'l',
-                  style: {
-                    fontFamily: 'Cinzel, serif',
-                    fontSize: '0.55rem',
-                    letterSpacing: '0.35em',
-                    color: '#d4af37',
-                    textTransform: 'uppercase',
-                    marginBottom: '6px',
-                    fontWeight: 500
-                  }
-                }, d.l),
-                React.createElement('div', {
-                  key: 'v',
-                  style: {
-                    fontFamily: 'Cormorant Garamond, serif',
-                    fontSize: '1rem',
-                    color: '#f7e7ce',
-                    fontWeight: 400
-                  }
-                }, d.v)
-              ])
-            ))
-          ]),
-          React.createElement('button', {
-            key: 'cta',
-            onClick: () => navigate('rsvp'),
-            style: {
-              display: 'block',
-              width: '100%',
-              maxWidth: '380px',
-              margin: '32px auto 0',
-              padding: '18px',
-              background: 'linear-gradient(180deg, #f4e4c1 0%, #d4af37 50%, #b8860b 100%)',
-              color: '#0a0908',
-              border: '1px solid #fff8d0',
-              fontFamily: 'Limelight, cursive',
-              fontSize: '0.85rem',
-              letterSpacing: '0.4em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              fontWeight: 400,
-              transition: 'all 0.3s',
-              boxShadow: '0 0 30px rgba(212,175,55,0.5), 0 4px 0 #8b6f1f, 0 6px 20px rgba(0,0,0,0.5)'
-            },
-            onMouseEnter: e => { 
-              e.currentTarget.style.transform = 'translateY(-2px)'; 
-              e.currentTarget.style.boxShadow = '0 0 50px rgba(212,175,55,0.8), 0 6px 0 #8b6f1f, 0 8px 30px rgba(0,0,0,0.6)'; 
-            },
-            onMouseLeave: e => { 
-              e.currentTarget.style.transform = 'translateY(0)'; 
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(212,175,55,0.5), 0 4px 0 #8b6f1f, 0 6px 20px rgba(0,0,0,0.5)'; 
-            }
-          }, 'Reservar Asiento'),
-          React.createElement('div', {
-            key: 'hint',
-            style: {
-              textAlign: 'center',
-              marginTop: '20px',
-              fontFamily: 'Cormorant Garamond, serif',
-              fontStyle: 'italic',
-              fontSize: '0.9rem',
-              color: '#f7e7ce',
-              opacity: 0.5
-            }
-          }, 'Cupo limitado · Por invitación')
-        ]),
-        React.createElement(BulbRow, {
-          key: 'bulbs-bottom',
-          count: 14,
-          style: {
-            position: 'absolute',
-            bottom: '-7px',
-            left: '20px',
-            right: '20px'
-          }
-        })
-      ])
-    )
-  ]);
-}
+const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/duo4dukq4/image/upload'
+const UPLOAD_PRESET = 'duo4dukq4'
 
 export default function App() {
-  const [page, setPage] = useState('invitacion');
-  const [rsvpData, setRsvpData] = useState(null);
+  const [photos, setPhotos] = useState([])
+  const [uploading, setUploading] = useState(false)
+  const [countdown, setCountdown] = useState({})
 
-  const navigate = p => {
-    setPage(p);
-    window.scrollTo(0, 0);
-  };
+  // Calcula la cuenta regresiva
+  useEffect(() => {
+    const calculateCountdown = () => {
+      const eventDate = new Date('2026-09-05T19:00:00').getTime()
+      const now = new Date().getTime()
+      const distance = eventDate - now
 
-  return React.createElement('div', { 
-    style: { background: '#0a0908', minHeight: '100vh' } 
-  }, page === 'invitacion' && React.createElement(Invitacion, { navigate }));
+      if (distance > 0) {
+        setCountdown({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        })
+      }
+    }
+
+    calculateCountdown()
+    const timer = setInterval(calculateCountdown, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Maneja la carga de fotos
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files)
+    if (files.length === 0) return
+
+    setUploading(true)
+
+    for (const file of files) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('upload_preset', UPLOAD_PRESET)
+
+        const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+          method: 'POST',
+          body: formData
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setPhotos(prev => [...prev, {
+            id: data.public_id,
+            url: data.secure_url,
+            thumb: data.secure_url.replace('/upload/', '/upload/w_200,h_200,c_fill/')
+          }])
+          toast.success('¡Foto subida exitosamente!')
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error)
+        toast.error('Error al subir la foto')
+      }
+    }
+
+    setUploading(false)
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      <Toaster position="top-center" />
+
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative h-screen flex items-center justify-center bg-gradient-to-b from-black via-amber-900/20 to-black"
+      >
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-700 rounded-full mix-blend-multiply filter blur-3xl"></div>
+        </div>
+
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+          className="relative z-10 text-center px-4"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="mb-8"
+          >
+            <h1 className="text-7xl md:text-8xl font-black text-amber-300 mb-4 font-serif drop-shadow-lg">
+              ZANDRA
+            </h1>
+          </motion.div>
+
+          <p className="text-3xl md:text-4xl text-amber-100 font-light mb-4 font-serif">
+            Celebrando 60 Años
+          </p>
+
+          <div className="text-amber-200 text-lg mb-12 font-light">
+            <p>Una noche de elegancia y nostalgia</p>
+            <p className="text-amber-300 font-serif text-2xl mt-2">Great Gatsby</p>
+          </div>
+
+          {/* Countdown */}
+          <div className="grid grid-cols-4 gap-4 md:gap-8 mb-12 max-w-2xl mx-auto">
+            {[
+              { value: countdown.days || 0, label: 'Días' },
+              { value: countdown.hours || 0, label: 'Horas' },
+              { value: countdown.minutes || 0, label: 'Minutos' },
+              { value: countdown.seconds || 0, label: 'Segundos' }
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ scale: 1.1 }}
+                className="bg-amber-900/50 backdrop-blur border border-amber-500/30 rounded-lg p-4"
+              >
+                <div className="text-3xl md:text-4xl font-bold text-amber-300 font-serif">
+                  {String(item.value).padStart(2, '0')}
+                </div>
+                <div className="text-xs md:text-sm text-amber-200 mt-2">{item.label}</div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 px-8 rounded-lg transition-all"
+          >
+            Confirmar Asistencia
+          </motion.button>
+        </motion.div>
+      </motion.section>
+
+      {/* Event Details */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="py-20 px-4 bg-black border-t border-amber-500/30"
+      >
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-bold text-amber-300 text-center mb-16 font-serif">
+            Detalles del Evento
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Date & Time */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="bg-gradient-to-br from-amber-900/30 to-black border border-amber-500/30 rounded-lg p-8"
+            >
+              <Calendar className="w-12 h-12 text-amber-400 mb-4" />
+              <h3 className="text-2xl font-bold text-amber-300 mb-2 font-serif">Fecha y Hora</h3>
+              <p className="text-amber-100">5 de Septiembre, 2026</p>
+              <p className="text-amber-100 text-lg font-bold">7:00 p.m.</p>
+            </motion.div>
+
+            {/* Location */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="bg-gradient-to-br from-amber-900/30 to-black border border-amber-500/30 rounded-lg p-8"
+            >
+              <MapPin className="w-12 h-12 text-amber-400 mb-4" />
+              <h3 className="text-2xl font-bold text-amber-300 mb-2 font-serif">Ubicación</h3>
+              <p className="text-amber-100">El Club Español</p>
+              <p className="text-amber-100">Ciudad de Guatemala</p>
+            </motion.div>
+          </div>
+
+          {/* Dress Code */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="mt-8 bg-gradient-to-r from-amber-900/40 to-amber-800/40 border border-amber-500/30 rounded-lg p-8 text-center"
+          >
+            <Heart className="w-8 h-8 text-amber-400 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-amber-300 mb-2 font-serif">Código de Vestimenta</h3>
+            <p className="text-amber-100 text-lg">Elegancia Great Gatsby</p>
+            <p className="text-amber-200 text-sm mt-2">Trajes, vestidos y accesorios de los años 20</p>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Photo Gallery */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="py-20 px-4 bg-black border-t border-amber-500/30"
+      >
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-5xl font-bold text-amber-300 text-center mb-16 font-serif">
+            Galería de Recuerdos
+          </h2>
+
+          {/* Upload Area */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="mb-12 bg-gradient-to-br from-amber-900/30 to-black border-2 border-dashed border-amber-500/50 rounded-lg p-12 text-center cursor-pointer hover:border-amber-400 transition-all"
+          >
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              disabled={uploading}
+              className="hidden"
+              id="photo-upload"
+            />
+            <label htmlFor="photo-upload" className="cursor-pointer block">
+              <Upload className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+              <p className="text-xl text-amber-300 font-semibold mb-2">
+                {uploading ? 'Subiendo fotos...' : 'Sube tus fotos favoritas'}
+              </p>
+              <p className="text-amber-200 text-sm">
+                Arrastra archivos aquí o haz clic para seleccionar
+              </p>
+            </label>
+          </motion.div>
+
+          {/* Photos Grid */}
+          {photos.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {photos.map((photo, idx) => (
+                <motion.div
+                  key={photo.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                  className="relative overflow-hidden rounded-lg border border-amber-500/30 aspect-square"
+                >
+                  <img
+                    src={photo.thumb}
+                    alt="Uploaded memory"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
+                    <p className="text-amber-300 text-sm">Recuerdo compartido</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {photos.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-amber-200 text-lg">
+                Aún no hay fotos. ¡Sé el primero en compartir un recuerdo!
+              </p>
+            </div>
+          )}
+        </div>
+      </motion.section>
+
+      {/* Contact Info */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="py-20 px-4 bg-gradient-to-b from-black to-amber-900/20 border-t border-amber-500/30"
+      >
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-amber-300 mb-8 font-serif">Confirma tu Asistencia</h2>
+          <p className="text-amber-100 mb-8 text-lg">
+            Para confirmar tu asistencia, contacta a:
+          </p>
+          <div className="bg-amber-900/30 border border-amber-500/30 rounded-lg p-8">
+            <p className="text-2xl font-bold text-amber-300 mb-2">Sergio J. Santizo</p>
+            <p className="text-amber-200 mb-4">Coordinador del Evento</p>
+            <p className="text-amber-100">
+              Responde a esta invitación o contacta directamente
+            </p>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Footer */}
+      <footer className="bg-black border-t border-amber-500/30 py-8 px-4 text-center">
+        <p className="text-amber-200 text-sm">
+          Una celebración de elegancia, amistad y nostalgia
+        </p>
+        <p className="text-amber-300 font-serif text-lg mt-2">
+          The Great Gatsby Experience
+        </p>
+      </footer>
+    </div>
+  )
 }
