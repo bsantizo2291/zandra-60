@@ -284,13 +284,16 @@ function PhotoGallery() {
     try {
       const res = await fetch('/api/delete-photo', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: id }),
+        body: JSON.stringify({ public_id: id, adminPassword: 'zandra60party' }),
       })
       if (res.ok) {
         toast.success('Foto eliminada')
         setPhotos(p => p.filter(x => x.public_id !== id))
         setDeletable(p => { const n = { ...p }; delete n[id]; return n })
-      } else toast.error('No se pudo eliminar')
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast.error('No se pudo eliminar: ' + (err.error || res.status))
+      }
     } catch (_) { toast.error('Error de conexión') }
     setDeleting(null)
   }
@@ -395,10 +398,15 @@ function AdminPanel() {
     try {
       const res = await fetch('/api/delete-photo', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: id, admin: true }),
+        body: JSON.stringify({ public_id: id, adminPassword: 'zandra60party' }),
       })
-      if (res.ok) { toast.success('Foto eliminada'); setPhotos(p => p.filter(x => x.public_id !== id)) }
-      else toast.error('No se pudo eliminar')
+      if (res.ok) {
+        toast.success('Foto eliminada')
+        setPhotos(p => p.filter(x => x.public_id !== id))
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast.error('No se pudo eliminar: ' + (err.error || res.status))
+      }
     } catch (_) { toast.error('Error de conexión') }
     setDeleting(null)
   }

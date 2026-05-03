@@ -1,62 +1,72 @@
 // Vercel Serverless Function — DELETE a photo from Cloudinary
-// Called by both admin panel and guest "undo" delete button
 
 export default async function handler(req, res) {
-  // Only allow POST
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') return res.status(200).end()
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { publicId, adminPassword, guestToken } = req.body
+  // Accept both public_id and publicId for compatibility
+  const public_id = req.body?.public_id || req.body?.publicId
+  const adminPassword = req.body?.adminPassword || req.body?.admin_password
+  const guestToken = req.body?.guestToken
 
-  if (!publicId) {
-    return res.status(400).json({ error: 'Missing publicId' })
+  if (!public_id) {
+    return res.status(400).json({ error: 'Missing public_id' })
   }
 
-  // Auth: either admin password OR valid guest token (public_id hash for 10-min window)
+  // Auth: admin password OR valid guest token
   const isAdmin = adminPassword === process.env.ADMIN_PASSWORD
-  const isGuest = guestToken && isValidGuestToken(publicId, guestToken)
+  const isGuest = guestToken && isValidGuestToken(public_id, guestToken)
 
   if (!isAdmin && !isGuest) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  // Call Cloudinary API to delete
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'duo4dukq4'
   const apiKey = process.env.CLOUDINARY_API_KEY
   const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-  const timestamp = Math.round(Date.now() / 1000)
-  const signature = await generateSignature({ public_id: publicId, timestamp }, apiSecret)
+  if (!apiKey || !apiSecret) {
+    return res.status(500).json({ error: 'Missing Cloudinary credentials' })
+  }
 
-  const formData = new URLSearchParams()
-  formData.append('public_id', publicId)
-  formData.append('timestamp', timestamp)
-  formData.append('api_key', apiKey)
-  formData.append('signature', signature)
+  try {
+    const timestamp = Math.round(Date.now() / 1000)
+    const signature = await generateSignature({ public_id, timestamp }, apiSecret)
 
-  const cloudRes = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
-    { method: 'POST', body: formData }
-  )
-  const data = await cloudRes.json()
+    const formData = new URLSearchParams()
+    formData.append('public_id', public_id)
+    formData.append('timestamp', String(timestamp))
+    formData.append('api_key', apiKey)
+    formData.append('signature', signature)
 
-  if (data.result === 'ok') {
-    return res.status(200).json({ success: true })
-  } else {
-    return res.status(500).json({ error: data.result || 'Delete failed' })
+    const cloudRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
+      { method: 'POST', body: formData }
+    )
+    const data = await cloudRes.json()
+
+    if (data.result === 'ok') {
+      return res.status(200).json({ success: true })
+    } else {
+      return res.status(500).json({ error: data.result || 'Delete failed', details: data })
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
   }
 }
 
-// Generate SHA-1 signature for Cloudinary signed requests
 async function generateSignature(params, apiSecret) {
   const sortedParams = Object.keys(params)
     .sort()
     .map(k => `${k}=${params[k]}`)
     .join('&')
   const message = sortedParams + apiSecret
-
-  // Use Web Crypto API (available in Vercel Edge/Node)
   const encoder = new TextEncoder()
   const data = encoder.encode(message)
   const hashBuffer = await crypto.subtle.digest('SHA-1', data)
@@ -64,15 +74,13 @@ async function generateSignature(params, apiSecret) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// Guest token: HMAC-like check — publicId + upload timestamp within 10 minutes
-function isValidGuestToken(publicId, token) {
+function isValidGuestToken(public_id, token) {
   try {
     const decoded = atob(token)
     const [id, ts] = decoded.split('|')
     const uploadTime = parseInt(ts, 10)
     const now = Date.now()
-    const tenMinutes = 10 * 60 * 1000
-    return id === publicId && (now - uploadTime) < tenMinutes
+    return id === public_id && (now - uploadTime) < 10 * 60 * 1000
   } catch {
     return false
   }
