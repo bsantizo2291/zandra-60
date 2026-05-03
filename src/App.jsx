@@ -492,45 +492,99 @@ function AdminPanel() {
 function Slideshow() {
   const [photos, setPhotos] = useState([])
   const [current, setCurrent] = useState(0)
-  const fetch_ = async () => {
+  const [loading, setLoading] = useState(true)
+
+  const fetchPhotos = async () => {
     try {
-      const res = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/list/${GALLERY_TAG}.json`)
+      const res = await fetch('/api/list-photos')
       if (res.ok) {
         const d = await res.json()
-        setPhotos((d.resources || []).map(r => `${CLOUDINARY_FETCH_URL}/w_1920,h_1080,c_fill,q_auto/${r.public_id}`))
+        const urls = (d.photos || []).map(p =>
+          `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/w_1920,h_1080,c_fill,q_auto/${p.public_id}`
+        )
+        if (urls.length > 0) setPhotos(urls)
       }
     } catch (_) {}
+    setLoading(false)
   }
-  useEffect(() => { fetch_(); const id = setInterval(fetch_, 20000); return () => clearInterval(id) }, [])
+
+  // Fetch on mount and every 20 seconds for new photos
+  useEffect(() => {
+    fetchPhotos()
+    const id = setInterval(fetchPhotos, 20000)
+    return () => clearInterval(id)
+  }, [])
+
+  // Advance slide every 6 seconds
   useEffect(() => {
     if (!photos.length) return
-    const id = setInterval(() => setCurrent(c => (c + 1) % photos.length), 5000)
+    const id = setInterval(() => setCurrent(c => (c + 1) % photos.length), 6000)
     return () => clearInterval(id)
   }, [photos.length])
+
   return (
-    <div className="relative w-screen h-screen bg-black overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden" style={{ background: '#080808' }}>
+      <ChampagneBubbles />
+
       <AnimatePresence mode="wait">
         {photos.length > 0 ? (
-          <motion.img key={current} src={photos[current]}
-            initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }} transition={{ duration: 1.2 }}
-            className="absolute inset-0 w-full h-full object-cover" />
+          <motion.img
+            key={current}
+            src={photos[current]}
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 1.5, ease: 'easeInOut' }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="font-serif text-3xl text-center px-8" style={{ color: '#d4a017' }}>
-              Esperando fotos de los invitados...
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{ backgroundImage: 'url(/hero_bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <div className="absolute inset-0" style={{ background: 'rgba(8,8,8,0.6)' }} />
+            <div className="relative z-10 text-center px-8">
+              <Medallion size={180} />
+              <p className="font-serif text-3xl md:text-5xl shimmer-text mt-8 mb-4" style={{ fontFamily: 'Cinzel, serif' }}>
+                ZANDRA VELIZ
+              </p>
+              <p className="font-serif text-xl md:text-2xl mb-8" style={{ color: '#d4a017' }}>60 Anos</p>
+              {loading ? (
+                <p className="font-serif text-lg tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.6)' }}>
+                  Cargando fotos...
+                </p>
+              ) : (
+                <p className="font-serif text-lg tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.6)' }}>
+                  Esperando fotos de los invitados...
+                </p>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
-        <p className="font-serif text-4xl md:text-6xl shimmer-text mb-2">Celebracion 60 Anos · Zandra Veliz</p>
-        <p className="font-serif text-sm md:text-lg tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.7)' }}>
+
+      {/* Dark gradient overlay at bottom */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
+
+      {/* Gold Art Deco border */}
+      <div className="absolute inset-4 pointer-events-none" style={{ border: '1px solid rgba(212,160,23,0.35)' }}>
+        <div className="absolute inset-2" style={{ border: '1px solid rgba(212,160,23,0.15)' }} />
+      </div>
+
+      {/* Bottom caption */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-center" style={{ zIndex: 10 }}>
+        <p className="font-serif shimmer-text mb-1" style={{ fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', fontFamily: 'Cinzel, serif' }}>
+          Celebracion 60 Anos · Zandra Veliz
+        </p>
+        <p className="font-serif tracking-widest uppercase" style={{ fontSize: 'clamp(0.7rem, 1.5vw, 1rem)', color: 'rgba(212,160,23,0.65)' }}>
           5 de Septiembre · 2026 · Club Espanol · Fuentecilla
         </p>
+        {photos.length > 0 && (
+          <p className="font-serif text-xs mt-2" style={{ color: 'rgba(212,160,23,0.35)' }}>
+            {current + 1} / {photos.length}
+          </p>
+        )}
       </div>
-      <ChampagneBubbles />
     </div>
   )
 }
