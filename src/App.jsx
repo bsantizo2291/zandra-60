@@ -12,25 +12,31 @@ const GALLERY_TAG = 'zandra60party'
 const ADMIN_PASSWORD = 'zandra60party'
 
 // ─── Image compression ────────────────────────────────────────────────────────
-async function compressImage(file, maxSizeMB = 8, maxDim = 2400) {
+async function compressImage(file, maxSizeMB = 9.5, maxDim = 4096) {
   return new Promise((resolve) => {
-    if (file.size <= maxSizeMB * 1024 * 1024 && file.type === 'image/jpeg') { resolve(file); return }
+    // If file is already small enough and is JPEG/PNG, upload as-is — no compression
+    if (file.size <= maxSizeMB * 1024 * 1024) { resolve(file); return }
     const img = new Image()
     const url = URL.createObjectURL(file)
     img.onload = () => {
       URL.revokeObjectURL(url)
       let { width: w, height: h } = img
+      // Only scale down if truly enormous (above 4096px)
       if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r) }
       const canvas = document.createElement('canvas')
       canvas.width = w; canvas.height = h
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+      const ctx = canvas.getContext('2d')
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(img, 0, 0, w, h)
+      // Start at 0.95 quality and only reduce if absolutely necessary
       const tryQ = (q) => canvas.toBlob((blob) => {
         if (!blob) { resolve(file); return }
-        if (blob.size <= maxSizeMB*1024*1024 || q <= 0.3)
+        if (blob.size <= maxSizeMB*1024*1024 || q <= 0.6)
           resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-        else tryQ(q - 0.1)
+        else tryQ(q - 0.05)
       }, 'image/jpeg', q)
-      tryQ(0.85)
+      tryQ(0.95)
     }
     img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
     img.src = url
