@@ -677,7 +677,7 @@ export default function App() {
         {/* Content */}
         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2 }}
-          className="relative z-10 text-center px-6 max-w-4xl mx-auto w-full">
+          className="relative z-10 text-center px-4 max-w-5xl mx-auto w-full" style={{ overflow: 'visible' }}>
 
           <motion.p initial={{ opacity: 0, letterSpacing: '0.05em' }} animate={{ opacity: 1, letterSpacing: '0.4em' }}
             transition={{ delay: 0.3, duration: 1 }}
@@ -688,8 +688,8 @@ export default function App() {
           {/* ZANDRA */}
           <motion.h1 initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 1, type: 'spring', stiffness: 60 }}
-            className="shimmer-text font-serif font-black leading-none mb-2"
-            style={{ fontSize: 'clamp(4.5rem, 18vw, 11rem)', fontFamily: 'Cinzel, serif', letterSpacing: '0.15em' }}>
+            className="shimmer-text font-serif font-black leading-none mb-2 w-full"
+            style={{ fontSize: 'clamp(3.2rem, 14vw, 9rem)', fontFamily: 'Cinzel, serif', letterSpacing: '0.08em', paddingLeft: '0.04em', paddingRight: '0.04em', overflow: 'visible', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
             ZANDRA
           </motion.h1>
 
