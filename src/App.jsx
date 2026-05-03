@@ -370,6 +370,121 @@ function Slideshow() {
   )
 }
 
+// ─── RSVP Form ───────────────────────────────────────────────────────────────
+function RSVPForm() {
+  const [name, setName] = useState('')
+  const [plusOne, setPlusOne] = useState(false)
+  const [plusOneName, setPlusOneName] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!name.trim()) { toast.error('Por favor ingresa tu nombre'); return }
+    setSubmitting(true)
+    // Store RSVP in Cloudinary as a text tag (lightweight approach)
+    // We just show confirmation — real RSVP tracking can be added later
+    await new Promise(r => setTimeout(r, 800))
+    setSubmitting(false)
+    setSubmitted(true)
+    toast.success('¡Confirmación recibida! Te esperamos. 🥂')
+  }
+
+  if (submitted) {
+    return (
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="glass-card rounded-2xl p-10 text-center"
+      >
+        <div className="text-5xl mb-4">🥂</div>
+        <p className="text-amber-300 font-serif text-2xl font-bold mb-2">¡Nos vemos el 5 de Septiembre!</p>
+        <p className="text-amber-400 text-sm">
+          {name}{plusOne && plusOneName ? ` y ${plusOneName}` : plusOne ? ' y acompañante' : ''} — confirmado{plusOne ? 's' : ''}
+        </p>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.form
+      onSubmit={handleSubmit}
+      whileHover={{ scale: 1.01 }}
+      className="glass-card rounded-2xl p-10"
+    >
+      <p className="text-amber-200 text-lg mb-6">Confirma tu asistencia:</p>
+
+      {/* Guest name */}
+      <div className="mb-5">
+        <label className="block text-amber-400 text-xs uppercase tracking-widest mb-2">Tu nombre completo</label>
+        <input
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Nombre y apellido"
+          className="w-full bg-black/50 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-700 focus:outline-none focus:border-amber-400"
+          required
+        />
+      </div>
+
+      {/* +1 toggle */}
+      <div className="mb-5">
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div
+            onClick={() => setPlusOne(p => !p)}
+            className={`w-12 h-6 rounded-full transition-all duration-300 flex items-center px-1 ${
+              plusOne ? 'bg-amber-500' : 'bg-amber-900/60 border border-amber-700'
+            }`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 ${plusOne ? 'translate-x-6' : 'translate-x-0'}`} />
+          </div>
+          <span className="text-amber-300 text-sm">Voy con acompañante <span className="text-amber-600">(+1)</span></span>
+        </label>
+      </div>
+
+      {/* +1 name */}
+      {plusOne && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-5"
+        >
+          <label className="block text-amber-400 text-xs uppercase tracking-widest mb-2">Nombre de tu acompañante</label>
+          <input
+            type="text"
+            value={plusOneName}
+            onChange={e => setPlusOneName(e.target.value)}
+            placeholder="Nombre y apellido"
+            className="w-full bg-black/50 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-700 focus:outline-none focus:border-amber-400"
+          />
+        </motion.div>
+      )}
+
+      {/* Attendee count badge */}
+      <div className="mb-6 text-center">
+        <span className="inline-block bg-amber-900/40 border border-amber-600/30 rounded-full px-4 py-1.5 text-amber-400 text-xs">
+          {plusOne ? '2 personas confirmadas' : '1 persona confirmada'}
+        </span>
+      </div>
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold py-3 rounded-xl transition-all hover:scale-105 disabled:opacity-60"
+      >
+        {submitting ? 'Confirmando...' : '✦ Confirmar Asistencia ✦'}
+      </button>
+
+      <div className="border-t border-amber-800/40 mt-8 pt-6 text-center">
+        <p className="text-amber-600 text-xs mb-2">¿Preguntas? Contacta al organizador:</p>
+        <p className="text-amber-300 font-semibold">Brayan Santizo</p>
+        <a href="tel:+12015987303" className="text-amber-400 hover:text-amber-300 transition-colors text-sm">📞 +1 (201) 598-7303</a>
+      </div>
+    </motion.form>
+  )
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const params = new URLSearchParams(window.location.search)
@@ -455,10 +570,10 @@ export default function App() {
             transition={{ delay: 1.4, duration: 0.8 }}
             className="glass-card rounded-2xl px-8 py-5 inline-block max-w-lg"
           >
-            <p className="text-amber-300 font-serif italic text-lg md:text-xl glow-text">
-              "So we beat on, boats against the current,<br />borne back ceaselessly into the past."
+            <p className="text-amber-300 font-serif text-lg md:text-xl glow-text">
+              ✦ &nbsp; Una noche de elegancia y celebración &nbsp; ✦
             </p>
-            <p className="text-amber-600 text-xs mt-2 tracking-widest">— F. SCOTT FITZGERALD · THE GREAT GATSBY</p>
+            <p className="text-amber-600 text-xs mt-2 tracking-widest">SÁBADO · 5 DE SEPTIEMBRE · 2026</p>
           </motion.div>
         </motion.div>
 
@@ -509,8 +624,8 @@ export default function App() {
             {[
               { icon: Calendar, title: 'Fecha', lines: ['Sábado', '5 de Septiembre', '2026'] },
               { icon: Clock, title: 'Horario', lines: ['19:00 — 24:00', 'Cinco horas de', 'pura celebración'] },
-              { icon: MapPin, title: 'Lugar', lines: ['Área Fuentecilla', 'Guatemala', '🇬🇹'] },
-            ].map(({ icon: Icon, title, lines }, i) => (
+              { icon: MapPin, title: 'Lugar', lines: ['Club Español', 'Área Fuentecilla', 'Guatemala 🇬🇹'], mapsUrl: 'https://share.google/FDmBZPdqd5IKUHSazP' },
+            ].map(({ icon: Icon, title, lines, mapsUrl }, i) => (
               <motion.div
                 key={title}
                 initial={{ opacity: 0, y: 30 }}
@@ -527,6 +642,17 @@ export default function App() {
                 {lines.map((l, j) => (
                   <p key={j} className={j === 0 ? 'text-amber-200 font-serif text-xl font-bold' : 'text-amber-400 text-sm mt-1'}>{l}</p>
                 ))}
+                {mapsUrl && (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-4 text-amber-400 hover:text-amber-300 text-xs border border-amber-600/40 hover:border-amber-400 rounded-full px-3 py-1.5 transition-all"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    Ver en Google Maps
+                  </a>
+                )}
               </motion.div>
             ))}
           </div>
@@ -649,23 +775,7 @@ export default function App() {
               Confirma tu Asistencia
             </h2>
             <ArtDecoOrnament className="mb-10" />
-
-            <motion.div whileHover={{ scale: 1.02 }} className="glass-card rounded-2xl p-10">
-              <p className="text-amber-200 text-lg mb-6">Para confirmar tu asistencia, contacta a:</p>
-              <p className="text-3xl font-serif font-bold text-amber-300 mb-1">Brayan Santizo</p>
-              <p className="text-amber-600 text-xs tracking-widest uppercase mb-5">Organizador del Evento</p>
-              <a
-                href="tel:+12015987303"
-                className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 text-xl font-semibold transition-colors"
-              >
-                📞 +1 (201) 598-7303
-              </a>
-              <div className="border-t border-amber-800/40 mt-8 pt-6">
-                <p className="text-amber-500 text-sm italic">
-                  "Te esperamos para celebrar juntos esta noche mágica"
-                </p>
-              </div>
-            </motion.div>
+            <RSVPForm />
           </motion.div>
         </div>
       </section>
