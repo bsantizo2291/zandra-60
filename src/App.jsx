@@ -876,7 +876,8 @@ function DoorPanel({ initial, flip }) {
           stroke={gold} strokeWidth="1" opacity="0.6" />
       })}
       <text x="100" y="54" textAnchor="middle" dominantBaseline="central"
-        fontFamily="'Pinyon Script', cursive" fontSize="52" fontWeight="400"
+        fontFamily="'Cinzel', serif" fontSize="36" fontWeight="700"
+        letterSpacing="3"
         fill={gold}>{initial}</text>
 
       {/* Vertical side rails */}
@@ -1095,13 +1096,12 @@ function EnvelopeIntro({ onOpen }) {
               />
               <span style={{
                 color: '#1a0e00',
-                fontFamily: "'Pinyon Script', cursive",
-                fontSize: 26, fontWeight: 400,
+                fontFamily: "'Cinzel', serif",
+                fontSize: 15, fontWeight: 700, letterSpacing: '0.15em',
                 lineHeight: 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: '100%', textAlign: 'center',
                 userSelect: 'none',
-                marginTop: 2,
               }}>ZV</span>
             </motion.button>
           )}
