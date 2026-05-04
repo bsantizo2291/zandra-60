@@ -863,23 +863,27 @@ function EnvelopeIntro({ onOpen }) {
 
         {/* Envelope body */}
         <motion.div
-          className="relative w-full rounded-lg overflow-visible"
+          className="relative w-full rounded-b-lg overflow-visible"
           style={{
-            height: 'min(220px, 56vw)',
-            background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
+            height: 'min(200px, 52vw)',
+            background: 'linear-gradient(180deg, #1a1200 0%, #0d0900 100%)',
             border: '2px solid #d4a017',
+            borderTop: 'none',
             boxShadow: '0 0 60px rgba(212,160,23,0.25), inset 0 0 30px rgba(212,160,23,0.05)',
           }}
           animate={stage === 'open' || stage === 'reveal' ? { y: 30 } : { y: 0 }}
           transition={{ duration: 0.6, ease: 'easeInOut' }}
         >
           {/* Envelope bottom V fold lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 340 220" preserveAspectRatio="none">
-            <line x1="0" y1="220" x2="170" y2="120" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
-            <line x1="340" y1="220" x2="170" y2="120" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 340 200" preserveAspectRatio="none">
+            <line x1="0" y1="200" x2="170" y2="100" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
+            <line x1="340" y1="200" x2="170" y2="100" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
+            {/* Side fold lines from top corners to center */}
+            <line x1="0" y1="0" x2="170" y2="100" stroke="rgba(212,160,23,0.2)" strokeWidth="1" />
+            <line x1="340" y1="0" x2="170" y2="100" stroke="rgba(212,160,23,0.2)" strokeWidth="1" />
           </svg>
 
-          {/* Wax seal */}
+          {/* Wax seal — centered on the fold seam */}
           <motion.div
             className="flex items-center justify-center rounded-full z-20"
             style={{
@@ -920,14 +924,14 @@ function EnvelopeIntro({ onOpen }) {
           </AnimatePresence>
         </motion.div>
 
-        {/* Envelope flap */}
+        {/* Envelope flap — triangle pointing DOWN, sits on top of body, opens upward */}
         <motion.div
-          className="absolute top-0 left-0 w-full origin-top"
+          className="absolute top-0 left-0 w-full"
           style={{
             perspective: 800,
             transformStyle: 'preserve-3d',
-            height: '50%',
-            background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
+            height: 'min(100px, 26vw)',
+            background: 'linear-gradient(180deg, #0d0900 0%, #1a1200 100%)',
             border: '2px solid #d4a017',
             borderBottom: 'none',
             clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
@@ -1188,7 +1192,7 @@ export default function App() {
                 Colores Gatsby
               </p>
 
-              <div className="flex flex-wrap justify-center gap-5 md:gap-8 mb-10">
+              <div className="flex flex-nowrap justify-center gap-3 md:gap-6 mb-10 overflow-x-auto pb-1">
                 {[
                   { color: '#d97706', name: 'Dorado' },
                   { color: '#111111', name: 'Negro', border: '#333' },
@@ -1197,10 +1201,10 @@ export default function App() {
                   { color: '#fef3c7', name: 'Marfil' },
                   { color: '#1e3a5f', name: 'Azul Noche' },
                 ].map(({ color, name, border }) => (
-                  <div key={name} className="flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg"
+                  <div key={name} className="flex flex-col items-center gap-2 flex-shrink-0">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg"
                       style={{ background: color, border: `2px solid ${border || 'rgba(212,160,23,0.4)'}` }} />
-                    <span className="font-serif text-xs" style={{ color: 'rgba(212,160,23,0.6)' }}>{name}</span>
+                    <span className="font-serif" style={{ fontSize: 'clamp(9px, 2.2vw, 12px)', color: 'rgba(212,160,23,0.6)', whiteSpace: 'nowrap' }}>{name}</span>
                   </div>
                 ))}
               </div>
