@@ -1382,16 +1382,33 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                {[
-                  { title: 'Damas', desc: 'Vestidos largos o coctel con flecos, lentejuelas o plumas. Guantes, tocados, diademas y accesorios de los anos 20.' },
-                  { title: 'Caballeros', desc: 'Traje oscuro o smoking con corbata o mono. Sombrero fedora o bombin. Chaleco y panuelo de bolsillo.' },
-                ].map(({ title, desc }) => (
-                  <div key={title} className="rounded-xl p-5" style={{ background: 'rgba(212,160,23,0.05)', border: '1px solid rgba(212,160,23,0.15)' }}>
-                    <p className="font-serif text-xs uppercase tracking-widest mb-2" style={{ color: '#d4a017' }}>{title}</p>
-                    <p className="font-serif text-sm leading-relaxed" style={{ color: 'rgba(212,160,23,0.6)' }}>{desc}</p>
+              {/* Outfit inspiration images */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="rounded-2xl overflow-hidden w-full" style={{ border: '1px solid rgba(212,160,23,0.3)', boxShadow: '0 0 20px rgba(212,160,23,0.1)' }}>
+                    <img src="/outfit_ladies.jpg" alt="Inspiracion Damas" className="w-full object-cover" style={{ aspectRatio: '3/4' }} />
                   </div>
-                ))}
+                  <p className="font-serif text-xs uppercase tracking-widest" style={{ color: '#d4a017' }}>✦ Damas ✦</p>
+                  <p className="font-serif text-xs leading-relaxed text-center" style={{ color: 'rgba(212,160,23,0.6)' }}>Vestido con flecos, lentejuelas o plumas. Guantes, tocado o diadema.</p>
+                </div>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="rounded-2xl overflow-hidden w-full" style={{ border: '1px solid rgba(212,160,23,0.3)', boxShadow: '0 0 20px rgba(212,160,23,0.1)' }}>
+                    <img src="/outfit_gents.jpg" alt="Inspiracion Caballeros" className="w-full object-cover" style={{ aspectRatio: '3/4' }} />
+                  </div>
+                  <p className="font-serif text-xs uppercase tracking-widest" style={{ color: '#d4a017' }}>✦ Caballeros ✦</p>
+                  <p className="font-serif text-xs leading-relaxed text-center" style={{ color: 'rgba(212,160,23,0.6)' }}>Traje oscuro o smoking. Sombrero fedora, chaleco y panuelo de bolsillo.</p>
+                </div>
+              </div>
+
+              {/* Accessories flat lay + note */}
+              <div className="rounded-2xl overflow-hidden mb-6" style={{ border: '1px solid rgba(212,160,23,0.25)', boxShadow: '0 0 24px rgba(212,160,23,0.08)' }}>
+                <img src="/outfit_accessories.jpg" alt="Accesorios Gatsby" className="w-full object-cover" style={{ maxHeight: 220 }} />
+              </div>
+              <div className="rounded-xl p-5" style={{ background: 'rgba(212,160,23,0.06)', border: '1px solid rgba(212,160,23,0.2)' }}>
+                <p className="font-serif text-sm font-semibold mb-1" style={{ color: '#d4a017' }}>✦ Accesorios Gatsby en la Fiesta ✦</p>
+                <p className="font-serif text-sm leading-relaxed" style={{ color: 'rgba(212,160,23,0.7)' }}>
+                  No te preocupes si no tienes accesorios — ¡nosotros los tenemos! En la fiesta se proporcionaran accesorios al estilo Gatsby para que todos puedan entrar en el ambiente. ¡Ven como estes y te transformamos!
+                </p>
               </div>
             </ArtDecoFrame>
           </motion.div>
