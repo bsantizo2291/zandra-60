@@ -456,7 +456,7 @@ function AdminPanel() {
         <Lock className="w-10 h-10 mx-auto mb-4" style={{ color: '#d4a017' }} />
         <h2 className="font-serif text-2xl mb-1" style={{ color: '#d4a017' }}>Panel de Administracion</h2>
         <p className="font-serif text-xs tracking-widest uppercase mb-8" style={{ color: 'rgba(212,160,23,0.5)' }}>
-          Celebracion Zandra Veliz · 60 Anos
+          Celebracion Zandra Veliz · 60 Años
         </p>
         <form onSubmit={login} className="space-y-4">
           <input type="password" value={pw} onChange={e => setPw(e.target.value)}
@@ -482,7 +482,7 @@ function AdminPanel() {
           <div>
             <h1 className="font-serif text-2xl" style={{ color: '#d4a017' }}>Panel de Administracion</h1>
             <p className="font-serif text-xs tracking-widest uppercase mt-1" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              Celebracion Zandra Veliz · 60 Anos
+              Celebracion Zandra Veliz · 60 Años
             </p>
           </div>
           <div className="flex gap-3">
@@ -678,7 +678,7 @@ function Slideshow() {
               <p className="font-serif text-3xl md:text-5xl shimmer-text mt-8 mb-4" style={{ fontFamily: 'Cinzel, serif' }}>
                 ZANDRA VELIZ
               </p>
-              <p className="font-serif text-xl md:text-2xl mb-8" style={{ color: '#d4a017' }}>60 Anos</p>
+              <p className="font-serif text-xl md:text-2xl mb-8" style={{ color: '#d4a017' }}>60 Años</p>
               {loading ? (
                 <p className="font-serif text-lg tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.6)' }}>
                   Cargando fotos...
@@ -704,7 +704,7 @@ function Slideshow() {
       {/* Bottom caption */}
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-center" style={{ zIndex: 10 }}>
         <p className="font-serif shimmer-text mb-1" style={{ fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', fontFamily: 'Cinzel, serif' }}>
-          Celebracion 60 Anos · Zandra Veliz
+          Celebracion 60 Años · Zandra Veliz
         </p>
         <p className="font-serif tracking-widest uppercase" style={{ fontSize: 'clamp(0.7rem, 1.5vw, 1rem)', color: 'rgba(212,160,23,0.65)' }}>
           5 de Septiembre · 2026 · Club Espanol · Fuentecilla
@@ -1236,7 +1236,7 @@ export default function App() {
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="shimmer-text font-serif font-black leading-none"
                   style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontFamily: 'Cinzel, serif' }}>60</span>
-                <span className="font-serif text-xs uppercase tracking-[0.3em]" style={{ color: 'rgba(212,160,23,0.6)' }}>Anos</span>
+                <span className="font-serif text-xs uppercase tracking-[0.3em]" style={{ color: 'rgba(212,160,23,0.6)' }}>Años</span>
               </div>
             </div>
           </motion.div>
@@ -1355,7 +1355,7 @@ export default function App() {
 
             <ArtDecoFrame className="gold-card-light rounded-2xl p-8 md:p-12">
               <p className="font-serif italic text-xl md:text-2xl mb-2" style={{ color: 'rgba(212,160,23,0.8)' }}>
-                "Viste con el esplendor de los anos dorados"
+                "Viste con el esplendor de los años dorados"
               </p>
               <p className="font-serif text-sm leading-relaxed mb-3 max-w-lg mx-auto" style={{ color: 'rgba(212,160,23,0.65)' }}>
                 No es obligatorio, pero te invitamos a lucir algo que vaya con el tema.
@@ -1476,7 +1476,7 @@ export default function App() {
         style={{ borderTop: '1px solid rgba(212,160,23,0.2)' }}>
         <GoldDivider />
         <p className="shimmer-text font-serif font-bold mb-2" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)' }}>
-          Zandra Veliz · 60 Anos
+          Zandra Veliz · 60 Años
         </p>
         <p className="font-serif text-xs tracking-widest uppercase" style={{ color: 'rgba(212,160,23,0.5)' }}>
           5 de Septiembre · 2026 · Club Espanol · Fuentecilla, Guatemala
