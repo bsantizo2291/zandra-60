@@ -881,10 +881,13 @@ function EnvelopeIntro({ onOpen }) {
 
           {/* Wax seal */}
           <motion.div
-            className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full z-20"
+            className="flex items-center justify-center rounded-full z-20"
             style={{
+              position: 'absolute',
               width: 56, height: 56,
               bottom: -28,
+              left: '50%',
+              transform: 'translateX(-50%)',
               background: 'radial-gradient(circle, #d4a017 0%, #8B6914 60%, #5a4010 100%)',
               border: '2px solid rgba(212,160,23,0.8)',
               boxShadow: '0 4px 20px rgba(212,160,23,0.5)',
