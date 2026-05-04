@@ -17,14 +17,30 @@ function cloudinarySign(params) {
 
 async function getRSVPs() {
   try {
-    // Add cache-busting to avoid stale CDN responses
-    const url = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${RSVP_PUBLIC_ID}.txt?t=${Date.now()}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const text = await res.text();
+    // Use authenticated Cloudinary API to bypass CDN cache entirely
+    const auth = Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64');
+    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/resources/raw/upload?public_ids[]=${RSVP_PUBLIC_ID}.txt&type=upload`;
+    const metaRes = await fetch(url, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    if (!metaRes.ok) return [];
+
+    // Fetch the actual file using the secure URL from the API response
+    const meta = await metaRes.json();
+    const resource = meta.resources?.[0];
+    if (!resource) return [];
+
+    // Use the secure URL with a version-busting query param
+    const fileUrl = `${resource.secure_url}?v=${resource.version}&t=${Date.now()}`;
+    const fileRes = await fetch(fileUrl, {
+      headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' },
+    });
+    if (!fileRes.ok) return [];
+    const text = await fileRes.text();
     const data = JSON.parse(text);
     return Array.isArray(data) ? data : [];
-  } catch {
+  } catch (e) {
+    console.error('getRSVPs error:', e);
     return [];
   }
 }
