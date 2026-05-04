@@ -824,13 +824,166 @@ function RSVPForm() {
   )
 }
 
+// ─── Envelope Intro ─────────────────────────────────────────────────────────
+function EnvelopeIntro({ onOpen }) {
+  const [stage, setStage] = useState('idle') // idle → flap → open → reveal
+
+  const handleClick = () => {
+    if (stage !== 'idle') return
+    setStage('flap')
+    setTimeout(() => setStage('open'), 900)
+    setTimeout(() => setStage('reveal'), 1800)
+    setTimeout(() => onOpen(), 2600)
+  }
+
+  return (
+    <motion.div
+      className="fixed inset-0 flex flex-col items-center justify-center z-50 cursor-pointer"
+      style={{ background: 'radial-gradient(ellipse at center, #1a1200 0%, #0a0800 60%, #050400 100%)' }}
+      onClick={handleClick}
+      animate={stage === 'reveal' ? { opacity: 0, scale: 1.05 } : { opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      {/* Champagne bubbles in background */}
+      <ChampagneBubbles />
+
+      {/* Art Deco corner ornaments */}
+      {[['top-4 left-4','0deg'],['top-4 right-4','90deg'],['bottom-4 right-4','180deg'],['bottom-4 left-4','270deg']].map(([pos, rot]) => (
+        <svg key={rot} width="60" height="60" viewBox="0 0 60 60" className={`absolute ${pos} pointer-events-none`} style={{ transform: `rotate(${rot})` }}>
+          <path d="M4 4 L4 28 M4 4 L28 4" stroke="#d4a017" strokeWidth="1.5" opacity="0.6" />
+          {[0,22,44,66].map(a => {
+            const r = (a * Math.PI) / 180
+            return <line key={a} x1="4" y1="4" x2={4+20*Math.cos(r)} y2={4+20*Math.sin(r)} stroke="#d4a017" strokeWidth="0.8" opacity="0.4" />
+          })}
+        </svg>
+      ))}
+
+      {/* Envelope */}
+      <div className="relative flex flex-col items-center select-none" style={{ width: 'min(340px, 88vw)' }}>
+
+        {/* Envelope body */}
+        <motion.div
+          className="relative w-full rounded-lg overflow-visible"
+          style={{
+            height: 'min(220px, 56vw)',
+            background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
+            border: '2px solid #d4a017',
+            boxShadow: '0 0 60px rgba(212,160,23,0.25), inset 0 0 30px rgba(212,160,23,0.05)',
+          }}
+          animate={stage === 'open' || stage === 'reveal' ? { y: 30 } : { y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
+        >
+          {/* Envelope bottom V fold lines */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 340 220" preserveAspectRatio="none">
+            <line x1="0" y1="220" x2="170" y2="120" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
+            <line x1="340" y1="220" x2="170" y2="120" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
+          </svg>
+
+          {/* Wax seal */}
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full z-20"
+            style={{
+              width: 56, height: 56,
+              bottom: -28,
+              background: 'radial-gradient(circle, #d4a017 0%, #8B6914 60%, #5a4010 100%)',
+              border: '2px solid rgba(212,160,23,0.8)',
+              boxShadow: '0 4px 20px rgba(212,160,23,0.5)',
+            }}
+            animate={stage === 'open' || stage === 'reveal' ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <span style={{ color: '#0a0800', fontSize: 22, fontFamily: 'Cinzel, serif', fontWeight: 700 }}>Z</span>
+          </motion.div>
+
+          {/* Inner card peek when open */}
+          <AnimatePresence>
+            {(stage === 'open' || stage === 'reveal') && (
+              <motion.div
+                className="absolute left-4 right-4 rounded-md flex flex-col items-center justify-center"
+                style={{
+                  background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
+                  border: '1px solid rgba(212,160,23,0.5)',
+                  bottom: 8,
+                }}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: '85%', opacity: 1 }}
+                transition={{ duration: 0.7, ease: 'easeOut' }}
+              >
+                <p style={{ color: '#d4a017', fontFamily: 'Cinzel, serif', fontSize: 'clamp(10px,3vw,14px)', letterSpacing: '0.2em', opacity: 0.8 }}>ZANDRA VELIZ</p>
+                <p style={{ color: 'rgba(212,160,23,0.5)', fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(9px,2.5vw,12px)', letterSpacing: '0.1em' }}>5 · IX · 2026</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Envelope flap */}
+        <motion.div
+          className="absolute top-0 left-0 w-full origin-top"
+          style={{
+            height: '50%',
+            background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
+            border: '2px solid #d4a017',
+            borderBottom: 'none',
+            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+            transformOrigin: 'top center',
+            zIndex: 10,
+          }}
+          animate={stage === 'flap' || stage === 'open' || stage === 'reveal'
+            ? { rotateX: -180, opacity: 0.7 }
+            : { rotateX: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          style={{ perspective: 800, transformStyle: 'preserve-3d',
+            height: '50%',
+            background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
+            border: '2px solid #d4a017',
+            borderBottom: 'none',
+            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+            transformOrigin: 'top center',
+            zIndex: 10,
+          }}
+        />
+      </div>
+
+      {/* Prompt text */}
+      <motion.div
+        className="mt-16 text-center"
+        animate={stage !== 'idle' ? { opacity: 0 } : { opacity: [0.4, 1, 0.4] }}
+        transition={stage === 'idle' ? { duration: 2.5, repeat: Infinity } : { duration: 0.3 }}
+      >
+        <p style={{ color: '#d4a017', fontFamily: 'Cinzel, serif', fontSize: 'clamp(11px,3vw,14px)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+          Toca para abrir tu invitacion
+        </p>
+        <div className="mt-3 flex justify-center gap-2">
+          {[0,1,2].map(i => (
+            <motion.div key={i} className="w-1 h-1 rounded-full" style={{ background: '#d4a017' }}
+              animate={{ opacity: [0.2, 1, 0.2] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }} />
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
+  const [envelopeOpened, setEnvelopeOpened] = useState(false)
   const params = new URLSearchParams(window.location.search)
   if (params.get('slideshow') === '1') return <Slideshow />
   if (params.get('admin') === '1') return <AdminPanel />
 
   return (
+    <>
+      <AnimatePresence>
+        {!envelopeOpened && (
+          <EnvelopeIntro onOpen={() => setEnvelopeOpened(true)} />
+        )}
+      </AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={envelopeOpened ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      >
     <div className="min-h-screen overflow-x-hidden" style={{ background: '#0a0a0a', color: '#d4a017' }}>
       <Toaster position="top-center" richColors />
       <ChampagneBubbles />
@@ -1142,5 +1295,7 @@ export default function App() {
         </p>
       </footer>
     </div>
+      </motion.div>
+    </>
   )
 }
