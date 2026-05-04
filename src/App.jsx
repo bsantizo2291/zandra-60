@@ -824,7 +824,131 @@ function RSVPForm() {
   )
 }
 
-// ─── Envelope Intro ─────────────────────────────────────────────────────────
+// ─── Art Deco Door SVG Panel ───────────────────────────────────────────────────
+function DoorPanel({ initial, flip }) {
+  const gold = '#d4a017'
+  const navy = '#0a0e1a'
+  // viewBox 200x520, flip=true mirrors for right door
+  return (
+    <svg
+      viewBox="0 0 200 520"
+      width="100%" height="100%"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: 'block', transform: flip ? 'scaleX(-1)' : 'none' }}
+    >
+      {/* Background */}
+      <rect width="200" height="520" fill={navy} />
+
+      {/* Outer border */}
+      <rect x="4" y="4" width="192" height="512" fill="none" stroke={gold} strokeWidth="3" />
+      {/* Inner borders */}
+      <rect x="10" y="10" width="180" height="500" fill="none" stroke={gold} strokeWidth="1" opacity="0.5" />
+      <rect x="15" y="15" width="170" height="490" fill="none" stroke={gold} strokeWidth="0.5" opacity="0.25" />
+
+      {/* Corner fan ornaments */}
+      {[
+        [15, 15, [0,20,40,60,80]],
+        [185, 15, [100,120,140,160,180]],
+        [15, 505, [280,300,320,340,360]],
+        [185, 505, [200,220,240,260,280]],
+      ].map(([cx, cy, angles], gi) =>
+        angles.map(a => {
+          const r = a * Math.PI / 180
+          return <line key={`g${gi}a${a}`} x1={cx} y1={cy} x2={cx + 24*Math.cos(r)} y2={cy + 24*Math.sin(r)} stroke={gold} strokeWidth="0.9" opacity="0.55" />
+        })
+      )}
+
+      {/* Top horizontal rule */}
+      <line x1="15" y1="96" x2="185" y2="96" stroke={gold} strokeWidth="2" />
+      <line x1="15" y1="100" x2="185" y2="100" stroke={gold} strokeWidth="0.6" opacity="0.4" />
+
+      {/* Monogram circle */}
+      <circle cx="100" cy="54" r="34" fill={navy} stroke={gold} strokeWidth="2.5" />
+      <circle cx="100" cy="54" r="27" fill="none" stroke={gold} strokeWidth="0.8" opacity="0.45" />
+      {Array.from({length: 12}, (_, i) => {
+        const a = (i * 30 - 90) * Math.PI / 180
+        return <line key={`tick${i}`}
+          x1={100 + 27*Math.cos(a)} y1={54 + 27*Math.sin(a)}
+          x2={100 + 32*Math.cos(a)} y2={54 + 32*Math.sin(a)}
+          stroke={gold} strokeWidth="1" opacity="0.6" />
+      })}
+      <text x="100" y="66" textAnchor="middle"
+        fontFamily="Cinzel, serif" fontSize="32" fontWeight="700"
+        fill={gold}>{initial}</text>
+
+      {/* Vertical side rails */}
+      <line x1="28" y1="100" x2="28" y2="278" stroke={gold} strokeWidth="1" opacity="0.45" />
+      <line x1="172" y1="100" x2="172" y2="278" stroke={gold} strokeWidth="1" opacity="0.45" />
+      <line x1="38" y1="100" x2="38" y2="278" stroke={gold} strokeWidth="0.5" opacity="0.25" />
+      <line x1="162" y1="100" x2="162" y2="278" stroke={gold} strokeWidth="0.5" opacity="0.25" />
+
+      {/* Palm / torch motif — center */}
+      {/* Main stem */}
+      <line x1="100" y1="270" x2="100" y2="162" stroke={gold} strokeWidth="2.5" />
+      <line x1="93" y1="270" x2="93" y2="182" stroke={gold} strokeWidth="1.2" opacity="0.6" />
+      <line x1="107" y1="270" x2="107" y2="182" stroke={gold} strokeWidth="1.2" opacity="0.6" />
+      <line x1="86" y1="270" x2="86" y2="200" stroke={gold} strokeWidth="0.8" opacity="0.35" />
+      <line x1="114" y1="270" x2="114" y2="200" stroke={gold} strokeWidth="0.8" opacity="0.35" />
+      {/* Fronds */}
+      <path d="M100 162 Q84 142 76 118" fill="none" stroke={gold} strokeWidth="1.8" />
+      <path d="M100 162 Q116 142 124 118" fill="none" stroke={gold} strokeWidth="1.8" />
+      <path d="M100 158 Q78 140 66 120" fill="none" stroke={gold} strokeWidth="1.2" opacity="0.7" />
+      <path d="M100 158 Q122 140 134 120" fill="none" stroke={gold} strokeWidth="1.2" opacity="0.7" />
+      <path d="M100 160 Q95 135 94 112" fill="none" stroke={gold} strokeWidth="1" opacity="0.8" />
+      <path d="M100 160 Q105 135 106 112" fill="none" stroke={gold} strokeWidth="1" opacity="0.8" />
+      {/* Teardrop tips */}
+      <ellipse cx="76" cy="115" rx="4.5" ry="7" fill={gold} opacity="0.85" />
+      <ellipse cx="124" cy="115" rx="4.5" ry="7" fill={gold} opacity="0.85" />
+      <ellipse cx="66" cy="117" rx="3.5" ry="5.5" fill={gold} opacity="0.6" />
+      <ellipse cx="134" cy="117" rx="3.5" ry="5.5" fill={gold} opacity="0.6" />
+      <ellipse cx="94" cy="109" rx="3" ry="5" fill={gold} opacity="0.75" />
+      <ellipse cx="106" cy="109" rx="3" ry="5" fill={gold} opacity="0.75" />
+
+      {/* Middle horizontal rules */}
+      <line x1="15" y1="278" x2="185" y2="278" stroke={gold} strokeWidth="2" />
+      <line x1="15" y1="282" x2="185" y2="282" stroke={gold} strokeWidth="0.6" opacity="0.4" />
+      <line x1="15" y1="286" x2="185" y2="286" stroke={gold} strokeWidth="1.5" />
+
+      {/* Scroll curls at sides */}
+      <path d="M28 300 Q18 312 22 326 Q28 336 40 328" fill="none" stroke={gold} strokeWidth="1.3" opacity="0.7" />
+      <path d="M172 300 Q182 312 178 326 Q172 336 160 328" fill="none" stroke={gold} strokeWidth="1.3" opacity="0.7" />
+
+      {/* Lower urn / vase */}
+      <line x1="100" y1="286" x2="100" y2="360" stroke={gold} strokeWidth="2" />
+      <path d="M100 330 Q68 348 64 378 Q80 390 100 388 Q120 390 136 378 Q132 348 100 330Z"
+        fill="none" stroke={gold} strokeWidth="1.8" />
+      <path d="M100 330 Q72 352 70 378" fill="none" stroke={gold} strokeWidth="0.9" opacity="0.5" />
+      <path d="M100 330 Q128 352 130 378" fill="none" stroke={gold} strokeWidth="0.9" opacity="0.5" />
+      {/* Urn base */}
+      <ellipse cx="100" cy="388" rx="24" ry="5.5" fill="none" stroke={gold} strokeWidth="1.5" />
+      <line x1="76" y1="388" x2="76" y2="400" stroke={gold} strokeWidth="1.2" />
+      <line x1="124" y1="388" x2="124" y2="400" stroke={gold} strokeWidth="1.2" />
+      <line x1="73" y1="400" x2="127" y2="400" stroke={gold} strokeWidth="2" />
+      <line x1="76" y1="404" x2="124" y2="404" stroke={gold} strokeWidth="0.8" opacity="0.45" />
+
+      {/* Bottom horizontal rule */}
+      <line x1="15" y1="424" x2="185" y2="424" stroke={gold} strokeWidth="2" />
+      <line x1="15" y1="428" x2="185" y2="428" stroke={gold} strokeWidth="0.6" opacity="0.4" />
+
+      {/* Bottom fan */}
+      {[-60,-40,-20,0,20,40,60].map(a => {
+        const r = (90 + a) * Math.PI / 180
+        return <line key={`fan${a}`} x1="100" y1="505" x2={100 + 44*Math.cos(r)} y2={505 + 44*Math.sin(r)} stroke={gold} strokeWidth="0.9" opacity="0.5" />
+      })}
+      <path d="M56 505 Q100 464 144 505" fill="none" stroke={gold} strokeWidth="1.5" opacity="0.7" />
+
+      {/* Subtle diagonal fill lines */}
+      {[-3,-2,-1,0,1,2,3,4,5,6].map(i => (
+        <line key={`dl${i}`} x1={-40+i*40} y1="100" x2={40+i*40} y2="278" stroke={gold} strokeWidth="0.4" opacity="0.1" />
+      ))}
+      {[-3,-2,-1,0,1,2,3,4,5,6].map(i => (
+        <line key={`dr${i}`} x1={240-i*40} y1="100" x2={160-i*40} y2="278" stroke={gold} strokeWidth="0.4" opacity="0.1" />
+      ))}
+    </svg>
+  )
+}
+
+// ─── Envelope Intro (Art Deco Doors) ────────────────────────────────────────────────────────────────────────────────
 function EnvelopeIntro({ onOpen }) {
   const [opened, setOpened] = useState(false)
   const [done, setDone] = useState(false)
@@ -832,133 +956,156 @@ function EnvelopeIntro({ onOpen }) {
   const handleOpen = () => {
     if (opened) return
     setOpened(true)
-    // After doors fully swing open, fade out and call onOpen
-    setTimeout(() => setDone(true), 1000)
-    setTimeout(() => onOpen(), 1600)
+    setTimeout(() => setDone(true), 1100)
+    setTimeout(() => onOpen(), 1700)
   }
-
-  // The doors image is 900×1152 — aspect ratio ~0.781 wide
-  // We show it filling the screen height, centered
-  // Left door = left half, right door = right half
-  // Each door swings open on its outer edge (left door rotates left, right door rotates right)
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 overflow-hidden"
-      style={{ background: '#080808' }}
+      className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center"
+      style={{ background: 'radial-gradient(ellipse at center, #0d0b02 0%, #080808 100%)' }}
       animate={done ? { opacity: 0 } : { opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
       <ChampagneBubbles />
 
-      {/* Full-screen doors container — image fills viewport height, centered */}
-      <div className="absolute inset-0 flex items-start justify-center">
-        {/* Wrapper sized to the image aspect ratio, fills screen height */}
-        <div
-          className="relative"
+      {/* Corner ornaments */}
+      {[['top-3 left-3','0deg'],['top-3 right-3','90deg'],['bottom-3 right-3','180deg'],['bottom-3 left-3','270deg']].map(([pos, rot]) => (
+        <svg key={rot} width="50" height="50" viewBox="0 0 50 50"
+          className={`absolute ${pos} pointer-events-none`}
+          style={{ transform: `rotate(${rot})` }}>
+          <path d="M4 4 L4 24 M4 4 L24 4" stroke="#d4a017" strokeWidth="1.5" opacity="0.5" />
+          {[0,22,44,66].map(a => {
+            const r = a * Math.PI / 180
+            return <line key={a} x1="4" y1="4" x2={4+16*Math.cos(r)} y2={4+16*Math.sin(r)} stroke="#d4a017" strokeWidth="0.8" opacity="0.35" />
+          })}
+        </svg>
+      ))}
+
+      {/* Perspective container */}
+      <div
+        className="relative flex"
+        style={{
+          width: 'min(92vw, 460px)',
+          height: 'min(88vh, 590px)',
+          perspective: '1400px',
+          perspectiveOrigin: 'center center',
+        }}
+      >
+        {/* LEFT DOOR */}
+        <motion.div
           style={{
-            height: '100vh',
-            width: 'min(100vw, calc(100vh * 0.781))',
+            width: '50%',
+            height: '100%',
+            transformOrigin: 'left center',
+            transformStyle: 'preserve-3d',
+            position: 'relative',
+            zIndex: 2,
           }}
+          animate={opened ? { rotateY: -128 } : { rotateY: 0 }}
+          transition={{ duration: 1.15, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          {/* ── LEFT DOOR (left half of image, swings open to the left) ── */}
-          <motion.div
-            className="absolute top-0 left-0 overflow-hidden"
-            style={{
-              width: '50%',
-              height: '100%',
-              transformOrigin: 'left center',
-              perspective: 1200,
-            }}
-            animate={opened ? { rotateY: -110 } : { rotateY: 0 }}
-            transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <img
-              src="/doors.jpg"
-              alt=""
-              draggable={false}
-              style={{
-                position: 'absolute',
-                top: 0, left: 0,
-                height: '100%',
-                width: '200%',  // full image, clipped to left half
-                objectFit: 'fill',
-                objectPosition: 'left top',
-                userSelect: 'none',
-                pointerEvents: 'none',
-              }}
-            />
-          </motion.div>
+          <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', overflow: 'hidden' }}>
+            <DoorPanel initial="Z" flip={false} />
+          </div>
+          {/* Door edge */}
+          <div style={{
+            position: 'absolute', top: 0, right: -4, width: 8, height: '100%',
+            background: 'linear-gradient(to right, #3a2a08, #6b4f10)',
+            transform: 'rotateY(90deg)', transformOrigin: 'right center',
+          }} />
+        </motion.div>
 
-          {/* ── RIGHT DOOR (right half of image, swings open to the right) ── */}
-          <motion.div
-            className="absolute top-0 right-0 overflow-hidden"
-            style={{
-              width: '50%',
-              height: '100%',
-              transformOrigin: 'right center',
-              perspective: 1200,
-            }}
-            animate={opened ? { rotateY: 110 } : { rotateY: 0 }}
-            transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <img
-              src="/doors.jpg"
-              alt=""
-              draggable={false}
-              style={{
-                position: 'absolute',
-                top: 0, right: 0,
-                height: '100%',
-                width: '200%',  // full image, clipped to right half
-                objectFit: 'fill',
-                objectPosition: 'right top',
-                userSelect: 'none',
-                pointerEvents: 'none',
-              }}
-            />
-          </motion.div>
+        {/* Gold seam line */}
+        <div style={{
+          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+          width: 2, height: '100%',
+          background: 'linear-gradient(to bottom, transparent 0%, #d4a017 15%, #d4a017 85%, transparent 100%)',
+          opacity: opened ? 0 : 0.7,
+          transition: 'opacity 0.5s',
+          zIndex: 10, pointerEvents: 'none',
+        }} />
 
-          {/* ── ZV tap target — centered on the seam ── */}
+        {/* RIGHT DOOR */}
+        <motion.div
+          style={{
+            width: '50%',
+            height: '100%',
+            transformOrigin: 'right center',
+            transformStyle: 'preserve-3d',
+            position: 'relative',
+            zIndex: 2,
+          }}
+          animate={opened ? { rotateY: 128 } : { rotateY: 0 }}
+          transition={{ duration: 1.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', overflow: 'hidden' }}>
+            <DoorPanel initial="V" flip={true} />
+          </div>
+          {/* Door edge */}
+          <div style={{
+            position: 'absolute', top: 0, left: -4, width: 8, height: '100%',
+            background: 'linear-gradient(to left, #3a2a08, #6b4f10)',
+            transform: 'rotateY(-90deg)', transformOrigin: 'left center',
+          }} />
+        </motion.div>
+
+        {/* ZV wax seal tap button */}
+        <AnimatePresence>
           {!opened && (
             <motion.button
               onClick={handleOpen}
-              className="absolute z-20 flex flex-col items-center justify-center"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+              whileTap={{ scale: 0.88 }}
               style={{
-                // Position at ~55% down (where the ZV diamond sits in the image)
-                top: '52%',
-                left: '50%',
+                position: 'absolute',
+                top: '50%', left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: 'min(100px, 22vw)',
-                height: 'min(100px, 22vw)',
+                zIndex: 20,
+                width: 68, height: 68,
                 borderRadius: '50%',
-                background: 'transparent',
-                border: 'none',
+                background: 'radial-gradient(circle at 35% 35%, #f5d76e 0%, #d4a017 40%, #8B6914 70%, #5a4010 100%)',
+                border: '2.5px solid rgba(212,160,23,0.9)',
+                boxShadow: '0 0 28px rgba(212,160,23,0.7), 0 0 70px rgba(212,160,23,0.25)',
                 cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              whileTap={{ scale: 0.92 }}
             >
-              {/* Glowing pulse ring */}
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{ border: '2px solid rgba(212,160,23,0.6)' }}
-                animate={{ scale: [1, 1.4, 1], opacity: [0.8, 0, 0.8] }}
-                transition={{ duration: 2, repeat: Infinity }}
+              {/* Outer pulse ring */}
+              <motion.div style={{
+                position: 'absolute', inset: -6, borderRadius: '50%',
+                border: '2px solid rgba(212,160,23,0.45)',
+              }}
+                animate={{ scale: [1, 1.55, 1], opacity: [0.7, 0, 0.7] }}
+                transition={{ duration: 2.2, repeat: Infinity }}
               />
+              {/* Inner pulse ring */}
+              <motion.div style={{
+                position: 'absolute', inset: -2, borderRadius: '50%',
+                border: '1px solid rgba(212,160,23,0.3)',
+              }}
+                animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.2, repeat: Infinity, delay: 0.4 }}
+              />
+              <span style={{
+                color: '#0a0800', fontFamily: 'Cinzel, serif',
+                fontSize: 15, fontWeight: 700, letterSpacing: '0.04em',
+              }}>ZV</span>
             </motion.button>
           )}
-        </div>
+        </AnimatePresence>
       </div>
 
-      {/* Prompt text — fades out when tapped */}
+      {/* Prompt text */}
       <motion.div
-        className="absolute bottom-10 left-0 right-0 text-center pointer-events-none"
+        className="absolute bottom-8 left-0 right-0 text-center pointer-events-none"
         animate={opened ? { opacity: 0 } : { opacity: [0.4, 1, 0.4] }}
         transition={opened ? { duration: 0.3 } : { duration: 2.5, repeat: Infinity }}
       >
-        <p style={{ color: '#d4a017', fontFamily: 'Cinzel, serif', fontSize: 'clamp(11px,3vw,14px)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+        <p style={{ color: '#d4a017', fontFamily: 'Cinzel, serif', fontSize: 'clamp(10px,3vw,13px)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
           Toca ✦ ZV ✦ para abrir
         </p>
         <div className="mt-3 flex justify-center gap-2">
