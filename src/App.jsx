@@ -826,8 +826,9 @@ function RSVPForm() {
 
 // ─── Art Deco Door SVG Panel ───────────────────────────────────────────────────
 function DoorPanel({ initial, flip }) {
-  const gold = '#d4a017'
-  const navy = '#0a0e1a'
+  const gold = '#e8b820'
+  const goldDim = '#c49a14'
+  const navy = '#040608'
   // viewBox 200x520, flip=true mirrors for right door
   return (
     <svg
@@ -838,12 +839,14 @@ function DoorPanel({ initial, flip }) {
     >
       {/* Background */}
       <rect width="200" height="520" fill={navy} />
+      {/* Subtle texture overlay */}
+      <rect width="200" height="520" fill="url(#grain)" opacity="0.03" />
 
       {/* Outer border */}
-      <rect x="4" y="4" width="192" height="512" fill="none" stroke={gold} strokeWidth="3" />
+      <rect x="4" y="4" width="192" height="512" fill="none" stroke={gold} strokeWidth="3.5" />
       {/* Inner borders */}
-      <rect x="10" y="10" width="180" height="500" fill="none" stroke={gold} strokeWidth="1" opacity="0.5" />
-      <rect x="15" y="15" width="170" height="490" fill="none" stroke={gold} strokeWidth="0.5" opacity="0.25" />
+      <rect x="10" y="10" width="180" height="500" fill="none" stroke={gold} strokeWidth="1.5" opacity="0.7" />
+      <rect x="15" y="15" width="170" height="490" fill="none" stroke={gold} strokeWidth="0.8" opacity="0.4" />
 
       {/* Corner fan ornaments */}
       {[
@@ -963,7 +966,7 @@ function EnvelopeIntro({ onOpen }) {
   return (
     <motion.div
       className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center"
-      style={{ background: 'radial-gradient(ellipse at center, #0d0b02 0%, #080808 100%)' }}
+      style={{ background: '#040608' }}
       animate={done ? { opacity: 0 } : { opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
@@ -1020,7 +1023,7 @@ function EnvelopeIntro({ onOpen }) {
         <div style={{
           position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
           width: 2, height: '100%',
-          background: 'linear-gradient(to bottom, transparent 0%, #d4a017 15%, #d4a017 85%, transparent 100%)',
+          background: 'linear-gradient(to bottom, transparent 0%, #e8b820 15%, #e8b820 85%, transparent 100%)',
           opacity: opened ? 0 : 0.7,
           transition: 'opacity 0.5s',
           zIndex: 10, pointerEvents: 'none',
@@ -1063,13 +1066,13 @@ function EnvelopeIntro({ onOpen }) {
               style={{
                 position: 'absolute',
                 top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%)',
+                marginTop: -34, marginLeft: -34,
                 zIndex: 20,
                 width: 68, height: 68,
                 borderRadius: '50%',
-                background: 'radial-gradient(circle at 35% 35%, #f5d76e 0%, #d4a017 40%, #8B6914 70%, #5a4010 100%)',
-                border: '2.5px solid rgba(212,160,23,0.9)',
-                boxShadow: '0 0 28px rgba(212,160,23,0.7), 0 0 70px rgba(212,160,23,0.25)',
+                background: 'radial-gradient(circle at 38% 35%, #f5d76e 0%, #d4a017 45%, #8B6914 72%, #5a4010 100%)',
+                border: '2.5px solid rgba(212,160,23,0.95)',
+                boxShadow: '0 0 32px rgba(212,160,23,0.85), 0 0 80px rgba(212,160,23,0.3)',
                 cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
@@ -1092,7 +1095,8 @@ function EnvelopeIntro({ onOpen }) {
               />
               <span style={{
                 color: '#0a0800', fontFamily: 'Cinzel, serif',
-                fontSize: 15, fontWeight: 700, letterSpacing: '0.04em',
+                fontSize: 15, fontWeight: 700, letterSpacing: '0.05em',
+                lineHeight: 1, textAlign: 'center', userSelect: 'none',
               }}>ZV</span>
             </motion.button>
           )}
