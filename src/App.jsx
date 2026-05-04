@@ -884,10 +884,11 @@ function EnvelopeIntro({ onOpen }) {
             className="flex items-center justify-center rounded-full z-20"
             style={{
               position: 'absolute',
-              width: 56, height: 56,
-              bottom: -28,
+              width: 64, height: 64,
+              top: '50%',
               left: '50%',
-              transform: 'translateX(-50%)',
+              marginTop: -32,
+              marginLeft: -32,
               background: 'radial-gradient(circle, #d4a017 0%, #8B6914 60%, #5a4010 100%)',
               border: '2px solid rgba(212,160,23,0.8)',
               boxShadow: '0 4px 20px rgba(212,160,23,0.5)',
@@ -923,6 +924,8 @@ function EnvelopeIntro({ onOpen }) {
         <motion.div
           className="absolute top-0 left-0 w-full origin-top"
           style={{
+            perspective: 800,
+            transformStyle: 'preserve-3d',
             height: '50%',
             background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
             border: '2px solid #d4a017',
@@ -935,15 +938,6 @@ function EnvelopeIntro({ onOpen }) {
             ? { rotateX: -180, opacity: 0.7 }
             : { rotateX: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: 'easeInOut' }}
-          style={{ perspective: 800, transformStyle: 'preserve-3d',
-            height: '50%',
-            background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
-            border: '2px solid #d4a017',
-            borderBottom: 'none',
-            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-            transformOrigin: 'top center',
-            zIndex: 10,
-          }}
         />
       </div>
 
