@@ -1357,8 +1357,12 @@ export default function App() {
               <p className="font-serif italic text-xl md:text-2xl mb-2" style={{ color: 'rgba(212,160,23,0.8)' }}>
                 "Viste con el esplendor de los anos dorados"
               </p>
+              <p className="font-serif text-sm leading-relaxed mb-3 max-w-lg mx-auto" style={{ color: 'rgba(212,160,23,0.65)' }}>
+                No es obligatorio, pero te invitamos a lucir algo que vaya con el tema.
+                ¡Cualquier toque Gatsby sera bienvenido!
+              </p>
               <p className="font-serif text-xs tracking-widest uppercase mb-10" style={{ color: 'rgba(212,160,23,0.4)' }}>
-                Colores Gatsby
+                Colores Sugeridos
               </p>
 
               <div className="flex flex-nowrap justify-center gap-3 md:gap-6 mb-10 overflow-x-auto pb-1">
