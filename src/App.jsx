@@ -826,133 +826,140 @@ function RSVPForm() {
 
 // ─── Envelope Intro ─────────────────────────────────────────────────────────
 function EnvelopeIntro({ onOpen }) {
-  const [stage, setStage] = useState('idle') // idle → flap → open → reveal
+  const [opened, setOpened] = useState(false)
+  const [done, setDone] = useState(false)
 
-  const handleClick = () => {
-    if (stage !== 'idle') return
-    setStage('flap')
-    setTimeout(() => setStage('open'), 900)
-    setTimeout(() => setStage('reveal'), 1800)
-    setTimeout(() => onOpen(), 2600)
+  const handleOpen = () => {
+    if (opened) return
+    setOpened(true)
+    // After doors fully swing open, fade out and call onOpen
+    setTimeout(() => setDone(true), 1000)
+    setTimeout(() => onOpen(), 1600)
   }
+
+  // The doors image is 900×1152 — aspect ratio ~0.781 wide
+  // We show it filling the screen height, centered
+  // Left door = left half, right door = right half
+  // Each door swings open on its outer edge (left door rotates left, right door rotates right)
 
   return (
     <motion.div
-      className="fixed inset-0 flex flex-col items-center justify-center z-50 cursor-pointer"
-      style={{ background: 'radial-gradient(ellipse at center, #1a1200 0%, #0a0800 60%, #050400 100%)' }}
-      onClick={handleClick}
-      animate={stage === 'reveal' ? { opacity: 0, scale: 1.05 } : { opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8 }}
+      className="fixed inset-0 z-50 overflow-hidden"
+      style={{ background: '#080808' }}
+      animate={done ? { opacity: 0 } : { opacity: 1 }}
+      transition={{ duration: 0.6 }}
     >
-      {/* Champagne bubbles in background */}
       <ChampagneBubbles />
 
-      {/* Art Deco corner ornaments */}
-      {[['top-4 left-4','0deg'],['top-4 right-4','90deg'],['bottom-4 right-4','180deg'],['bottom-4 left-4','270deg']].map(([pos, rot]) => (
-        <svg key={rot} width="60" height="60" viewBox="0 0 60 60" className={`absolute ${pos} pointer-events-none`} style={{ transform: `rotate(${rot})` }}>
-          <path d="M4 4 L4 28 M4 4 L28 4" stroke="#d4a017" strokeWidth="1.5" opacity="0.6" />
-          {[0,22,44,66].map(a => {
-            const r = (a * Math.PI) / 180
-            return <line key={a} x1="4" y1="4" x2={4+20*Math.cos(r)} y2={4+20*Math.sin(r)} stroke="#d4a017" strokeWidth="0.8" opacity="0.4" />
-          })}
-        </svg>
-      ))}
-
-      {/* Envelope */}
-      <div className="relative flex flex-col items-center select-none" style={{ width: 'min(340px, 88vw)' }}>
-
-        {/* Envelope body */}
-        <motion.div
-          className="relative w-full rounded-b-lg overflow-visible"
+      {/* Full-screen doors container — image fills viewport height, centered */}
+      <div className="absolute inset-0 flex items-start justify-center">
+        {/* Wrapper sized to the image aspect ratio, fills screen height */}
+        <div
+          className="relative"
           style={{
-            height: 'min(200px, 52vw)',
-            background: 'linear-gradient(180deg, #1a1200 0%, #0d0900 100%)',
-            border: '2px solid #d4a017',
-            borderTop: 'none',
-            boxShadow: '0 0 60px rgba(212,160,23,0.25), inset 0 0 30px rgba(212,160,23,0.05)',
+            height: '100vh',
+            width: 'min(100vw, calc(100vh * 0.781))',
           }}
-          animate={stage === 'open' || stage === 'reveal' ? { y: 30 } : { y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeInOut' }}
         >
-          {/* Envelope bottom V fold lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 340 200" preserveAspectRatio="none">
-            <line x1="0" y1="200" x2="170" y2="100" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
-            <line x1="340" y1="200" x2="170" y2="100" stroke="rgba(212,160,23,0.3)" strokeWidth="1" />
-            {/* Side fold lines from top corners to center */}
-            <line x1="0" y1="0" x2="170" y2="100" stroke="rgba(212,160,23,0.2)" strokeWidth="1" />
-            <line x1="340" y1="0" x2="170" y2="100" stroke="rgba(212,160,23,0.2)" strokeWidth="1" />
-          </svg>
-
-          {/* Wax seal — centered on the fold seam */}
+          {/* ── LEFT DOOR (left half of image, swings open to the left) ── */}
           <motion.div
-            className="flex items-center justify-center rounded-full z-20"
+            className="absolute top-0 left-0 overflow-hidden"
             style={{
-              position: 'absolute',
-              width: 64, height: 64,
-              top: '50%',
-              left: '50%',
-              marginTop: -32,
-              marginLeft: -32,
-              background: 'radial-gradient(circle, #d4a017 0%, #8B6914 60%, #5a4010 100%)',
-              border: '2px solid rgba(212,160,23,0.8)',
-              boxShadow: '0 4px 20px rgba(212,160,23,0.5)',
+              width: '50%',
+              height: '100%',
+              transformOrigin: 'left center',
+              perspective: 1200,
             }}
-            animate={stage === 'open' || stage === 'reveal' ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
+            animate={opened ? { rotateY: -110 } : { rotateY: 0 }}
+            transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
           >
-            <span style={{ color: '#0a0800', fontSize: 22, fontFamily: 'Cinzel, serif', fontWeight: 700 }}>Z</span>
+            <img
+              src="/doors.jpg"
+              alt=""
+              draggable={false}
+              style={{
+                position: 'absolute',
+                top: 0, left: 0,
+                height: '100%',
+                width: '200%',  // full image, clipped to left half
+                objectFit: 'fill',
+                objectPosition: 'left top',
+                userSelect: 'none',
+                pointerEvents: 'none',
+              }}
+            />
           </motion.div>
 
-          {/* Inner card peek when open */}
-          <AnimatePresence>
-            {(stage === 'open' || stage === 'reveal') && (
-              <motion.div
-                className="absolute left-4 right-4 rounded-md flex flex-col items-center justify-center"
-                style={{
-                  background: 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)',
-                  border: '1px solid rgba(212,160,23,0.5)',
-                  bottom: 8,
-                }}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: '85%', opacity: 1 }}
-                transition={{ duration: 0.7, ease: 'easeOut' }}
-              >
-                <p style={{ color: '#d4a017', fontFamily: 'Cinzel, serif', fontSize: 'clamp(10px,3vw,14px)', letterSpacing: '0.2em', opacity: 0.8 }}>ZANDRA VELIZ</p>
-                <p style={{ color: 'rgba(212,160,23,0.5)', fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(9px,2.5vw,12px)', letterSpacing: '0.1em' }}>5 · IX · 2026</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+          {/* ── RIGHT DOOR (right half of image, swings open to the right) ── */}
+          <motion.div
+            className="absolute top-0 right-0 overflow-hidden"
+            style={{
+              width: '50%',
+              height: '100%',
+              transformOrigin: 'right center',
+              perspective: 1200,
+            }}
+            animate={opened ? { rotateY: 110 } : { rotateY: 0 }}
+            transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <img
+              src="/doors.jpg"
+              alt=""
+              draggable={false}
+              style={{
+                position: 'absolute',
+                top: 0, right: 0,
+                height: '100%',
+                width: '200%',  // full image, clipped to right half
+                objectFit: 'fill',
+                objectPosition: 'right top',
+                userSelect: 'none',
+                pointerEvents: 'none',
+              }}
+            />
+          </motion.div>
 
-        {/* Envelope flap — triangle pointing DOWN, sits on top of body, opens upward */}
-        <motion.div
-          className="absolute top-0 left-0 w-full"
-          style={{
-            perspective: 800,
-            transformStyle: 'preserve-3d',
-            height: 'min(100px, 26vw)',
-            background: 'linear-gradient(180deg, #0d0900 0%, #1a1200 100%)',
-            border: '2px solid #d4a017',
-            borderBottom: 'none',
-            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-            transformOrigin: 'top center',
-            zIndex: 10,
-          }}
-          animate={stage === 'flap' || stage === 'open' || stage === 'reveal'
-            ? { rotateX: -180, opacity: 0.7 }
-            : { rotateX: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
-        />
+          {/* ── ZV tap target — centered on the seam ── */}
+          {!opened && (
+            <motion.button
+              onClick={handleOpen}
+              className="absolute z-20 flex flex-col items-center justify-center"
+              style={{
+                // Position at ~55% down (where the ZV diamond sits in the image)
+                top: '52%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: 'min(100px, 22vw)',
+                height: 'min(100px, 22vw)',
+                borderRadius: '50%',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              whileTap={{ scale: 0.92 }}
+            >
+              {/* Glowing pulse ring */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{ border: '2px solid rgba(212,160,23,0.6)' }}
+                animate={{ scale: [1, 1.4, 1], opacity: [0.8, 0, 0.8] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </motion.button>
+          )}
+        </div>
       </div>
 
-      {/* Prompt text */}
+      {/* Prompt text — fades out when tapped */}
       <motion.div
-        className="mt-16 text-center"
-        animate={stage !== 'idle' ? { opacity: 0 } : { opacity: [0.4, 1, 0.4] }}
-        transition={stage === 'idle' ? { duration: 2.5, repeat: Infinity } : { duration: 0.3 }}
+        className="absolute bottom-10 left-0 right-0 text-center pointer-events-none"
+        animate={opened ? { opacity: 0 } : { opacity: [0.4, 1, 0.4] }}
+        transition={opened ? { duration: 0.3 } : { duration: 2.5, repeat: Infinity }}
       >
         <p style={{ color: '#d4a017', fontFamily: 'Cinzel, serif', fontSize: 'clamp(11px,3vw,14px)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
-          Toca para abrir tu invitacion
+          Toca ✦ ZV ✦ para abrir
         </p>
         <div className="mt-3 flex justify-center gap-2">
           {[0,1,2].map(i => (
@@ -973,11 +980,17 @@ export default function App() {
   if (params.get('slideshow') === '1') return <Slideshow />
   if (params.get('admin') === '1') return <AdminPanel />
 
+  const handleOpen = () => {
+    // Scroll to very top before revealing invitation
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    setEnvelopeOpened(true)
+  }
+
   return (
     <>
       <AnimatePresence>
         {!envelopeOpened && (
-          <EnvelopeIntro onOpen={() => setEnvelopeOpened(true)} />
+          <EnvelopeIntro onOpen={handleOpen} />
         )}
       </AnimatePresence>
       <motion.div
