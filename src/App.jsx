@@ -722,8 +722,8 @@ function Slideshow() {
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
 function RSVPForm() {
   const [name, setName] = useState('')
-  const [plusOne, setPlusOne] = useState(false)
-  const [plusOneName, setPlusOneName] = useState('')
+  const [adults, setAdults] = useState(1)
+  const [kids, setKids] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -735,19 +735,38 @@ function RSVPForm() {
       const res = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), plusOne, plusOneName: plusOneName.trim() }),
+        body: JSON.stringify({ name: name.trim(), adults, kids, total: adults + kids, plusOne: adults > 1 || kids > 0, plusOneName: '' }),
       })
       if (res.ok) {
         setSubmitted(true)
-        toast.success('Confirmacion recibida. Te esperamos.')
+        toast.success('Confirmación recibida. ¡Te esperamos!')
       } else {
         toast.error('Error al confirmar. Intenta de nuevo.')
       }
     } catch (_) {
-      toast.error('Error de conexion. Intenta de nuevo.')
+      toast.error('Error de conexión. Intenta de nuevo.')
     }
     setSubmitting(false)
   }
+
+  const Counter = ({ label, value, onChange, min = 0 }) => (
+    <div className="flex flex-col items-center gap-2">
+      <span className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>{label}</span>
+      <div className="flex items-center gap-3">
+        <button type="button" onClick={() => onChange(Math.max(min, value - 1))}
+          className="w-9 h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all"
+          style={{ background: 'rgba(212,160,23,0.15)', border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>
+          −
+        </button>
+        <span className="font-serif text-2xl font-bold w-8 text-center" style={{ color: '#d4a017' }}>{value}</span>
+        <button type="button" onClick={() => onChange(value + 1)}
+          className="w-9 h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all"
+          style={{ background: 'rgba(212,160,23,0.15)', border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>
+          +
+        </button>
+      </div>
+    </div>
+  )
 
   if (submitted) return (
     <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-8">
@@ -756,7 +775,7 @@ function RSVPForm() {
         Nos vemos el 5 de Septiembre
       </p>
       <p className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.6)' }}>
-        {name}{plusOne && plusOneName ? ` y ${plusOneName}` : plusOne ? ' y acompanante' : ''} — confirmado{plusOne ? 's' : ''}
+        {name} — {adults} adulto{adults !== 1 ? 's' : ''}{kids > 0 ? ` y ${kids} niño${kids !== 1 ? 's' : ''}` : ''} confirmado{adults + kids !== 1 ? 's' : ''}
       </p>
     </motion.div>
   )
@@ -771,36 +790,20 @@ function RSVPForm() {
           placeholder="Nombre y apellido" required className="gatsby-input w-full rounded-xl px-4 py-3 font-serif text-lg" />
       </div>
 
-      <div>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <button type="button" onClick={() => setPlusOne(p => !p)}
-            className={`relative w-12 h-6 rounded-full transition-all duration-300 ${plusOne ? '' : ''}`}
-            style={{ background: plusOne ? '#d4a017' : 'rgba(212,160,23,0.2)', border: '1px solid rgba(212,160,23,0.4)' }}>
-            <span className={`absolute top-1 w-4 h-4 rounded-full shadow transition-all duration-300 ${plusOne ? 'left-7' : 'left-1'}`}
-              style={{ background: plusOne ? '#0a0a0a' : '#d4a017' }} />
-          </button>
-          <span className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.8)' }}>
-            Voy con acompanante <span style={{ color: '#d4a017' }}>(+1)</span>
-          </span>
-        </label>
+      {/* Guest count selectors */}
+      <div className="rounded-xl p-4" style={{ background: 'rgba(212,160,23,0.05)', border: '1px solid rgba(212,160,23,0.15)' }}>
+        <p className="font-serif text-xs uppercase tracking-widest text-center mb-4" style={{ color: 'rgba(212,160,23,0.5)' }}>¿Cuántas personas asistirán?</p>
+        <div className="flex justify-around">
+          <Counter label="Adultos" value={adults} onChange={setAdults} min={1} />
+          <div style={{ width: 1, background: 'rgba(212,160,23,0.2)' }} />
+          <Counter label="Niños" value={kids} onChange={setKids} min={0} />
+        </div>
       </div>
-
-      <AnimatePresence>
-        {plusOne && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <label className="block font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.6)' }}>
-              Nombre de tu acompanante
-            </label>
-            <input type="text" value={plusOneName} onChange={e => setPlusOneName(e.target.value)}
-              placeholder="Nombre y apellido" className="gatsby-input w-full rounded-xl px-4 py-3 font-serif text-lg" />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="text-center">
         <span className="inline-block font-serif text-xs uppercase tracking-widest px-4 py-1 rounded-full"
           style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.6)' }}>
-          {plusOne ? 'Dos personas confirmadas' : 'Una persona confirmada'}
+          {adults + kids} persona{adults + kids !== 1 ? 's' : ''} confirmada{adults + kids !== 1 ? 's' : ''}
         </span>
       </div>
 
