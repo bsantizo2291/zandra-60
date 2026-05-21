@@ -11,32 +11,52 @@ const UPLOAD_PRESET = 'zandra60'
 const GALLERY_TAG = 'zandra60party'
 const ADMIN_PASSWORD = 'zandra60party'
 
-// ─── Image compression ────────────────────────────────────────────────────────
-async function compressImage(file, maxSizeMB = 9.5, maxDim = 4096) {
+// ─── Image compression + normalization ───────────────────────────────────────
+// Normalizes every uploaded photo to a standard 4:3 landscape (1200x900)
+// using smart center-crop so nothing looks cut off in the gallery grid.
+async function compressImage(file) {
+  const TARGET_W = 1200
+  const TARGET_H = 900
+  const TARGET_RATIO = TARGET_W / TARGET_H // 1.333
+
   return new Promise((resolve) => {
-    // If file is already small enough and is JPEG/PNG, upload as-is — no compression
-    if (file.size <= maxSizeMB * 1024 * 1024) { resolve(file); return }
     const img = new Image()
     const url = URL.createObjectURL(file)
     img.onload = () => {
       URL.revokeObjectURL(url)
-      let { width: w, height: h } = img
-      // Only scale down if truly enormous (above 4096px)
-      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r) }
+      const { width: srcW, height: srcH } = img
+      const srcRatio = srcW / srcH
+
+      // Calculate crop region to fill 4:3 from center
+      let cropW, cropH, cropX, cropY
+      if (srcRatio > TARGET_RATIO) {
+        // Source is wider than 4:3 — crop sides
+        cropH = srcH
+        cropW = srcH * TARGET_RATIO
+        cropX = (srcW - cropW) / 2
+        cropY = 0
+      } else {
+        // Source is taller than 4:3 — crop top/bottom (keep upper portion for portraits)
+        cropW = srcW
+        cropH = srcW / TARGET_RATIO
+        cropX = 0
+        // Bias toward top 40% so faces aren't cut off in portrait shots
+        cropY = Math.min((srcH - cropH) * 0.35, srcH - cropH)
+      }
+
       const canvas = document.createElement('canvas')
-      canvas.width = w; canvas.height = h
+      canvas.width = TARGET_W
+      canvas.height = TARGET_H
       const ctx = canvas.getContext('2d')
       ctx.imageSmoothingEnabled = true
       ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(img, 0, 0, w, h)
-      // Start at 0.95 quality and only reduce if absolutely necessary
+      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, TARGET_W, TARGET_H)
+
       const tryQ = (q) => canvas.toBlob((blob) => {
         if (!blob) { resolve(file); return }
-        if (blob.size <= maxSizeMB*1024*1024 || q <= 0.6)
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-        else tryQ(q - 0.05)
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
       }, 'image/jpeg', q)
-      tryQ(0.95)
+      tryQ(0.88)
     }
     img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
     img.src = url
@@ -345,13 +365,13 @@ function PhotoGallery() {
       </div>
 
       {photos.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {photos.map((photo, i) => (
             <motion.div key={photo.public_id} layout
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
               transition={{ delay: i * 0.03 }}
-              className="relative group rounded-xl overflow-hidden aspect-square"
-              style={{ border: '1px solid rgba(212,160,23,0.25)' }}>
+              className="relative group rounded-xl overflow-hidden"
+              style={{ border: '1px solid rgba(212,160,23,0.25)', aspectRatio: '4/3' }}>
               <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
               {deletable[photo.public_id] && Date.now() < deletable[photo.public_id] && (
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
