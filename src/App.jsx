@@ -632,7 +632,7 @@ function Slideshow() {
       if (res.ok) {
         const d = await res.json()
         const urls = (d.photos || []).map(p =>
-          `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/w_1920,h_1080,c_fill,q_auto/${p.public_id}`
+          `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/w_1920,h_1080,c_fit,q_auto,f_auto/${p.public_id}`
         )
         if (urls.length > 0) setPhotos(urls)
       }
