@@ -72,7 +72,7 @@ async function saveRSVPs(rsvps) {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -89,23 +89,45 @@ export default async function handler(req, res) {
 
   // POST — add a new RSVP
   if (req.method === 'POST') {
-    const { name, plusOne, plusOneName } = req.body || {};
+    const { name, plusOne, plusOneName, adults, kids } = req.body || {};
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Nombre requerido' });
     }
     const rsvps = await getRSVPs();
+    const adultCount = adults != null ? parseInt(adults) : (plusOne ? 2 : 1);
+    const kidsCount  = kids  != null ? parseInt(kids)  : 0;
     const newRSVP = {
       id: Date.now().toString(),
       name: name.trim(),
-      plusOne: !!plusOne,
+      plusOne: adultCount > 1 || kidsCount > 0,
       plusOneName: plusOneName?.trim() || '',
+      adults: adultCount,
+      kids: kidsCount,
       confirmedAt: new Date().toISOString(),
-      total: plusOne ? 2 : 1,
+      total: adultCount + kidsCount,
     };
     rsvps.push(newRSVP);
     const saved = await saveRSVPs(rsvps);
     if (!saved) return res.status(500).json({ error: 'Error al guardar RSVP' });
     return res.status(200).json({ success: true, rsvp: newRSVP });
+  }
+
+  // PATCH — update an existing RSVP (admin only)
+  if (req.method === 'PATCH') {
+    const { id, password, adults, kids, name } = req.body || {};
+    if (password !== ADMIN_PW) return res.status(401).json({ error: 'No autorizado' });
+    if (!id) return res.status(400).json({ error: 'ID requerido' });
+    const rsvps = await getRSVPs();
+    const idx = rsvps.findIndex(r => r.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'RSVP no encontrado' });
+    if (name  != null) rsvps[idx].name  = name.trim();
+    if (adults != null) rsvps[idx].adults = parseInt(adults);
+    if (kids   != null) rsvps[idx].kids   = parseInt(kids);
+    rsvps[idx].total   = (rsvps[idx].adults || 1) + (rsvps[idx].kids || 0);
+    rsvps[idx].plusOne = rsvps[idx].total > 1;
+    const saved = await saveRSVPs(rsvps);
+    if (!saved) return res.status(500).json({ error: 'Error al guardar' });
+    return res.status(200).json({ success: true, rsvp: rsvps[idx] });
   }
 
   // DELETE — remove an RSVP by id (admin only)

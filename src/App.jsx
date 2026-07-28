@@ -407,6 +407,9 @@ function AdminPanel() {
   const [rsvps, setRsvps] = useState([])
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [deletingRsvp, setDeletingRsvp] = useState(null)
+  const [editingRsvp, setEditingRsvp] = useState(null)   // id of rsvp being edited
+  const [editValues, setEditValues] = useState({})        // { name, adults, kids }
+  const [savingRsvp, setSavingRsvp] = useState(null)
 
   const login = (e) => {
     e.preventDefault()
@@ -449,6 +452,34 @@ function AdminPanel() {
       else toast.error('Error al cargar RSVPs')
     } catch (_) { toast.error('Error de conexion') }
     setRsvpLoading(false)
+  }
+
+  const startEdit = (r) => {
+    setEditingRsvp(r.id)
+    setEditValues({ name: r.name, adults: r.adults ?? 1, kids: r.kids ?? 0 })
+  }
+
+  const cancelEdit = () => { setEditingRsvp(null); setEditValues({}) }
+
+  const saveEdit = async (id) => {
+    setSavingRsvp(id)
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, password: ADMIN_PASSWORD, ...editValues }),
+      })
+      if (res.ok) {
+        const { rsvp } = await res.json()
+        setRsvps(p => p.map(r => r.id === id ? rsvp : r))
+        toast.success('Reservacion actualizada')
+        cancelEdit()
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast.error('Error: ' + (err.error || res.status))
+      }
+    } catch (_) { toast.error('Error de conexion') }
+    setSavingRsvp(null)
   }
 
   const deleteRSVP = async (id) => {
@@ -586,32 +617,100 @@ function AdminPanel() {
                   <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>Aun no hay confirmaciones</p>
                 </div>
               )}
-              {rsvps.map((r, i) => (
-                <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                  className="flex items-center justify-between rounded-xl px-5 py-4"
-                  style={{ border: '1px solid rgba(212,160,23,0.2)', background: 'rgba(212,160,23,0.04)' }}>
-                  <div className="flex-1">
-                    <p className="font-serif font-semibold" style={{ color: '#d4a017' }}>{r.name}</p>
-                    {r.plusOne && (
-                      <p className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.6)' }}>
-                        +1{r.plusOneName ? `: ${r.plusOneName}` : ' (acompanante)'}
-                      </p>
+              {rsvps.map((r, i) => {
+                const isEditing = editingRsvp === r.id
+                return (
+                  <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                    className="rounded-xl px-5 py-4"
+                    style={{ border: `1px solid ${isEditing ? 'rgba(212,160,23,0.6)' : 'rgba(212,160,23,0.2)'}`, background: isEditing ? 'rgba(212,160,23,0.08)' : 'rgba(212,160,23,0.04)' }}>
+
+                    {/* Normal view */}
+                    {!isEditing && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="font-serif font-semibold" style={{ color: '#d4a017' }}>{r.name}</p>
+                          <p className="font-serif text-sm mt-0.5" style={{ color: 'rgba(212,160,23,0.7)' }}>
+                            {r.adults ?? 1} adulto{(r.adults ?? 1) !== 1 ? 's' : ''}
+                            {(r.kids ?? 0) > 0 ? ` · ${r.kids} niño${r.kids !== 1 ? 's' : ''}` : ''}
+                            {' · '}<span style={{ color: '#d4a017', fontWeight: 700 }}>{r.total || 1} total</span>
+                          </p>
+                          <p className="font-serif text-xs mt-1" style={{ color: 'rgba(212,160,23,0.35)' }}>
+                            {new Date(r.confirmedAt).toLocaleDateString('es-GT', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <button onClick={() => startEdit(r)}
+                            className="font-serif text-xs px-3 py-1.5 rounded-lg transition-colors"
+                            style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>
+                            Editar
+                          </button>
+                          <button onClick={() => deleteRSVP(r.id)} disabled={deletingRsvp === r.id}
+                            className="text-red-500 hover:text-red-400 transition-colors disabled:opacity-40">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     )}
-                    <p className="font-serif text-xs mt-1" style={{ color: 'rgba(212,160,23,0.35)' }}>
-                      {new Date(r.confirmedAt).toLocaleDateString('es-GT', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 ml-4">
-                    <span className="font-serif text-xs px-3 py-1 rounded-full" style={{ background: 'rgba(212,160,23,0.15)', color: '#d4a017' }}>
-                      {r.total || 1} persona{(r.total || 1) !== 1 ? 's' : ''}
-                    </span>
-                    <button onClick={() => deleteRSVP(r.id)} disabled={deletingRsvp === r.id}
-                      className="text-red-500 hover:text-red-400 transition-colors disabled:opacity-40">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* Edit mode */}
+                    {isEditing && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Nombre</label>
+                          <input
+                            value={editValues.name}
+                            onChange={e => setEditValues(v => ({ ...v, name: e.target.value }))}
+                            className="gatsby-input w-full rounded-lg px-3 py-2 font-serif mt-1"
+                          />
+                        </div>
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <label className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Adultos</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <button onClick={() => setEditValues(v => ({ ...v, adults: Math.max(1, (v.adults || 1) - 1) }))}
+                                className="w-8 h-8 rounded-full font-bold text-lg flex items-center justify-center"
+                                style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>−</button>
+                              <span className="font-serif text-xl font-bold w-6 text-center" style={{ color: '#d4a017' }}>{editValues.adults ?? 1}</span>
+                              <button onClick={() => setEditValues(v => ({ ...v, adults: (v.adults || 1) + 1 }))}
+                                className="w-8 h-8 rounded-full font-bold text-lg flex items-center justify-center"
+                                style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>+</button>
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <label className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Niños</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <button onClick={() => setEditValues(v => ({ ...v, kids: Math.max(0, (v.kids || 0) - 1) }))}
+                                className="w-8 h-8 rounded-full font-bold text-lg flex items-center justify-center"
+                                style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>−</button>
+                              <span className="font-serif text-xl font-bold w-6 text-center" style={{ color: '#d4a017' }}>{editValues.kids ?? 0}</span>
+                              <button onClick={() => setEditValues(v => ({ ...v, kids: (v.kids || 0) + 1 }))}
+                                className="w-8 h-8 rounded-full font-bold text-lg flex items-center justify-center"
+                                style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>+</button>
+                            </div>
+                          </div>
+                          <div className="flex items-end pb-1">
+                            <span className="font-serif text-sm" style={{ color: 'rgba(212,160,23,0.5)' }}>
+                              Total: <strong style={{ color: '#d4a017' }}>{(editValues.adults ?? 1) + (editValues.kids ?? 0)}</strong>
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <button onClick={() => saveEdit(r.id)} disabled={savingRsvp === r.id}
+                            className="flex-1 font-serif text-sm py-2 rounded-lg font-bold uppercase tracking-widest transition-all disabled:opacity-50"
+                            style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#0a0a0a' }}>
+                            {savingRsvp === r.id ? 'Guardando...' : 'Guardar'}
+                          </button>
+                          <button onClick={cancelEdit}
+                            className="font-serif text-sm px-5 py-2 rounded-lg uppercase tracking-widest transition-colors"
+                            style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.6)' }}>
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )
+              })}
             </div>
           </>
         )}
