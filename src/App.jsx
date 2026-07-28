@@ -522,7 +522,7 @@ function AdminPanel() {
     </div>
   )
 
-  const PARTY_CAP = 65
+  const PARTY_CAP = 80
   const totalGuests = rsvps.reduce((sum, r) => sum + (r.total || 1), 0)
   const totalAdults = rsvps.reduce((sum, r) => sum + (r.adults ?? (r.plusOne ? 2 : 1)), 0)
   const totalKids   = rsvps.reduce((sum, r) => sum + (r.kids ?? 0), 0)

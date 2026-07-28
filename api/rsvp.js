@@ -93,9 +93,22 @@ export default async function handler(req, res) {
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Nombre requerido' });
     }
+    const PARTY_CAP = 80;
     const rsvps = await getRSVPs();
+    const currentTotal = rsvps.reduce((sum, r) => sum + (r.total || 1), 0);
     const adultCount = adults != null ? parseInt(adults) : (plusOne ? 2 : 1);
     const kidsCount  = kids  != null ? parseInt(kids)  : 0;
+    const newTotal   = adultCount + kidsCount;
+    if (currentTotal + newTotal > PARTY_CAP) {
+      const spotsLeft = Math.max(0, PARTY_CAP - currentTotal);
+      return res.status(400).json({
+        error: spotsLeft === 0
+          ? 'Lo sentimos, el evento ha alcanzado su capacidad maxima de 80 personas.'
+          : `Solo quedan ${spotsLeft} lugar${spotsLeft !== 1 ? 'es' : ''} disponible${spotsLeft !== 1 ? 's' : ''}. Tu grupo de ${newTotal} no cabe. Por favor ajusta el numero de personas.`,
+        spotsLeft,
+        atCapacity: spotsLeft === 0,
+      });
+    }
     const newRSVP = {
       id: Date.now().toString(),
       name: name.trim(),
