@@ -522,7 +522,13 @@ function AdminPanel() {
     </div>
   )
 
+  const PARTY_CAP = 65
   const totalGuests = rsvps.reduce((sum, r) => sum + (r.total || 1), 0)
+  const totalAdults = rsvps.reduce((sum, r) => sum + (r.adults ?? (r.plusOne ? 2 : 1)), 0)
+  const totalKids   = rsvps.reduce((sum, r) => sum + (r.kids ?? 0), 0)
+  const spotsLeft   = Math.max(0, PARTY_CAP - totalGuests)
+  const pct         = Math.min(100, Math.round((totalGuests / PARTY_CAP) * 100))
+  const barColor    = pct >= 100 ? '#ef4444' : pct >= 85 ? '#f97316' : pct >= 60 ? '#eab308' : '#d4a017'
 
   return (
     <div className="min-h-screen noir-section p-4">
@@ -596,12 +602,49 @@ function AdminPanel() {
         {/* RSVPs Tab */}
         {activeTab === 'rsvps' && (
           <>
+            {/* Capacity Bar */}
+            <div className="rounded-2xl p-6 mb-6 gold-card">
+              <div className="flex items-end justify-between mb-3">
+                <div>
+                  <p className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Capacidad del Evento</p>
+                  <p className="font-serif text-4xl font-bold mt-1" style={{ fontFamily: 'Cinzel, serif', color: barColor }}>
+                    {totalGuests} <span className="text-xl font-normal" style={{ color: 'rgba(212,160,23,0.5)' }}>/ {PARTY_CAP}</span>
+                  </p>
+                </div>
+                <div className="text-right">
+                  {spotsLeft > 0 ? (
+                    <>
+                      <p className="font-serif text-3xl font-bold" style={{ fontFamily: 'Cinzel, serif', color: barColor }}>{spotsLeft}</p>
+                      <p className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.5)' }}>lugares disponibles</p>
+                    </>
+                  ) : (
+                    <p className="font-serif text-lg font-bold uppercase tracking-widest" style={{ color: '#ef4444' }}>¡Cupo Lleno!</p>
+                  )}
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full rounded-full overflow-hidden" style={{ height: 10, background: 'rgba(212,160,23,0.15)' }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  style={{ height: '100%', borderRadius: 9999, background: `linear-gradient(to right, #8B6914, ${barColor})` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2">
+                <p className="font-serif text-xs" style={{ color: 'rgba(212,160,23,0.4)' }}>{pct}% ocupado</p>
+                <p className="font-serif text-xs" style={{ color: 'rgba(212,160,23,0.4)' }}>
+                  {totalAdults} adultos · {totalKids} niños
+                </p>
+              </div>
+            </div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
                 { label: 'Confirmaciones', value: rsvps.length },
-                { label: 'Total Invitados', value: totalGuests },
-                { label: 'Con Acompanante', value: rsvps.filter(r => r.plusOne).length },
+                { label: 'Adultos', value: totalAdults },
+                { label: 'Niños', value: totalKids },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded-xl p-5 text-center gold-card">
                   <p className="font-serif text-4xl font-bold shimmer-text" style={{ fontFamily: 'Cinzel, serif' }}>{value}</p>
