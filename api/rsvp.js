@@ -93,7 +93,7 @@ export default async function handler(req, res) {
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Nombre requerido' });
     }
-    const PARTY_CAP = 80;
+    const PARTY_CAP = 85;
     const rsvps = await getRSVPs();
     const currentTotal = rsvps.reduce((sum, r) => sum + (r.total || 1), 0);
     const adultCount = adults != null ? parseInt(adults) : (plusOne ? 2 : 1);
