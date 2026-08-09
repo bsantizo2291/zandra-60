@@ -850,24 +850,24 @@ function Slideshow() {
             transition={{ duration: 1.8, ease: 'easeInOut' }}
             className="absolute inset-0 w-full h-full"
           >
-            {/* Blurred background fill */}
-            <div
+            {/* Ken Burns blurred background — zoom/pan only on the blurred fill */}
+            <motion.div
               className="absolute inset-0"
+              initial={kbVariant.initial}
+              animate={kbVariant.animate}
+              transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
               style={{
                 backgroundImage: `url(${photos[current]})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'blur(32px) brightness(0.3)',
-                transform: 'scale(1.15)',
+                filter: 'blur(36px) brightness(0.28)',
+                transform: 'scale(1.2)',
               }}
             />
-            {/* Ken Burns animated photo — fully visible, no crop */}
-            <motion.img
+            {/* Main photo — always fully visible, no zoom, no crop */}
+            <img
               src={photos[current]}
               alt=""
-              initial={kbVariant.initial}
-              animate={kbVariant.animate}
-              transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
               className="absolute inset-0 w-full h-full"
               style={{ objectFit: 'contain', objectPosition: 'center' }}
             />
