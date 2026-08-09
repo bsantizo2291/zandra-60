@@ -776,9 +776,6 @@ function Slideshow() {
   const [photos, setPhotos] = useState([])
   const [current, setCurrent] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [musicStarted, setMusicStarted] = useState(false)
-  const [musicPlaying, setMusicPlaying] = useState(false)
-  const audioRef = useRef(null)
   const SLIDE_DURATION = 7000 // ms per slide
 
   const fetchPhotos = async () => {
@@ -809,34 +806,10 @@ function Slideshow() {
     return () => clearInterval(id)
   }, [photos.length])
 
-  // Start music on first user interaction (required by browsers)
-  const startMusic = () => {
-    if (musicStarted) return
-    setMusicStarted(true)
-    if (audioRef.current) {
-      audioRef.current.volume = 0.7
-      audioRef.current.play().then(() => setMusicPlaying(true)).catch(() => {})
-    }
-  }
-
-  const toggleMusic = (e) => {
-    e.stopPropagation()
-    if (!audioRef.current) return
-    if (musicPlaying) {
-      audioRef.current.pause()
-      setMusicPlaying(false)
-    } else {
-      audioRef.current.play().then(() => setMusicPlaying(true)).catch(() => {})
-      setMusicStarted(true)
-    }
-  }
-
   const kbVariant = KB_VARIANTS[current % KB_VARIANTS.length]
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden" style={{ background: '#080808' }} onClick={startMusic}>
-      {/* Background music */}
-      <audio ref={audioRef} src="/slideshow_music.mp3" loop preload="auto" />
+    <div className="relative w-screen h-screen overflow-hidden" style={{ background: '#080808' }}>
 
       <ChampagneBubbles />
 
@@ -943,31 +916,7 @@ function Slideshow() {
         )}
       </div>
 
-      {/* Music toggle button */}
-      <button onClick={toggleMusic}
-        className="absolute top-6 right-8 z-20 flex items-center gap-2 px-4 py-2 rounded-full font-serif text-xs uppercase tracking-widest transition-all"
-        style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017', backdropFilter: 'blur(8px)' }}>
-        {musicPlaying ? (
-          <><span style={{ fontSize: 14 }}>&#9646;&#9646;</span> Pausar</>
-        ) : (
-          <><span style={{ fontSize: 14 }}>&#9654;</span> {musicStarted ? 'Reanudar' : 'Iniciar Musica'}</>
-        )}
-      </button>
 
-      {/* Tap to start hint (only shown before music starts) */}
-      {!musicStarted && photos.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-          <motion.div
-            animate={{ opacity: [0.7, 1, 0.7] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="px-8 py-4 rounded-2xl font-serif text-lg uppercase tracking-widest"
-            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(212,160,23,0.5)', color: '#d4a017', backdropFilter: 'blur(12px)' }}>
-            Toca para iniciar la musica
-          </motion.div>
-        </motion.div>
-      )}
     </div>
   )
 }
