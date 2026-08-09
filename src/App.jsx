@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
@@ -763,10 +763,23 @@ function AdminPanel() {
 }
 
 // ─── Slideshow ────────────────────────────────────────────────────────────────
+// Ken Burns animation variants — each slide gets a random zoom/pan effect
+const KB_VARIANTS = [
+  { initial: { scale: 1.15, x: '3%',  y: '2%'  }, animate: { scale: 1,    x: '0%',  y: '0%'  } },
+  { initial: { scale: 1,    x: '0%',  y: '0%'  }, animate: { scale: 1.12, x: '-2%', y: '-2%' } },
+  { initial: { scale: 1.1,  x: '-3%', y: '0%'  }, animate: { scale: 1,    x: '2%',  y: '2%'  } },
+  { initial: { scale: 1,    x: '2%',  y: '-2%' }, animate: { scale: 1.1,  x: '-1%', y: '1%'  } },
+  { initial: { scale: 1.08, x: '0%',  y: '3%'  }, animate: { scale: 1,    x: '0%',  y: '-1%' } },
+]
+
 function Slideshow() {
   const [photos, setPhotos] = useState([])
   const [current, setCurrent] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [musicStarted, setMusicStarted] = useState(false)
+  const [musicPlaying, setMusicPlaying] = useState(false)
+  const audioRef = useRef(null)
+  const SLIDE_DURATION = 7000 // ms per slide
 
   const fetchPhotos = async () => {
     try {
@@ -782,49 +795,79 @@ function Slideshow() {
     setLoading(false)
   }
 
-  // Fetch on mount and every 20 seconds for new photos
+  // Fetch on mount and every 30 seconds for new photos
   useEffect(() => {
     fetchPhotos()
-    const id = setInterval(fetchPhotos, 20000)
+    const id = setInterval(fetchPhotos, 30000)
     return () => clearInterval(id)
   }, [])
 
-  // Advance slide every 6 seconds
+  // Advance slide every SLIDE_DURATION ms
   useEffect(() => {
     if (!photos.length) return
-    const id = setInterval(() => setCurrent(c => (c + 1) % photos.length), 6000)
+    const id = setInterval(() => setCurrent(c => (c + 1) % photos.length), SLIDE_DURATION)
     return () => clearInterval(id)
   }, [photos.length])
 
+  // Start music on first user interaction (required by browsers)
+  const startMusic = () => {
+    if (musicStarted) return
+    setMusicStarted(true)
+    if (audioRef.current) {
+      audioRef.current.volume = 0.7
+      audioRef.current.play().then(() => setMusicPlaying(true)).catch(() => {})
+    }
+  }
+
+  const toggleMusic = (e) => {
+    e.stopPropagation()
+    if (!audioRef.current) return
+    if (musicPlaying) {
+      audioRef.current.pause()
+      setMusicPlaying(false)
+    } else {
+      audioRef.current.play().then(() => setMusicPlaying(true)).catch(() => {})
+      setMusicStarted(true)
+    }
+  }
+
+  const kbVariant = KB_VARIANTS[current % KB_VARIANTS.length]
+
   return (
-    <div className="relative w-screen h-screen overflow-hidden" style={{ background: '#080808' }}>
+    <div className="relative w-screen h-screen overflow-hidden" style={{ background: '#080808' }} onClick={startMusic}>
+      {/* Background music */}
+      <audio ref={audioRef} src="/slideshow_music.mp3" loop preload="auto" />
+
       <ChampagneBubbles />
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="crossfade">
         {photos.length > 0 ? (
           <motion.div
             key={current}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
+            transition={{ duration: 1.8, ease: 'easeInOut' }}
             className="absolute inset-0 w-full h-full"
           >
-            {/* Blurred background fill — same image, blurred and darkened */}
+            {/* Blurred background fill */}
             <div
               className="absolute inset-0"
               style={{
                 backgroundImage: `url(${photos[current]})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'blur(28px) brightness(0.35)',
-                transform: 'scale(1.1)',
+                filter: 'blur(32px) brightness(0.3)',
+                transform: 'scale(1.15)',
               }}
             />
-            {/* Main image — fully visible, no crop */}
-            <img
+            {/* Ken Burns animated photo — fully visible, no crop */}
+            <motion.img
               src={photos[current]}
               alt=""
+              initial={kbVariant.initial}
+              animate={kbVariant.animate}
+              transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
               className="absolute inset-0 w-full h-full"
               style={{ objectFit: 'contain', objectPosition: 'center' }}
             />
@@ -855,28 +898,76 @@ function Slideshow() {
         )}
       </AnimatePresence>
 
-      {/* Dark gradient overlay at bottom */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
+      {/* Dark gradient overlays */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.4) 100%)'
+      }} />
 
       {/* Gold Art Deco border */}
-      <div className="absolute inset-4 pointer-events-none" style={{ border: '1px solid rgba(212,160,23,0.35)' }}>
-        <div className="absolute inset-2" style={{ border: '1px solid rgba(212,160,23,0.15)' }} />
+      <div className="absolute inset-4 pointer-events-none" style={{ border: '1px solid rgba(212,160,23,0.4)' }}>
+        <div className="absolute inset-2" style={{ border: '1px solid rgba(212,160,23,0.18)' }} />
+        {/* Corner ornaments */}
+        {[['top-0 left-0', '0 0'], ['top-0 right-0', '0 90deg'], ['bottom-0 right-0', '0 180deg'], ['bottom-0 left-0', '0 270deg']].map(([pos, rot], i) => (
+          <div key={i} className={`absolute ${pos} w-8 h-8`} style={{ transform: `rotate(${rot})` }}>
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M2 2 L14 2 L14 4 L4 4 L4 14 L2 14 Z" fill="rgba(212,160,23,0.7)" />
+            </svg>
+          </div>
+        ))}
+      </div>
+
+      {/* Top title */}
+      <div className="absolute top-0 left-0 right-0 pt-8 text-center" style={{ zIndex: 10 }}>
+        <p className="font-serif shimmer-text" style={{ fontSize: 'clamp(1.2rem, 3vw, 2.5rem)', fontFamily: 'Cinzel, serif', letterSpacing: '0.2em' }}>
+          ZANDRA VELIZ
+        </p>
+        <p className="font-serif tracking-widest uppercase mt-1" style={{ fontSize: 'clamp(0.6rem, 1.2vw, 0.9rem)', color: 'rgba(212,160,23,0.55)' }}>
+          60 Años ❖ 5 de Septiembre 2026
+        </p>
       </div>
 
       {/* Bottom caption */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-center" style={{ zIndex: 10 }}>
-        <p className="font-serif shimmer-text mb-1" style={{ fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', fontFamily: 'Cinzel, serif' }}>
-          Celebracion 60 Años · Zandra Veliz
-        </p>
-        <p className="font-serif tracking-widest uppercase" style={{ fontSize: 'clamp(0.7rem, 1.5vw, 1rem)', color: 'rgba(212,160,23,0.65)' }}>
-          5 de Septiembre · 2026 · Club Espanol · Fuentecilla
+      <div className="absolute bottom-0 left-0 right-0 pb-8 text-center" style={{ zIndex: 10 }}>
+        <p className="font-serif tracking-widest uppercase" style={{ fontSize: 'clamp(0.6rem, 1.2vw, 0.85rem)', color: 'rgba(212,160,23,0.5)' }}>
+          Club Español · Fuentecilla · Guatemala
         </p>
         {photos.length > 0 && (
-          <p className="font-serif text-xs mt-2" style={{ color: 'rgba(212,160,23,0.35)' }}>
-            {current + 1} / {photos.length}
-          </p>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            {photos.map((_, i) => (
+              <div key={i} onClick={(e) => { e.stopPropagation(); setCurrent(i) }}
+                className="rounded-full cursor-pointer transition-all"
+                style={{ width: i === current ? 20 : 6, height: 6,
+                  background: i === current ? '#d4a017' : 'rgba(212,160,23,0.3)' }} />
+            ))}
+          </div>
         )}
       </div>
+
+      {/* Music toggle button */}
+      <button onClick={toggleMusic}
+        className="absolute top-6 right-8 z-20 flex items-center gap-2 px-4 py-2 rounded-full font-serif text-xs uppercase tracking-widest transition-all"
+        style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017', backdropFilter: 'blur(8px)' }}>
+        {musicPlaying ? (
+          <><span style={{ fontSize: 14 }}>&#9646;&#9646;</span> Pausar</>
+        ) : (
+          <><span style={{ fontSize: 14 }}>&#9654;</span> {musicStarted ? 'Reanudar' : 'Iniciar Musica'}</>
+        )}
+      </button>
+
+      {/* Tap to start hint (only shown before music starts) */}
+      {!musicStarted && photos.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <motion.div
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="px-8 py-4 rounded-2xl font-serif text-lg uppercase tracking-widest"
+            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(212,160,23,0.5)', color: '#d4a017', backdropFilter: 'blur(12px)' }}>
+            Toca para iniciar la musica
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
