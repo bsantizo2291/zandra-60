@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')
 
     // Use resources by tag endpoint — most reliable
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image/tags/${tag}?max_results=500&direction=-1`
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image/tags/${tag}?max_results=500&direction=-1&context=true`
 
     const response = await fetch(url, {
       headers: { 'Authorization': `Basic ${auth}` },
