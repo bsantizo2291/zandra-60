@@ -32,12 +32,17 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json()
-    const photos = (data.resources || []).map(r => ({
-      public_id: r.public_id,
-      url: `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_fill,q_auto/${r.public_id}`,
-      full_url: `https://res.cloudinary.com/${cloudName}/image/upload/q_auto/${r.public_id}`,
-      created_at: r.created_at,
-    }))
+    const photos = (data.resources || []).map(r => {
+      // Deliver the untransformed Cloudinary asset. Both normal gallery and
+      // slideshow therefore begin with the full, original-resolution frame.
+      const originalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${r.public_id}`
+      return {
+        public_id: r.public_id,
+        url: originalUrl,
+        full_url: originalUrl,
+        created_at: r.created_at,
+      }
+    })
 
     return res.status(200).json({ photos, total: photos.length })
   } catch (err) {

@@ -11,57 +11,9 @@ const UPLOAD_PRESET = 'zandra60'
 const GALLERY_TAG = 'zandra60party'
 const ADMIN_PASSWORD = 'zandra60party'
 
-// ─── Image compression + normalization ───────────────────────────────────────
-// Normalizes every uploaded photo to a standard 4:3 landscape (1200x900)
-// using smart center-crop so nothing looks cut off in the gallery grid.
-async function compressImage(file) {
-  const TARGET_W = 1200
-  const TARGET_H = 900
-  const TARGET_RATIO = TARGET_W / TARGET_H // 1.333
-
-  return new Promise((resolve) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      const { width: srcW, height: srcH } = img
-      const srcRatio = srcW / srcH
-
-      // Calculate crop region to fill 4:3 from center
-      let cropW, cropH, cropX, cropY
-      if (srcRatio > TARGET_RATIO) {
-        // Source is wider than 4:3 — crop sides
-        cropH = srcH
-        cropW = srcH * TARGET_RATIO
-        cropX = (srcW - cropW) / 2
-        cropY = 0
-      } else {
-        // Source is taller than 4:3 — crop top/bottom (keep upper portion for portraits)
-        cropW = srcW
-        cropH = srcW / TARGET_RATIO
-        cropX = 0
-        // Bias toward top 40% so faces aren't cut off in portrait shots
-        cropY = Math.min((srcH - cropH) * 0.35, srcH - cropH)
-      }
-
-      const canvas = document.createElement('canvas')
-      canvas.width = TARGET_W
-      canvas.height = TARGET_H
-      const ctx = canvas.getContext('2d')
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, TARGET_W, TARGET_H)
-
-      const tryQ = (q) => canvas.toBlob((blob) => {
-        if (!blob) { resolve(file); return }
-        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-      }, 'image/jpeg', q)
-      tryQ(0.88)
-    }
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
-    img.src = url
-  })
-}
+// Photos are uploaded as the original browser-selected files. This preserves the
+// complete frame and highest available resolution instead of resizing, converting,
+// or cropping guest memories before they reach the gallery.
 
 // ─── Champagne Bubbles ────────────────────────────────────────────────────────
 function ChampagneBubbles() {
@@ -258,8 +210,6 @@ function PhotoGallery() {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState('')
   const [name, setName] = useState('')
-  const [deletable, setDeletable] = useState({})
-  const [deleting, setDeleting] = useState(null)
 
   const fetchPhotos = useCallback(async () => {
     setLoading(true)
@@ -279,50 +229,29 @@ function PhotoGallery() {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     setUploading(true)
-    let ok = 0; const nd = {}
+    let ok = 0
     for (let i = 0; i < files.length; i++) {
       setProgress(`Preparando foto ${i+1} de ${files.length}...`)
-      const compressed = await compressImage(files[i])
       setProgress(`Subiendo foto ${i+1} de ${files.length}...`)
       const fd = new FormData()
-      fd.append('file', compressed); fd.append('upload_preset', UPLOAD_PRESET)
+      fd.append('file', files[i]); fd.append('upload_preset', UPLOAD_PRESET)
       fd.append('tags', GALLERY_TAG)
       if (name.trim()) fd.append('context', `uploader=${name.trim()}`)
       try {
         const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: fd })
         const data = await res.json()
-        if (data.public_id) { ok++; nd[data.public_id] = Date.now() + 10 * 60 * 1000 }
+        if (data.public_id) ok++
         else toast.error(`Error: ${data.error?.message || 'No se pudo subir'}`)
       } catch (_) { toast.error('Error de conexión') }
     }
     setUploading(false); setProgress('')
     if (ok > 0) {
-      setDeletable(p => ({ ...p, ...nd }))
       toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente`)
       fetchPhotos()
     }
   }, [name, fetchPhotos])
 
   const handleChange = (e) => { handleUpload(e); e.target.value = '' }
-
-  const deletePhoto = async (id) => {
-    setDeleting(id)
-    try {
-      const res = await fetch('/api/delete-photo', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: id, adminPassword: 'zandra60party' }),
-      })
-      if (res.ok) {
-        toast.success('Foto eliminada')
-        setPhotos(p => p.filter(x => x.public_id !== id))
-        setDeletable(p => { const n = { ...p }; delete n[id]; return n })
-      } else {
-        const err = await res.json().catch(() => ({}))
-        toast.error('No se pudo eliminar: ' + (err.error || res.status))
-      }
-    } catch (_) { toast.error('Error de conexión') }
-    setDeleting(null)
-  }
 
   return (
     <div className="space-y-8">
@@ -368,20 +297,11 @@ function PhotoGallery() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {photos.map((photo, i) => (
             <motion.div key={photo.public_id} layout
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.03 }}
-              className="relative group rounded-xl overflow-hidden"
-              style={{ border: '1px solid rgba(212,160,23,0.25)', aspectRatio: '4/3' }}>
-              <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
-              {deletable[photo.public_id] && Date.now() < deletable[photo.public_id] && (
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
-                    className="flex items-center gap-1 bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-full font-serif uppercase tracking-wide transition-colors">
-                    <Trash2 className="w-3 h-3" />
-                    {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
-                  </button>
-                </div>
-              )}
+              className="relative rounded-xl overflow-hidden flex items-center justify-center"
+              style={{ border: '1px solid rgba(212,160,23,0.25)', aspectRatio: '4/3', background: 'rgba(0,0,0,0.42)' }}>
+              <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" loading="lazy" />
             </motion.div>
           ))}
         </div>
@@ -402,7 +322,6 @@ function AdminPanel() {
   const [pw, setPw] = useState('')
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(false)
-  const [deleting, setDeleting] = useState(null)
   const [activeTab, setActiveTab] = useState('photos')
   const [rsvps, setRsvps] = useState([])
   const [rsvpLoading, setRsvpLoading] = useState(false)
@@ -424,24 +343,6 @@ function AdminPanel() {
       if (res.ok) { const d = await res.json(); setPhotos(d.photos || []) }
     } catch (_) { toast.error('Error al cargar fotos') }
     setLoading(false)
-  }
-
-  const deletePhoto = async (id) => {
-    setDeleting(id)
-    try {
-      const res = await fetch('/api/delete-photo', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: id, adminPassword: 'zandra60party' }),
-      })
-      if (res.ok) {
-        toast.success('Foto eliminada')
-        setPhotos(p => p.filter(x => x.public_id !== id))
-      } else {
-        const err = await res.json().catch(() => ({}))
-        toast.error('No se pudo eliminar: ' + (err.error || res.status))
-      }
-    } catch (_) { toast.error('Error de conexión') }
-    setDeleting(null)
   }
 
   const fetchRSVPs = async () => {
@@ -577,17 +478,10 @@ function AdminPanel() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {photos.map(photo => (
                 <motion.div key={photo.public_id} layout
-                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: deleting === photo.public_id ? 0.3 : 1, scale: 1 }}
-                  className="relative group rounded-xl overflow-hidden aspect-square"
-                  style={{ border: '1px solid rgba(212,160,23,0.2)' }}>
-                  <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button onClick={() => deletePhoto(photo.public_id)} disabled={deleting === photo.public_id}
-                      className="flex items-center gap-1 bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-full font-serif uppercase tracking-wide">
-                      <Trash2 className="w-3 h-3" />
-                      {deleting === photo.public_id ? 'Eliminando...' : 'Eliminar'}
-                    </button>
-                  </div>
+                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                  className="relative rounded-xl overflow-hidden aspect-square flex items-center justify-center"
+                  style={{ border: '1px solid rgba(212,160,23,0.2)', background: 'rgba(0,0,0,0.42)' }}>
+                  <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" loading="lazy" />
                 </motion.div>
               ))}
             </div>
@@ -783,9 +677,7 @@ function Slideshow() {
       const res = await fetch('/api/list-photos')
       if (res.ok) {
         const d = await res.json()
-        const urls = (d.photos || []).map(p =>
-          `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/w_1920,h_1080,c_fit,q_auto,f_auto/${p.public_id}`
-        )
+        const urls = (d.photos || []).map(p => p.full_url || p.url)
         if (urls.length > 0) setPhotos(urls)
       }
     } catch (_) {}
