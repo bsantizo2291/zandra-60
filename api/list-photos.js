@@ -36,11 +36,18 @@ export default async function handler(req, res) {
       // Deliver the untransformed Cloudinary asset. Both normal gallery and
       // slideshow therefore begin with the full, original-resolution frame.
       const originalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${r.public_id}`
+      const context = r.context?.custom || r.context || {}
       return {
         public_id: r.public_id,
         url: originalUrl,
         full_url: originalUrl,
         created_at: r.created_at,
+        settings: {
+          order: Number(context.zv_order) || null,
+          rotation: Number(context.zv_rotation) || 0,
+          brightness: Number(context.zv_brightness) || 100,
+          caption: context.zv_caption || '',
+        },
       }
     })
 

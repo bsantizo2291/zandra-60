@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation } from 'lucide-react'
+import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -14,6 +14,23 @@ const ADMIN_PASSWORD = 'zandra60party'
 // Photos are uploaded as the original browser-selected files. This preserves the
 // complete frame and highest available resolution instead of resizing, converting,
 // or cropping guest memories before they reach the gallery.
+
+function photoSettings(photo) {
+  return { order: null, rotation: 0, brightness: 100, caption: '', ...(photo?.settings || {}) }
+}
+
+function presentationOrder(photos) {
+  return [...photos].sort((a, b) => {
+    const aOrder = photoSettings(a).order ?? new Date(a.created_at).getTime()
+    const bOrder = photoSettings(b).order ?? new Date(b.created_at).getTime()
+    return bOrder - aOrder
+  })
+}
+
+function photoStyle(photo) {
+  const settings = photoSettings(photo)
+  return { transform: `rotate(${settings.rotation}deg)`, filter: `brightness(${settings.brightness}%)` }
+}
 
 // ─── Champagne Bubbles ────────────────────────────────────────────────────────
 function ChampagneBubbles() {
@@ -217,7 +234,7 @@ function PhotoGallery() {
       const res = await fetch('/api/list-photos')
       if (res.ok) {
         const d = await res.json()
-        setPhotos((d.photos || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
+        setPhotos(presentationOrder(d.photos || []))
       }
     } catch (_) {}
     setLoading(false)
@@ -301,7 +318,12 @@ function PhotoGallery() {
               transition={{ delay: i * 0.03 }}
               className="relative rounded-xl overflow-hidden flex items-center justify-center"
               style={{ border: '1px solid rgba(212,160,23,0.25)', aspectRatio: '4/3', background: 'rgba(0,0,0,0.42)' }}>
-              <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" loading="lazy" />
+              <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" style={photoStyle(photo)} loading="lazy" />
+              {photoSettings(photo).caption && (
+                <p className="absolute bottom-0 inset-x-0 px-2 py-1.5 text-center font-serif text-xs" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))', color: '#f5d76e' }}>
+                  {photoSettings(photo).caption}
+                </p>
+              )}
             </motion.div>
           ))}
         </div>
@@ -329,6 +351,9 @@ function AdminPanel() {
   const [editingRsvp, setEditingRsvp] = useState(null)   // id of rsvp being edited
   const [editValues, setEditValues] = useState({})        // { name, adults, kids }
   const [savingRsvp, setSavingRsvp] = useState(null)
+  const [selectedPhotoId, setSelectedPhotoId] = useState(null)
+  const [photoDraft, setPhotoDraft] = useState({ order: 1, rotation: 0, brightness: 100, caption: '' })
+  const [savingPhoto, setSavingPhoto] = useState(false)
 
   const login = (e) => {
     e.preventDefault()
@@ -340,7 +365,12 @@ function AdminPanel() {
     setLoading(true)
     try {
       const res = await fetch('/api/list-photos')
-      if (res.ok) { const d = await res.json(); setPhotos(d.photos || []) }
+      if (res.ok) {
+        const d = await res.json()
+        const ordered = presentationOrder(d.photos || [])
+        setPhotos(ordered)
+        setSelectedPhotoId(current => current || ordered[0]?.public_id || null)
+      }
     } catch (_) { toast.error('Error al cargar fotos') }
     setLoading(false)
   }
@@ -399,6 +429,76 @@ function AdminPanel() {
     setDeletingRsvp(null)
   }
 
+  const selectPhoto = (photo, index) => {
+    const settings = photoSettings(photo)
+    setSelectedPhotoId(photo.public_id)
+    setPhotoDraft({
+      order: settings.order ?? new Date(photo.created_at).getTime(),
+      rotation: settings.rotation,
+      brightness: settings.brightness,
+      caption: settings.caption,
+      position: index + 1,
+    })
+  }
+
+  const savePhotoSettings = async (photo, nextSettings, quiet = false) => {
+    const res = await fetch('/api/update-photo-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, public_id: photo.public_id, settings: nextSettings }),
+    })
+    if (!res.ok) throw new Error('No se pudieron guardar los ajustes')
+    const data = await res.json()
+    if (!quiet) toast.success('Ajustes de proyección guardados')
+    return data.settings
+  }
+
+  const saveSelectedPhoto = async () => {
+    const photo = photos.find(p => p.public_id === selectedPhotoId)
+    if (!photo) return
+    setSavingPhoto(true)
+    try {
+      const settings = await savePhotoSettings(photo, photoDraft)
+      const updated = presentationOrder(photos.map(p => p.public_id === photo.public_id ? { ...p, settings } : p))
+      setPhotos(updated)
+      selectPhoto(updated.find(p => p.public_id === photo.public_id), updated.findIndex(p => p.public_id === photo.public_id))
+    } catch (error) {
+      toast.error(error.message)
+    }
+    setSavingPhoto(false)
+  }
+
+  const moveSelectedPhoto = async (direction) => {
+    const ordered = presentationOrder(photos)
+    const currentIndex = ordered.findIndex(p => p.public_id === selectedPhotoId)
+    const targetIndex = currentIndex + direction
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= ordered.length) return
+    const currentPhoto = ordered[currentIndex]
+    const targetPhoto = ordered[targetIndex]
+    const currentSettings = photoSettings(currentPhoto)
+    const targetSettings = photoSettings(targetPhoto)
+    const currentOrder = currentSettings.order ?? new Date(currentPhoto.created_at).getTime()
+    const targetOrder = targetSettings.order ?? new Date(targetPhoto.created_at).getTime()
+    setSavingPhoto(true)
+    try {
+      const [savedCurrent, savedTarget] = await Promise.all([
+        savePhotoSettings(currentPhoto, { ...currentSettings, order: targetOrder }, true),
+        savePhotoSettings(targetPhoto, { ...targetSettings, order: currentOrder }, true),
+      ])
+      const updated = presentationOrder(ordered.map(p => {
+        if (p.public_id === currentPhoto.public_id) return { ...p, settings: savedCurrent }
+        if (p.public_id === targetPhoto.public_id) return { ...p, settings: savedTarget }
+        return p
+      }))
+      setPhotos(updated)
+      selectPhoto(updated.find(p => p.public_id === currentPhoto.public_id), updated.findIndex(p => p.public_id === currentPhoto.public_id))
+      toast.success(direction < 0 ? 'Foto movida antes en la proyección' : 'Foto movida después en la proyección')
+    } catch (error) {
+      toast.error(error.message)
+    }
+    setSavingPhoto(false)
+  }
+
   useEffect(() => { if (auth) { fetchPhotos(); fetchRSVPs() } }, [auth])
 
   if (!auth) return (
@@ -430,6 +530,8 @@ function AdminPanel() {
   const spotsLeft   = Math.max(0, PARTY_CAP - totalGuests)
   const pct         = Math.min(100, Math.round((totalGuests / PARTY_CAP) * 100))
   const barColor    = pct >= 100 ? '#ef4444' : pct >= 85 ? '#f97316' : pct >= 60 ? '#eab308' : '#d4a017'
+  const selectedPhoto = photos.find(p => p.public_id === selectedPhotoId) || photos[0]
+  const selectedIndex = selectedPhoto ? presentationOrder(photos).findIndex(p => p.public_id === selectedPhoto.public_id) : -1
 
   return (
     <div className="min-h-screen noir-section p-4">
@@ -475,15 +577,73 @@ function AdminPanel() {
         {/* Photos Tab */}
         {activeTab === 'photos' && (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {photos.map(photo => (
+            <div className="rounded-2xl p-5 mb-6 gold-card">
+              <div className="flex flex-col lg:flex-row gap-5 lg:items-center lg:justify-between">
+                <div>
+                  <p className="font-serif text-lg" style={{ color: '#d4a017' }}>Orden de proyección</p>
+                  <p className="font-serif text-sm mt-1" style={{ color: 'rgba(212,160,23,0.58)' }}>
+                    Selecciona una foto y muévela para crear tu propia historia. El orden se usa también en Modo Pantalla Grande.
+                  </p>
+                </div>
+                <button onClick={() => window.open('/?slideshow=1', '_blank')}
+                  className="inline-flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-4 py-3 rounded-xl"
+                  style={{ border: '1px solid rgba(212,160,23,0.45)', color: '#d4a017' }}>
+                  <MonitorPlay className="w-4 h-4" /> Vista de pantalla grande
+                </button>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {presentationOrder(photos).map((photo, index) => (
                 <motion.div key={photo.public_id} layout
                   initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                  className="relative rounded-xl overflow-hidden aspect-square flex items-center justify-center"
-                  style={{ border: '1px solid rgba(212,160,23,0.2)', background: 'rgba(0,0,0,0.42)' }}>
-                  <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" loading="lazy" />
+                  onClick={() => selectPhoto(photo, index)}
+                  className="relative rounded-xl overflow-hidden aspect-square flex items-center justify-center cursor-pointer transition-all"
+                  style={{ border: `2px solid ${selectedPhotoId === photo.public_id ? '#d4a017' : 'rgba(212,160,23,0.2)'}`, background: 'rgba(0,0,0,0.42)' }}>
+                  <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" style={photoStyle(photo)} loading="lazy" />
+                  <span className="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center font-serif text-xs font-bold" style={{ background: '#0a0a0a', border: '1px solid rgba(212,160,23,0.6)', color: '#f5d76e' }}>{index + 1}</span>
+                  {photoSettings(photo).caption && <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-center font-serif text-xs truncate" style={{ background: 'rgba(0,0,0,0.76)', color: '#f5d76e' }}>{photoSettings(photo).caption}</span>}
                 </motion.div>
               ))}
+              </div>
+
+              {selectedPhoto && (
+                <aside className="rounded-2xl p-5 gold-card lg:sticky lg:top-4">
+                  <p className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.58)' }}>Editor de presentación</p>
+                  <p className="font-serif text-xl mt-1" style={{ color: '#d4a017' }}>Foto {selectedIndex + 1} de {photos.length}</p>
+                  <div className="relative mt-4 rounded-xl overflow-hidden flex items-center justify-center" style={{ aspectRatio: '4 / 3', background: '#070707' }}>
+                    <img src={selectedPhoto.full_url || selectedPhoto.url} alt="Vista previa" className="w-full h-full object-contain" style={photoStyle({ ...selectedPhoto, settings: { ...photoSettings(selectedPhoto), ...photoDraft } })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-4">
+                    <button onClick={() => moveSelectedPhoto(-1)} disabled={savingPhoto || selectedIndex <= 0}
+                      className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}><ArrowLeft className="w-4 h-4" /> Antes</button>
+                    <button onClick={() => moveSelectedPhoto(1)} disabled={savingPhoto || selectedIndex >= photos.length - 1}
+                      className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>Después <ArrowRight className="w-4 h-4" /></button>
+                  </div>
+                  <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Brillo</label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Sun className="w-4 h-4" style={{ color: '#d4a017' }} />
+                    <input type="range" min="60" max="140" value={photoDraft.brightness} onChange={e => setPhotoDraft(v => ({ ...v, brightness: Number(e.target.value) }))} className="flex-1 accent-yellow-500" />
+                    <span className="font-serif text-sm w-9 text-right" style={{ color: '#f5d76e' }}>{photoDraft.brightness}%</span>
+                  </div>
+                  <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Rotación</label>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button onClick={() => setPhotoDraft(v => ({ ...v, rotation: v.rotation === -180 ? 90 : v.rotation - 90 }))}
+                      className="font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>↶ Girar izquierda</button>
+                    <button onClick={() => setPhotoDraft(v => ({ ...v, rotation: v.rotation === 180 ? -90 : v.rotation + 90 }))}
+                      className="font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>Girar derecha ↷</button>
+                  </div>
+                  <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Pie de foto opcional</label>
+                  <input value={photoDraft.caption} maxLength={120} onChange={e => setPhotoDraft(v => ({ ...v, caption: e.target.value }))} placeholder="Ej. Recuerdo familiar" className="gatsby-input w-full rounded-lg px-3 py-2 mt-2 font-serif" />
+                  <div className="flex gap-2 mt-4">
+                    <button onClick={() => setPhotoDraft({ order: photoSettings(selectedPhoto).order ?? new Date(selectedPhoto.created_at).getTime(), rotation: 0, brightness: 100, caption: '' })}
+                      className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.7)' }}><RotateCcw className="w-4 h-4" /> Restaurar</button>
+                    <button onClick={saveSelectedPhoto} disabled={savingPhoto} className="flex-1 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg font-bold disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#0a0a0a' }}>{savingPhoto ? 'Guardando...' : 'Guardar'}</button>
+                  </div>
+                  <p className="font-serif text-xs leading-relaxed mt-4" style={{ color: 'rgba(212,160,23,0.46)' }}>Los originales no se recortan, sustituyen ni eliminan. Estos ajustes solo cambian la presentación.</p>
+                </aside>
+              )}
             </div>
             {photos.length === 0 && !loading && (
               <div className="text-center py-20">
@@ -677,8 +837,8 @@ function Slideshow() {
       const res = await fetch('/api/list-photos')
       if (res.ok) {
         const d = await res.json()
-        const urls = (d.photos || []).map(p => p.full_url || p.url)
-        if (urls.length > 0) setPhotos(urls)
+        const ordered = presentationOrder(d.photos || [])
+        if (ordered.length > 0) setPhotos(ordered)
       }
     } catch (_) {}
     setLoading(false)
@@ -722,7 +882,7 @@ function Slideshow() {
               animate={kbVariant.animate}
               transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
               style={{
-                backgroundImage: `url(${photos[current]})`,
+                backgroundImage: `url(${photos[current].full_url || photos[current].url})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'blur(36px) brightness(0.28)',
@@ -731,11 +891,16 @@ function Slideshow() {
             />
             {/* Main photo — always fully visible, no zoom, no crop */}
             <img
-              src={photos[current]}
+              src={photos[current].full_url || photos[current].url}
               alt=""
               className="absolute inset-0 w-full h-full"
-              style={{ objectFit: 'contain', objectPosition: 'center' }}
+              style={{ objectFit: 'contain', objectPosition: 'center', ...photoStyle(photos[current]) }}
             />
+            {photoSettings(photos[current]).caption && (
+              <div className="absolute bottom-20 left-8 right-8 text-center" style={{ zIndex: 5 }}>
+                <p className="inline-block px-6 py-3 font-serif text-xl md:text-3xl" style={{ color: '#f5d76e', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(212,160,23,0.35)' }}>{photoSettings(photos[current]).caption}</p>
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div
