@@ -46,6 +46,7 @@ export default async function handler(req, res) {
           order: Number(context.zv_order) || null,
           rotation: Number(context.zv_rotation) || 0,
           brightness: Number(context.zv_brightness) || 100,
+          zoom: Math.max(50, Math.min(150, Number(context.zv_zoom) || 100)),
           caption: context.zv_caption || '',
         },
       }

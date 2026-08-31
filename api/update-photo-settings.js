@@ -28,8 +28,9 @@ export default async function handler(req, res) {
   const order = Math.max(1, Math.min(9999999999999, Number.parseInt(settings.order, 10) || 1))
   const rotation = [-180, -90, 0, 90, 180].includes(Number(settings.rotation)) ? Number(settings.rotation) : 0
   const brightness = Math.max(60, Math.min(140, Number.parseInt(settings.brightness, 10) || 100))
+  const zoom = Math.max(50, Math.min(150, Number.parseInt(settings.zoom, 10) || 100))
   const caption = cleanValue(settings.caption, 120)
-  const context = `zv_order=${order}|zv_rotation=${rotation}|zv_brightness=${brightness}|zv_caption=${caption}`
+  const context = `zv_order=${order}|zv_rotation=${rotation}|zv_brightness=${brightness}|zv_zoom=${zoom}|zv_caption=${caption}`
 
   try {
     const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')
@@ -45,7 +46,7 @@ export default async function handler(req, res) {
     if (!response.ok) return res.status(response.status).json({ error: 'Cloudinary update failed', details: await response.text() })
     return res.status(200).json({
       success: true,
-      settings: { order, rotation, brightness, caption },
+      settings: { order, rotation, brightness, zoom, caption },
     })
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Unable to save photo settings' })

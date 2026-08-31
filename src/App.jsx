@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay } from 'lucide-react'
+import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
+import { photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
@@ -14,23 +15,6 @@ const ADMIN_PASSWORD = 'zandra60party'
 // Photos are uploaded as the original browser-selected files. This preserves the
 // complete frame and highest available resolution instead of resizing, converting,
 // or cropping guest memories before they reach the gallery.
-
-function photoSettings(photo) {
-  return { order: null, rotation: 0, brightness: 100, caption: '', ...(photo?.settings || {}) }
-}
-
-function presentationOrder(photos) {
-  return [...photos].sort((a, b) => {
-    const aOrder = photoSettings(a).order ?? new Date(a.created_at).getTime()
-    const bOrder = photoSettings(b).order ?? new Date(b.created_at).getTime()
-    return bOrder - aOrder
-  })
-}
-
-function photoStyle(photo) {
-  const settings = photoSettings(photo)
-  return { transform: `rotate(${settings.rotation}deg)`, filter: `brightness(${settings.brightness}%)` }
-}
 
 // ─── Champagne Bubbles ────────────────────────────────────────────────────────
 function ChampagneBubbles() {
@@ -352,7 +336,7 @@ function AdminPanel() {
   const [editValues, setEditValues] = useState({})        // { name, adults, kids }
   const [savingRsvp, setSavingRsvp] = useState(null)
   const [selectedPhotoId, setSelectedPhotoId] = useState(null)
-  const [photoDraft, setPhotoDraft] = useState({ order: 1, rotation: 0, brightness: 100, caption: '' })
+  const [photoDraft, setPhotoDraft] = useState({ order: 1, rotation: 0, brightness: 100, zoom: 100, caption: '' })
   const [savingPhoto, setSavingPhoto] = useState(false)
 
   const login = (e) => {
@@ -436,6 +420,7 @@ function AdminPanel() {
       order: settings.order ?? new Date(photo.created_at).getTime(),
       rotation: settings.rotation,
       brightness: settings.brightness,
+      zoom: settings.zoom,
       caption: settings.caption,
       position: index + 1,
     })
@@ -627,6 +612,14 @@ function AdminPanel() {
                     <input type="range" min="60" max="140" value={photoDraft.brightness} onChange={e => setPhotoDraft(v => ({ ...v, brightness: Number(e.target.value) }))} className="flex-1 accent-yellow-500" />
                     <span className="font-serif text-sm w-9 text-right" style={{ color: '#f5d76e' }}>{photoDraft.brightness}%</span>
                   </div>
+                  <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Tamaño en pantalla</label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <ZoomOut className="w-4 h-4" style={{ color: '#d4a017' }} />
+                    <input type="range" min="50" max="150" step="5" value={photoDraft.zoom} onChange={e => setPhotoDraft(v => ({ ...v, zoom: Number(e.target.value) }))} className="flex-1 accent-yellow-500" aria-label="Tamaño de la foto en pantalla" />
+                    <ZoomIn className="w-4 h-4" style={{ color: '#d4a017' }} />
+                    <span className="font-serif text-sm w-10 text-right" style={{ color: '#f5d76e' }}>{photoDraft.zoom}%</span>
+                  </div>
+                  <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(212,160,23,0.46)' }}>Reduce el tamaño para ver más de la foto; aumenta solo si deseas un acercamiento.</p>
                   <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Rotación</label>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     <button onClick={() => setPhotoDraft(v => ({ ...v, rotation: v.rotation === -180 ? 90 : v.rotation - 90 }))}
@@ -637,7 +630,7 @@ function AdminPanel() {
                   <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Pie de foto opcional</label>
                   <input value={photoDraft.caption} maxLength={120} onChange={e => setPhotoDraft(v => ({ ...v, caption: e.target.value }))} placeholder="Ej. Recuerdo familiar" className="gatsby-input w-full rounded-lg px-3 py-2 mt-2 font-serif" />
                   <div className="flex gap-2 mt-4">
-                    <button onClick={() => setPhotoDraft({ order: photoSettings(selectedPhoto).order ?? new Date(selectedPhoto.created_at).getTime(), rotation: 0, brightness: 100, caption: '' })}
+                    <button onClick={() => setPhotoDraft({ order: photoSettings(selectedPhoto).order ?? new Date(selectedPhoto.created_at).getTime(), rotation: 0, brightness: 100, zoom: 100, caption: '' })}
                       className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.7)' }}><RotateCcw className="w-4 h-4" /> Restaurar</button>
                     <button onClick={saveSelectedPhoto} disabled={savingPhoto} className="flex-1 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg font-bold disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#0a0a0a' }}>{savingPhoto ? 'Guardando...' : 'Guardar'}</button>
                   </div>
@@ -889,7 +882,7 @@ function Slideshow() {
                 transform: 'scale(1.2)',
               }}
             />
-            {/* Main photo — always fully visible, no zoom, no crop */}
+            {/* Main photo — object-contain preserves the original full frame; the host may only scale it for presentation. */}
             <img
               src={photos[current].full_url || photos[current].url}
               alt=""
