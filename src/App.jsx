@@ -486,6 +486,21 @@ function AdminPanel() {
 
   useEffect(() => { if (auth) { fetchPhotos(); fetchRSVPs() } }, [auth])
 
+  useEffect(() => {
+    const selectedIndex = photos.findIndex(photo => photo.public_id === selectedPhotoId)
+    if (selectedIndex < 0) return
+    const selected = photos[selectedIndex]
+    const settings = photoSettings(selected)
+    setPhotoDraft({
+      order: settings.order ?? new Date(selected.created_at).getTime(),
+      rotation: settings.rotation,
+      brightness: settings.brightness,
+      zoom: settings.zoom,
+      caption: settings.caption,
+      position: selectedIndex + 1,
+    })
+  }, [photos, selectedPhotoId])
+
   if (!auth) return (
     <div className="min-h-screen noir-section flex items-center justify-center p-4">
       <Toaster position="top-center" richColors />

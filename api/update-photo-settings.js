@@ -34,14 +34,19 @@ export default async function handler(req, res) {
 
   try {
     const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')
-    const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image/upload/${encodeURIComponent(publicId)}`
+    // Cloudinary's contextual-metadata route merges these keys with existing
+    // asset context. Unlike an upload or transformation request, it never
+    // replaces, resizes, crops, or deletes the original guest image.
+    const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/context`
+    const body = new URLSearchParams({ command: 'add', context })
+    body.append('public_ids[]', publicId)
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Basic ${auth}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({ context }).toString(),
+      body: body.toString(),
     })
     if (!response.ok) return res.status(response.status).json({ error: 'Cloudinary update failed', details: await response.text() })
     return res.status(200).json({
