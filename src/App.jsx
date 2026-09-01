@@ -340,6 +340,9 @@ function AdminPanel() {
   const [savingPhoto, setSavingPhoto] = useState(false)
   const [photoQuery, setPhotoQuery] = useState('')
   const [targetPosition, setTargetPosition] = useState('')
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
+  const [deletingPhoto, setDeletingPhoto] = useState(false)
 
   const login = (e) => {
     e.preventDefault()
@@ -528,6 +531,43 @@ function AdminPanel() {
       toast.error(error.message)
     }
     setSavingPhoto(false)
+  }
+
+  const closeDeleteConfirmation = () => {
+    if (deletingPhoto) return
+    setDeleteConfirmationOpen(false)
+    setDeleteConfirmationText('')
+  }
+
+  const deleteSelectedPhoto = async () => {
+    const photo = photos.find(p => p.public_id === selectedPhotoId)
+    if (!photo) return
+    if (deleteConfirmationText.trim().toUpperCase() !== 'ELIMINAR') {
+      toast.error('Escribe ELIMINAR para confirmar el borrado permanente')
+      return
+    }
+    setDeletingPhoto(true)
+    try {
+      const res = await fetch('/api/delete-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD, public_id: photo.public_id }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'No se pudo eliminar la foto')
+      const ordered = presentationOrder(photos)
+      const deletedIndex = ordered.findIndex(p => p.public_id === photo.public_id)
+      const remaining = ordered.filter(p => p.public_id !== photo.public_id)
+      setPhotos(remaining)
+      const nextPhoto = remaining[Math.min(Math.max(0, deletedIndex), remaining.length - 1)]
+      setSelectedPhotoId(nextPhoto?.public_id || null)
+      setDeleteConfirmationOpen(false)
+      setDeleteConfirmationText('')
+      toast.success('Foto eliminada permanentemente')
+    } catch (error) {
+      toast.error(error.message)
+    }
+    setDeletingPhoto(false)
   }
 
   useEffect(() => { if (auth) { fetchPhotos(); fetchRSVPs() } }, [auth])
@@ -736,6 +776,10 @@ function AdminPanel() {
                     {photoSettings(selectedPhoto).visible ? <><EyeOff className="w-4 h-4" /> Ocultar de pantalla grande</> : <><Eye className="w-4 h-4" /> Mostrar en pantalla grande</>}
                   </button>
                   <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(212,160,23,0.46)' }}>Ocultar solo salta esta foto en el slideshow. La foto se conserva en la galería pública y no se elimina.</p>
+                  <button onClick={() => { setDeleteConfirmationText(''); setDeleteConfirmationOpen(true) }} disabled={savingPhoto || deletingPhoto} className="w-full flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg mt-4 disabled:opacity-35" style={{ border: '1px solid rgba(239,68,68,0.85)', color: '#fca5a5', background: 'rgba(127,29,29,0.18)' }}>
+                    <Trash2 className="w-4 h-4" /> Eliminar esta foto
+                  </button>
+                  <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(252,165,165,0.72)' }}>Elimina el archivo original de forma permanente. Úsalo solamente para duplicados.</p>
                   <p className="font-serif text-xs leading-relaxed mt-4" style={{ color: 'rgba(212,160,23,0.46)' }}>Los originales no se recortan, sustituyen ni eliminan. Estos ajustes solo cambian la presentación.</p>
                 </aside>
               )}
@@ -743,6 +787,21 @@ function AdminPanel() {
             {photos.length === 0 && !loading && (
               <div className="text-center py-20">
                 <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>No hay fotos aun</p>
+              </div>
+            )}
+            {deleteConfirmationOpen && selectedPhoto && (
+              <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-photo-title" style={{ background: 'rgba(0,0,0,0.82)' }}>
+                <ArtDecoFrame className="w-full max-w-md rounded-2xl p-7 gold-card" >
+                  <Trash2 className="w-9 h-9 mb-4" style={{ color: '#f87171' }} />
+                  <h3 id="delete-photo-title" className="font-serif text-2xl" style={{ color: '#fca5a5' }}>¿Eliminar esta foto?</h3>
+                  <p className="font-serif leading-relaxed mt-3" style={{ color: 'rgba(255,235,235,0.82)' }}>Esta acción elimina permanentemente la foto {selectedIndex + 1} de la galería y de Cloudinary. No se puede deshacer.</p>
+                  <p className="font-serif text-sm leading-relaxed mt-4" style={{ color: 'rgba(252,165,165,0.84)' }}>Para confirmar, escribe <strong>ELIMINAR</strong> abajo.</p>
+                  <input value={deleteConfirmationText} onChange={e => setDeleteConfirmationText(e.target.value)} placeholder="ELIMINAR" autoFocus className="gatsby-input w-full rounded-lg px-3 py-3 mt-2 font-serif" aria-label="Escribe ELIMINAR para confirmar" />
+                  <div className="grid grid-cols-2 gap-3 mt-5">
+                    <button onClick={closeDeleteConfirmation} disabled={deletingPhoto} className="font-serif text-xs uppercase tracking-widest px-4 py-3 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>Cancelar</button>
+                    <button onClick={deleteSelectedPhoto} disabled={deletingPhoto || deleteConfirmationText.trim().toUpperCase() !== 'ELIMINAR'} className="font-serif text-xs uppercase tracking-widest px-4 py-3 rounded-lg font-bold disabled:opacity-35" style={{ background: '#b91c1c', color: '#fff1f2' }}>{deletingPhoto ? 'Eliminando...' : 'Eliminar permanentemente'}</button>
+                  </div>
+                </ArtDecoFrame>
               </div>
             )}
           </>
