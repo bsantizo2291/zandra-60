@@ -516,9 +516,10 @@ function AdminPanel() {
     const photo = photos.find(p => p.public_id === selectedPhotoId)
     if (!photo) return
     const currentSettings = photoSettings(photo)
+    const preservedOrder = currentSettings.order ?? new Date(photo.created_at).getTime()
     setSavingPhoto(true)
     try {
-      const settings = await savePhotoSettings(photo, { ...currentSettings, visible: !currentSettings.visible })
+      const settings = await savePhotoSettings(photo, { ...currentSettings, order: preservedOrder, visible: !currentSettings.visible })
       const updated = presentationOrder(photos.map(p => p.public_id === photo.public_id ? { ...p, settings } : p))
       setPhotos(updated)
       selectPhoto(updated.find(p => p.public_id === photo.public_id), updated.findIndex(p => p.public_id === photo.public_id))
