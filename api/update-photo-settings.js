@@ -30,7 +30,8 @@ export default async function handler(req, res) {
   const brightness = Math.max(60, Math.min(140, Number.parseInt(settings.brightness, 10) || 100))
   const zoom = Math.max(50, Math.min(150, Number.parseInt(settings.zoom, 10) || 100))
   const caption = cleanValue(settings.caption, 120)
-  const context = `zv_order=${order}|zv_rotation=${rotation}|zv_brightness=${brightness}|zv_zoom=${zoom}|zv_caption=${caption}`
+  const visible = settings.visible !== false
+  const context = `zv_order=${order}|zv_rotation=${rotation}|zv_brightness=${brightness}|zv_zoom=${zoom}|zv_caption=${caption}|zv_visible=${visible ? '1' : '0'}`
 
   try {
     const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')
@@ -51,7 +52,7 @@ export default async function handler(req, res) {
     if (!response.ok) return res.status(response.status).json({ error: 'Cloudinary update failed', details: await response.text() })
     return res.status(200).json({
       success: true,
-      settings: { order, rotation, brightness, zoom, caption },
+      settings: { order, rotation, brightness, zoom, caption, visible },
     })
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Unable to save photo settings' })

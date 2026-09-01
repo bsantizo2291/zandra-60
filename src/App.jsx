@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut } from 'lucide-react'
+import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut, Eye, EyeOff, Search } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
-import { photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
+import { isSlideshowVisible, photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
@@ -336,8 +336,10 @@ function AdminPanel() {
   const [editValues, setEditValues] = useState({})        // { name, adults, kids }
   const [savingRsvp, setSavingRsvp] = useState(null)
   const [selectedPhotoId, setSelectedPhotoId] = useState(null)
-  const [photoDraft, setPhotoDraft] = useState({ order: 1, rotation: 0, brightness: 100, zoom: 100, caption: '' })
+  const [photoDraft, setPhotoDraft] = useState({ order: 1, rotation: 0, brightness: 100, zoom: 100, caption: '', visible: true })
   const [savingPhoto, setSavingPhoto] = useState(false)
+  const [photoQuery, setPhotoQuery] = useState('')
+  const [targetPosition, setTargetPosition] = useState('')
 
   const login = (e) => {
     e.preventDefault()
@@ -422,8 +424,10 @@ function AdminPanel() {
       brightness: settings.brightness,
       zoom: settings.zoom,
       caption: settings.caption,
+      visible: settings.visible,
       position: index + 1,
     })
+    setTargetPosition(String(index + 1))
   }
 
   const savePhotoSettings = async (photo, nextSettings, quiet = false) => {
@@ -456,8 +460,9 @@ function AdminPanel() {
   const moveSelectedPhoto = async (direction) => {
     const ordered = presentationOrder(photos)
     const currentIndex = ordered.findIndex(p => p.public_id === selectedPhotoId)
-    const targetIndex = currentIndex + direction
+    const targetIndex = Math.max(0, Math.min(ordered.length - 1, currentIndex + direction))
     if (currentIndex < 0 || targetIndex < 0 || targetIndex >= ordered.length) return
+    if (currentIndex === targetIndex) return
     const currentPhoto = ordered[currentIndex]
     const targetPhoto = ordered[targetIndex]
     const currentSettings = photoSettings(currentPhoto)
@@ -477,7 +482,47 @@ function AdminPanel() {
       }))
       setPhotos(updated)
       selectPhoto(updated.find(p => p.public_id === currentPhoto.public_id), updated.findIndex(p => p.public_id === currentPhoto.public_id))
-      toast.success(direction < 0 ? 'Foto movida antes en la proyección' : 'Foto movida después en la proyección')
+      toast.success(direction < 0 ? 'Foto movida hacia el inicio de la proyección' : 'Foto movida hacia el final de la proyección')
+    } catch (error) {
+      toast.error(error.message)
+    }
+    setSavingPhoto(false)
+  }
+
+  const moveSelectedToPosition = () => {
+    const ordered = presentationOrder(photos)
+    const currentIndex = ordered.findIndex(p => p.public_id === selectedPhotoId)
+    const targetIndex = Number.parseInt(targetPosition, 10) - 1
+    if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= ordered.length) {
+      toast.error(`Escribe una posición entre 1 y ${ordered.length}`)
+      return
+    }
+    moveSelectedPhoto(targetIndex - currentIndex)
+  }
+
+  const selectPhotoByPosition = () => {
+    const ordered = presentationOrder(photos)
+    const targetIndex = Number.parseInt(photoQuery.replace('#', ''), 10) - 1
+    if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= ordered.length) {
+      toast.error(`Escribe un número entre 1 y ${ordered.length}`)
+      return
+    }
+    const photo = ordered[targetIndex]
+    selectPhoto(photo, targetIndex)
+    document.getElementById(`organizer-photo-${photo.public_id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  const toggleSelectedSlideshowVisibility = async () => {
+    const photo = photos.find(p => p.public_id === selectedPhotoId)
+    if (!photo) return
+    const currentSettings = photoSettings(photo)
+    setSavingPhoto(true)
+    try {
+      const settings = await savePhotoSettings(photo, { ...currentSettings, visible: !currentSettings.visible })
+      const updated = presentationOrder(photos.map(p => p.public_id === photo.public_id ? { ...p, settings } : p))
+      setPhotos(updated)
+      selectPhoto(updated.find(p => p.public_id === photo.public_id), updated.findIndex(p => p.public_id === photo.public_id))
+      toast.success(settings.visible ? 'La foto vuelve a mostrarse en pantalla grande' : 'La foto quedó oculta solo de pantalla grande')
     } catch (error) {
       toast.error(error.message)
     }
@@ -497,8 +542,10 @@ function AdminPanel() {
       brightness: settings.brightness,
       zoom: settings.zoom,
       caption: settings.caption,
+      visible: settings.visible,
       position: selectedIndex + 1,
     })
+    setTargetPosition(String(selectedIndex + 1))
   }, [photos, selectedPhotoId])
 
   if (!auth) return (
@@ -532,6 +579,13 @@ function AdminPanel() {
   const barColor    = pct >= 100 ? '#ef4444' : pct >= 85 ? '#f97316' : pct >= 60 ? '#eab308' : '#d4a017'
   const selectedPhoto = photos.find(p => p.public_id === selectedPhotoId) || photos[0]
   const selectedIndex = selectedPhoto ? presentationOrder(photos).findIndex(p => p.public_id === selectedPhoto.public_id) : -1
+  const orderedPhotos = presentationOrder(photos)
+  const normalizedQuery = photoQuery.trim().toLowerCase().replace('#', '')
+  const filteredPhotos = orderedPhotos.map((photo, index) => ({ photo, index })).filter(({ photo, index }) => {
+    if (!normalizedQuery) return true
+    return `${index + 1} ${photo.public_id} ${photoSettings(photo).caption}`.toLowerCase().includes(normalizedQuery)
+  })
+  const slideshowPhotoCount = photos.filter(isSlideshowVisible).length
 
   return (
     <div className="min-h-screen noir-section p-4">
@@ -593,19 +647,38 @@ function AdminPanel() {
               </div>
             </div>
 
+            <div className="rounded-2xl p-4 mb-6 gold-card" style={{ border: '1px solid rgba(212,160,23,0.22)' }}>
+              <div className="flex flex-col md:flex-row gap-3 md:items-end md:justify-between">
+                <div>
+                  <p className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.64)' }}>Selección rápida</p>
+                  <p className="font-serif text-sm mt-1" style={{ color: 'rgba(212,160,23,0.48)' }}>{slideshowPhotoCount} fotos visibles en pantalla grande · {photos.length - slideshowPhotoCount} ocultas de la proyección</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                  <input value={photoQuery} onChange={e => setPhotoQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') selectPhotoByPosition() }} placeholder="Número, pie o ID" className="gatsby-input min-w-0 sm:w-48 rounded-lg px-3 py-2 font-serif" aria-label="Buscar o seleccionar una foto" />
+                  <button onClick={selectPhotoByPosition} className="inline-flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-4 py-2 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.42)', color: '#d4a017' }}><Search className="w-4 h-4" /> Ir a foto</button>
+                </div>
+              </div>
+            </div>
+
             <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {presentationOrder(photos).map((photo, index) => (
+              {filteredPhotos.map(({ photo, index }) => (
                 <motion.div key={photo.public_id} layout
                   initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                   onClick={() => selectPhoto(photo, index)}
-                  className="relative rounded-xl overflow-hidden aspect-square flex items-center justify-center cursor-pointer transition-all"
-                  style={{ border: `2px solid ${selectedPhotoId === photo.public_id ? '#d4a017' : 'rgba(212,160,23,0.2)'}`, background: 'rgba(0,0,0,0.42)' }}>
+                  id={`organizer-photo-${photo.public_id}`}
+                  role="button" tabIndex={0} aria-pressed={selectedPhotoId === photo.public_id} aria-label={`Foto ${index + 1}${isSlideshowVisible(photo) ? '' : ', oculta de pantalla grande'}`}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPhoto(photo, index) } }}
+                  className="relative rounded-xl overflow-hidden aspect-square flex items-center justify-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  style={{ border: `2px solid ${selectedPhotoId === photo.public_id ? '#f5d76e' : 'rgba(212,160,23,0.2)'}`, background: 'rgba(0,0,0,0.42)', opacity: isSlideshowVisible(photo) ? 1 : 0.55, boxShadow: selectedPhotoId === photo.public_id ? '0 0 22px rgba(245,215,110,0.34)' : 'none', transform: selectedPhotoId === photo.public_id ? 'scale(1.02)' : 'scale(1)' }}>
                   <img src={photo.full_url || photo.url} alt="" className="w-full h-full object-contain" style={photoStyle(photo)} loading="lazy" />
                   <span className="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center font-serif text-xs font-bold" style={{ background: '#0a0a0a', border: '1px solid rgba(212,160,23,0.6)', color: '#f5d76e' }}>{index + 1}</span>
+                  {selectedPhotoId === photo.public_id && <span className="absolute top-2 right-2 px-2 py-1 rounded font-serif text-[10px] uppercase tracking-wider" style={{ background: '#f5d76e', color: '#0a0a0a' }}>Seleccionada</span>}
+                  {!isSlideshowVisible(photo) && <span className="absolute top-2 right-2 px-2 py-1 rounded font-serif text-[10px] uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.82)', border: '1px solid rgba(212,160,23,0.5)', color: '#f5d76e' }}>Oculta</span>}
                   {photoSettings(photo).caption && <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-center font-serif text-xs truncate" style={{ background: 'rgba(0,0,0,0.76)', color: '#f5d76e' }}>{photoSettings(photo).caption}</span>}
                 </motion.div>
               ))}
+              {filteredPhotos.length === 0 && <p className="col-span-full text-center py-10 font-serif italic" style={{ color: 'rgba(212,160,23,0.5)' }}>No encontramos una foto con esa búsqueda.</p>}
               </div>
 
               {selectedPhoto && (
@@ -621,6 +694,15 @@ function AdminPanel() {
                     <button onClick={() => moveSelectedPhoto(1)} disabled={savingPhoto || selectedIndex >= photos.length - 1}
                       className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>Después <ArrowRight className="w-4 h-4" /></button>
                   </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button onClick={() => moveSelectedPhoto(-10)} disabled={savingPhoto || selectedIndex <= 0} className="font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>← 10 lugares</button>
+                    <button onClick={() => moveSelectedPhoto(10)} disabled={savingPhoto || selectedIndex >= photos.length - 1} className="font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>10 lugares →</button>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <input type="number" min="1" max={photos.length} value={targetPosition} onChange={e => setTargetPosition(e.target.value)} className="gatsby-input min-w-0 flex-1 rounded-lg px-3 py-2 font-serif" aria-label="Nueva posición de proyección" />
+                    <button onClick={moveSelectedToPosition} disabled={savingPhoto} className="font-serif text-xs uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.45)', color: '#d4a017' }}>Mover a #</button>
+                  </div>
+                  <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(212,160,23,0.46)' }}>Usa ±10 para avanzar rápido o escribe el número exacto de posición.</p>
                   <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Brillo</label>
                   <div className="flex items-center gap-3 mt-2">
                     <Sun className="w-4 h-4" style={{ color: '#d4a017' }} />
@@ -645,10 +727,14 @@ function AdminPanel() {
                   <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Pie de foto opcional</label>
                   <input value={photoDraft.caption} maxLength={120} onChange={e => setPhotoDraft(v => ({ ...v, caption: e.target.value }))} placeholder="Ej. Recuerdo familiar" className="gatsby-input w-full rounded-lg px-3 py-2 mt-2 font-serif" />
                   <div className="flex gap-2 mt-4">
-                    <button onClick={() => setPhotoDraft({ order: photoSettings(selectedPhoto).order ?? new Date(selectedPhoto.created_at).getTime(), rotation: 0, brightness: 100, zoom: 100, caption: '' })}
+                    <button onClick={() => setPhotoDraft({ order: photoSettings(selectedPhoto).order ?? new Date(selectedPhoto.created_at).getTime(), rotation: 0, brightness: 100, zoom: 100, caption: '', visible: photoSettings(selectedPhoto).visible })}
                       className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.3)', color: 'rgba(212,160,23,0.7)' }}><RotateCcw className="w-4 h-4" /> Restaurar</button>
                     <button onClick={saveSelectedPhoto} disabled={savingPhoto} className="flex-1 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg font-bold disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#0a0a0a' }}>{savingPhoto ? 'Guardando...' : 'Guardar'}</button>
                   </div>
+                  <button onClick={toggleSelectedSlideshowVisibility} disabled={savingPhoto} className="w-full flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg mt-2 disabled:opacity-35" style={{ border: `1px solid ${photoSettings(selectedPhoto).visible ? 'rgba(212,160,23,0.55)' : 'rgba(104,211,145,0.65)'}`, color: photoSettings(selectedPhoto).visible ? '#f5d76e' : '#8ee6b2' }}>
+                    {photoSettings(selectedPhoto).visible ? <><EyeOff className="w-4 h-4" /> Ocultar de pantalla grande</> : <><Eye className="w-4 h-4" /> Mostrar en pantalla grande</>}
+                  </button>
+                  <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(212,160,23,0.46)' }}>Ocultar solo salta esta foto en el slideshow. La foto se conserva en la galería pública y no se elimina.</p>
                   <p className="font-serif text-xs leading-relaxed mt-4" style={{ color: 'rgba(212,160,23,0.46)' }}>Los originales no se recortan, sustituyen ni eliminan. Estos ajustes solo cambian la presentación.</p>
                 </aside>
               )}

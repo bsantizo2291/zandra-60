@@ -48,6 +48,7 @@ export default async function handler(req, res) {
           brightness: Number(context.zv_brightness) || 100,
           zoom: Math.max(50, Math.min(150, Number(context.zv_zoom) || 100)),
           caption: context.zv_caption || '',
+          visible: context.zv_visible !== '0',
         },
       }
     })

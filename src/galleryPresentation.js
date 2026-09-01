@@ -1,5 +1,9 @@
 export function photoSettings(photo) {
-  return { order: null, rotation: 0, brightness: 100, zoom: 100, caption: '', ...(photo?.settings || {}) }
+  return { order: null, rotation: 0, brightness: 100, zoom: 100, caption: '', visible: true, ...(photo?.settings || {}) }
+}
+
+export function isSlideshowVisible(photo) {
+  return photoSettings(photo).visible !== false
 }
 
 export function presentationOrder(photos) {
