@@ -1188,13 +1188,13 @@ function RSVPForm() {
     <div className="flex flex-col items-center gap-2">
       <span className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>{label}</span>
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => onChange(Math.max(min, value - 1))}
+        <button type="button" formNoValidate data-quantity-control="decrease" aria-label={`Reducir ${label}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); onChange(Math.max(min, value - 1)) }}
           className="w-9 h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all"
           style={{ background: 'rgba(212,160,23,0.15)', border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>
           −
         </button>
         <span className="font-serif text-2xl font-bold w-8 text-center" style={{ color: '#d4a017' }}>{value}</span>
-        <button type="button" onClick={() => onChange(value + 1)}
+        <button type="button" formNoValidate data-quantity-control="increase" aria-label={`Aumentar ${label}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); onChange(value + 1) }}
           className="w-9 h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all"
           style={{ background: 'rgba(212,160,23,0.15)', border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>
           +
