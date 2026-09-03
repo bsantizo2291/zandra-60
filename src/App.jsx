@@ -1139,10 +1139,27 @@ function RSVPForm() {
   const [kids, setKids] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [availability, setAvailability] = useState(null)
+
+  const fetchAvailability = useCallback(async () => {
+    try {
+      const res = await fetch('/api/rsvp?availability=1')
+      if (res.ok) setAvailability(await res.json())
+    } catch (_) {}
+  }, [])
+
+  useEffect(() => { fetchAvailability() }, [fetchAvailability])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) { toast.error('Por favor ingresa tu nombre'); return }
+    const groupSize = adults + kids
+    if (availability && groupSize > availability.spotsLeft) {
+      toast.error(availability.spotsLeft === 0
+        ? 'Lo sentimos, ya no hay lugares disponibles.'
+        : `Solo quedan ${availability.spotsLeft} lugares. Ajusta tu grupo para confirmar.`)
+      return
+    }
     setSubmitting(true)
     try {
       const res = await fetch('/api/rsvp', {
@@ -1150,11 +1167,16 @@ function RSVPForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), adults, kids, total: adults + kids, plusOne: adults > 1 || kids > 0, plusOneName: '' }),
       })
+      const data = await res.json().catch(() => ({}))
       if (res.ok) {
         setSubmitted(true)
         toast.success('Confirmación recibida. ¡Te esperamos!')
+        setAvailability(current => current ? { ...current, confirmed: current.confirmed + groupSize, spotsLeft: Math.max(0, current.spotsLeft - groupSize) } : current)
       } else {
-        toast.error('Error al confirmar. Intenta de nuevo.')
+        if (typeof data.spotsLeft === 'number') {
+          setAvailability(current => current ? { ...current, confirmed: Math.max(0, current.partyCap - data.spotsLeft), spotsLeft: data.spotsLeft } : current)
+        }
+        toast.error(data.error || 'No fue posible confirmar en este momento. Intenta de nuevo.')
       }
     } catch (_) {
       toast.error('Error de conexión. Intenta de nuevo.')
@@ -1220,11 +1242,19 @@ function RSVPForm() {
         </span>
       </div>
 
+      {availability && (
+        <p className="text-center font-serif text-xs leading-relaxed" style={{ color: availability.spotsLeft > 0 ? 'rgba(212,160,23,0.64)' : '#fca5a5' }}>
+          {availability.spotsLeft > 0
+            ? `${availability.spotsLeft} lugar${availability.spotsLeft !== 1 ? 'es' : ''} disponible${availability.spotsLeft !== 1 ? 's' : ''} para esta celebración.`
+            : 'Lo sentimos, la celebración ya alcanzó su capacidad.'}
+        </p>
+      )}
+
       <motion.button type="submit" disabled={submitting}
         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
         className="w-full font-serif font-bold py-4 rounded-xl transition-all disabled:opacity-50 tracking-widest text-sm uppercase text-black"
         style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017, #f5d76e, #d4a017, #8B6914)' }}>
-        {submitting ? 'Confirmando...' : '✦  Confirmar Asistencia  ✦'}
+        {submitting ? 'Confirmando...' : 'Confirmar Asistencia'}
       </motion.button>
 
       <div className="pt-4 text-center" style={{ borderTop: '1px solid rgba(212,160,23,0.2)' }}>

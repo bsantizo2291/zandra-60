@@ -6,6 +6,23 @@ const API_KEY = process.env.CLOUDINARY_API_KEY;
 const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 const ADMIN_PW = process.env.ADMIN_PASSWORD || 'zandra60party';
 const RSVP_PUBLIC_ID = 'zandra60party/rsvp_data';
+const PARTY_CAP = 85;
+
+export function currentGuestTotal(rsvps) {
+  return rsvps.reduce((sum, rsvp) => sum + Math.max(1, Number.parseInt(rsvp.total, 10) || 1), 0);
+}
+
+export function availabilityFor(rsvps) {
+  const confirmed = currentGuestTotal(rsvps);
+  return { partyCap: PARTY_CAP, confirmed, spotsLeft: Math.max(0, PARTY_CAP - confirmed) };
+}
+
+export function normalizedGuestCounts(adults, kids, plusOne) {
+  const adultCount = adults != null ? Number.parseInt(adults, 10) : (plusOne ? 2 : 1);
+  const kidsCount = kids != null ? Number.parseInt(kids, 10) : 0;
+  if (!Number.isInteger(adultCount) || !Number.isInteger(kidsCount) || adultCount < 1 || kidsCount < 0) return null;
+  return { adults: adultCount, kids: kidsCount, total: adultCount + kidsCount };
+}
 
 // Correct Cloudinary signature: sort params alphabetically (exclude api_key, file, resource_type)
 function cloudinarySign(params) {
@@ -79,6 +96,10 @@ export default async function handler(req, res) {
 
   // GET — list all RSVPs (admin only)
   if (req.method === 'GET') {
+    if (req.query?.availability === '1') {
+      const rsvps = await getRSVPs();
+      return res.status(200).json(availabilityFor(rsvps));
+    }
     const { password } = req.query;
     if (password !== ADMIN_PW) {
       return res.status(401).json({ error: 'No autorizado' });
@@ -93,17 +114,16 @@ export default async function handler(req, res) {
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Nombre requerido' });
     }
-    const PARTY_CAP = 85;
     const rsvps = await getRSVPs();
-    const currentTotal = rsvps.reduce((sum, r) => sum + (r.total || 1), 0);
-    const adultCount = adults != null ? parseInt(adults) : (plusOne ? 2 : 1);
-    const kidsCount  = kids  != null ? parseInt(kids)  : 0;
-    const newTotal   = adultCount + kidsCount;
-    if (currentTotal + newTotal > PARTY_CAP) {
-      const spotsLeft = Math.max(0, PARTY_CAP - currentTotal);
+    const guestCounts = normalizedGuestCounts(adults, kids, plusOne);
+    if (!guestCounts) return res.status(400).json({ error: 'Selecciona al menos 1 adulto y una cantidad válida de niños.' });
+    const { adults: adultCount, kids: kidsCount, total: newTotal } = guestCounts;
+    const availability = availabilityFor(rsvps);
+    if (newTotal > availability.spotsLeft) {
+      const { spotsLeft } = availability;
       return res.status(400).json({
         error: spotsLeft === 0
-          ? 'Lo sentimos, el evento ha alcanzado su capacidad maxima de 80 personas.'
+          ? `Lo sentimos, el evento ha alcanzado su capacidad máxima de ${PARTY_CAP} personas.`
           : `Solo quedan ${spotsLeft} lugar${spotsLeft !== 1 ? 'es' : ''} disponible${spotsLeft !== 1 ? 's' : ''}. Tu grupo de ${newTotal} no cabe. Por favor ajusta el numero de personas.`,
         spotsLeft,
         atCapacity: spotsLeft === 0,
@@ -117,7 +137,7 @@ export default async function handler(req, res) {
       adults: adultCount,
       kids: kidsCount,
       confirmedAt: new Date().toISOString(),
-      total: adultCount + kidsCount,
+      total: newTotal,
     };
     rsvps.push(newRSVP);
     const saved = await saveRSVPs(rsvps);
