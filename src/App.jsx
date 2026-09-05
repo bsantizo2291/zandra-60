@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut, Eye, EyeOff, Search } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 import { isSlideshowVisible, photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
+import { LIVE_PHOTO_REFRESH_MS, livePhotoArrivalMessage } from './livePartyPhotos'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
@@ -247,7 +248,7 @@ function PhotoGallery() {
     }
     setUploading(false); setProgress('')
     if (ok > 0) {
-      toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente`)
+      toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente. ${livePhotoArrivalMessage()}`)
       fetchPhotos()
     }
   }, [name, fetchPhotos])
@@ -255,23 +256,36 @@ function PhotoGallery() {
   const handleChange = (e) => { handleUpload(e); e.target.value = '' }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" aria-live="polite">
+      <div className="gold-card rounded-2xl p-5 md:p-6 relative overflow-hidden" style={{ border: '1px solid rgba(212,160,23,0.48)', background: 'linear-gradient(135deg, rgba(212,160,23,0.16), rgba(5,25,31,0.74))' }}>
+        <div className="absolute -right-5 -top-6 w-28 h-28 rounded-full" style={{ background: 'radial-gradient(circle, rgba(47,173,173,0.36), transparent 70%)' }} />
+        <div className="relative flex items-start gap-4">
+          <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,160,23,0.14)', border: '1px solid rgba(245,215,110,0.55)' }}>
+            <Camera className="w-6 h-6" style={{ color: '#f5d76e' }} />
+          </div>
+          <div>
+            <p className="font-serif text-xs uppercase tracking-[0.22em] mb-1" style={{ color: 'rgba(245,215,110,0.72)' }}>Fotos en Vivo</p>
+            <p className="font-serif text-lg md:text-xl font-bold" style={{ color: '#f5d76e' }}>Sube una foto y comparte la fiesta en pantalla grande.</p>
+            <p className="font-serif text-sm mt-2 leading-relaxed" style={{ color: 'rgba(212,160,23,0.78)' }}>{livePhotoArrivalMessage()}</p>
+          </div>
+        </div>
+      </div>
       <div className="max-w-sm mx-auto">
         <label className="block text-center font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.7)' }}>
-          Tu nombre (opcional)
+          Tu nombre o mesa (opcional)
         </label>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
-          placeholder="Tu nombre" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
+          placeholder="Ej. Familia Santizo" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
       </div>
 
       <label className="block cursor-pointer">
-        <input type="file" accept="image/*" multiple onChange={handleChange} className="hidden" />
+        <input type="file" accept="image/*" capture="environment" multiple onChange={handleChange} className="hidden" />
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
           className="gold-card rounded-2xl p-8 md:p-12 text-center relative overflow-hidden"
           style={{ borderStyle: 'dashed', borderColor: 'rgba(212,160,23,0.4)' }}>
           <Camera className="w-10 h-10 md:w-14 md:h-14 mx-auto mb-4" style={{ color: '#d4a017' }} />
           <p className="font-serif text-lg md:text-xl mb-1" style={{ color: '#d4a017' }}>
-            {uploading ? (progress || 'Procesando...') : 'Comparte un recuerdo con Zandra'}
+            {uploading ? (progress || 'Procesando...') : 'Tomar o subir fotos de la fiesta'}
           </p>
           {uploading ? (
             <div className="mt-4 w-48 h-1 bg-yellow-900 rounded-full mx-auto overflow-hidden">
@@ -279,7 +293,7 @@ function PhotoGallery() {
             </div>
           ) : (
             <p className="font-serif text-xs uppercase tracking-widest mt-2" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              JPG · PNG · HEIC · Multiples fotos
+              Cámara o galería · JPG · PNG · HEIC · Múltiples fotos
             </p>
           )}
         </motion.div>
@@ -290,7 +304,7 @@ function PhotoGallery() {
           className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
           style={{ color: 'rgba(212,160,23,0.6)' }}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Cargando...' : 'Actualizar galeria'}
+          {loading ? 'Cargando...' : 'Actualizar fotos en vivo'}
         </button>
       </div>
 
@@ -999,7 +1013,7 @@ function Slideshow() {
       const res = await fetch('/api/list-photos')
       if (res.ok) {
         const d = await res.json()
-        const ordered = presentationOrder(d.photos || [])
+        const ordered = presentationOrder(d.photos || []).filter(isSlideshowVisible)
         if (ordered.length > 0) setPhotos(ordered)
       }
     } catch (_) {}
@@ -1009,7 +1023,7 @@ function Slideshow() {
   // Fetch on mount and every 30 seconds for new photos
   useEffect(() => {
     fetchPhotos()
-    const id = setInterval(fetchPhotos, 30000)
+    const id = setInterval(fetchPhotos, LIVE_PHOTO_REFRESH_MS)
     return () => clearInterval(id)
   }, [])
 
@@ -1889,13 +1903,13 @@ export default function App() {
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
             <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              ✦ Galeria ✦
+              ✦ Fotos en Vivo ✦
             </p>
             <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
-              Recuerdos con Zandra
+              Fotos en Vivo de la Fiesta
             </h2>
             <p className="font-serif italic text-base md:text-lg max-w-xl mx-auto" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              Sube tus fotos favoritas con la festejada. El dia del evento se proyectaran en pantalla grande durante la fiesta.
+              Durante la fiesta, toma o sube tus fotos desde tu teléfono. Aparecerán automáticamente en la pantalla grande y siempre se mostrarán completas, sin recortes.
             </p>
             <GoldDivider />
           </motion.div>
