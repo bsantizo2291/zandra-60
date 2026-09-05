@@ -701,6 +701,32 @@ function AdminPanel() {
               </div>
             </div>
 
+            {selectedPhoto && (
+              <section className="sticky top-2 z-40 mb-5 rounded-2xl p-3 sm:p-4 shadow-2xl" style={{ background: 'rgba(10,10,10,0.96)', border: '1px solid rgba(245,215,110,0.7)', backdropFilter: 'blur(14px)', boxShadow: '0 8px 30px rgba(0,0,0,0.48)' }} aria-label="Acciones rápidas de la foto seleccionada">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <p className="font-serif text-[10px] uppercase tracking-[0.22em]" style={{ color: 'rgba(245,215,110,0.68)' }}>Foto seleccionada</p>
+                    <p className="font-serif text-lg sm:text-xl leading-tight truncate" style={{ color: '#f5d76e' }}>Foto #{selectedIndex + 1} de {photos.length}</p>
+                  </div>
+                  <button type="button" onClick={() => document.getElementById('photo-detail-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="shrink-0 font-serif text-xs uppercase tracking-widest px-3 py-2 rounded-lg" style={{ border: '1px solid rgba(212,160,23,0.42)', color: '#d4a017' }}>Editar</button>
+                </div>
+
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <input type="number" min="1" max={photos.length} value={targetPosition} onChange={e => setTargetPosition(e.target.value)} className="gatsby-input min-w-0 rounded-lg px-3 py-2.5 font-serif" aria-label="Nueva posición de proyección" placeholder="Posición" />
+                  <button type="button" onClick={moveSelectedToPosition} disabled={savingPhoto} className="font-serif text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg font-bold disabled:opacity-35" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#0a0a0a' }}>Mover</button>
+                </div>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  <button type="button" onClick={() => moveSelectedPhoto(-10)} disabled={savingPhoto || selectedIndex <= 0} className="font-serif text-xs uppercase tracking-widest py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.38)', color: '#f5d76e' }} aria-label="Mover diez lugares antes">← 10</button>
+                  <button type="button" onClick={() => moveSelectedPhoto(-1)} disabled={savingPhoto || selectedIndex <= 0} className="font-serif text-xs uppercase tracking-widest py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.38)', color: '#f5d76e' }} aria-label="Mover un lugar antes">← 1</button>
+                  <button type="button" onClick={() => moveSelectedPhoto(1)} disabled={savingPhoto || selectedIndex >= photos.length - 1} className="font-serif text-xs uppercase tracking-widest py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.38)', color: '#f5d76e' }} aria-label="Mover un lugar después">1 →</button>
+                  <button type="button" onClick={() => moveSelectedPhoto(10)} disabled={savingPhoto || selectedIndex >= photos.length - 1} className="font-serif text-xs uppercase tracking-widest py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.38)', color: '#f5d76e' }} aria-label="Mover diez lugares después">10 →</button>
+                </div>
+                <button type="button" onClick={() => { setDeleteConfirmationText(''); setDeleteConfirmationOpen(true) }} disabled={savingPhoto || deletingPhoto} className="w-full flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-3 rounded-lg mt-2 font-bold disabled:opacity-35" style={{ border: '1px solid rgba(239,68,68,0.9)', color: '#fee2e2', background: 'rgba(127,29,29,0.46)' }}>
+                  <Trash2 className="w-4 h-4" /> Eliminar foto #{selectedIndex + 1}
+                </button>
+              </section>
+            )}
+
             <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {filteredPhotos.map(({ photo, index }) => (
@@ -723,27 +749,13 @@ function AdminPanel() {
               </div>
 
               {selectedPhoto && (
-                <aside className="rounded-2xl p-5 gold-card lg:sticky lg:top-4">
+                <aside id="photo-detail-editor" className="rounded-2xl p-5 gold-card lg:sticky lg:top-4 scroll-mt-4">
                   <p className="font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.58)' }}>Editor de presentación</p>
                   <p className="font-serif text-xl mt-1" style={{ color: '#d4a017' }}>Foto {selectedIndex + 1} de {photos.length}</p>
                   <div className="relative mt-4 rounded-xl overflow-hidden flex items-center justify-center" style={{ aspectRatio: '4 / 3', background: '#070707' }}>
                     <img src={selectedPhoto.full_url || selectedPhoto.url} alt="Vista previa" className="w-full h-full object-contain" style={photoStyle({ ...selectedPhoto, settings: { ...photoSettings(selectedPhoto), ...photoDraft } })} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mt-4">
-                    <button onClick={() => moveSelectedPhoto(-1)} disabled={savingPhoto || selectedIndex <= 0}
-                      className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}><ArrowLeft className="w-4 h-4" /> Antes</button>
-                    <button onClick={() => moveSelectedPhoto(1)} disabled={savingPhoto || selectedIndex >= photos.length - 1}
-                      className="flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.4)', color: '#d4a017' }}>Después <ArrowRight className="w-4 h-4" /></button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <button onClick={() => moveSelectedPhoto(-10)} disabled={savingPhoto || selectedIndex <= 0} className="font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>← 10 lugares</button>
-                    <button onClick={() => moveSelectedPhoto(10)} disabled={savingPhoto || selectedIndex >= photos.length - 1} className="font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.35)', color: '#d4a017' }}>10 lugares →</button>
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <input type="number" min="1" max={photos.length} value={targetPosition} onChange={e => setTargetPosition(e.target.value)} className="gatsby-input min-w-0 flex-1 rounded-lg px-3 py-2 font-serif" aria-label="Nueva posición de proyección" />
-                    <button onClick={moveSelectedToPosition} disabled={savingPhoto} className="font-serif text-xs uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-35" style={{ border: '1px solid rgba(212,160,23,0.45)', color: '#d4a017' }}>Mover a #</button>
-                  </div>
-                  <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(212,160,23,0.46)' }}>Usa ±10 para avanzar rápido o escribe el número exacto de posición.</p>
+                  <p className="font-serif text-xs leading-relaxed mt-4" style={{ color: 'rgba(212,160,23,0.46)' }}>Usa la barra fija encima de las fotos para mover o eliminar esta imagen rápidamente. Aquí puedes ajustar solo su presentación.</p>
                   <label className="block mt-5 font-serif text-xs uppercase tracking-widest" style={{ color: 'rgba(212,160,23,0.6)' }}>Brillo</label>
                   <div className="flex items-center gap-3 mt-2">
                     <Sun className="w-4 h-4" style={{ color: '#d4a017' }} />
@@ -776,10 +788,6 @@ function AdminPanel() {
                     {photoSettings(selectedPhoto).visible ? <><EyeOff className="w-4 h-4" /> Ocultar de pantalla grande</> : <><Eye className="w-4 h-4" /> Mostrar en pantalla grande</>}
                   </button>
                   <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(212,160,23,0.46)' }}>Ocultar solo salta esta foto en el slideshow. La foto se conserva en la galería pública y no se elimina.</p>
-                  <button onClick={() => { setDeleteConfirmationText(''); setDeleteConfirmationOpen(true) }} disabled={savingPhoto || deletingPhoto} className="w-full flex items-center justify-center gap-2 font-serif text-xs uppercase tracking-widest px-3 py-2.5 rounded-lg mt-4 disabled:opacity-35" style={{ border: '1px solid rgba(239,68,68,0.85)', color: '#fca5a5', background: 'rgba(127,29,29,0.18)' }}>
-                    <Trash2 className="w-4 h-4" /> Eliminar esta foto
-                  </button>
-                  <p className="font-serif text-xs leading-relaxed mt-2" style={{ color: 'rgba(252,165,165,0.72)' }}>Elimina el archivo original de forma permanente. Úsalo solamente para duplicados.</p>
                   <p className="font-serif text-xs leading-relaxed mt-4" style={{ color: 'rgba(212,160,23,0.46)' }}>Los originales no se recortan, sustituyen ni eliminan. Estos ajustes solo cambian la presentación.</p>
                 </aside>
               )}
