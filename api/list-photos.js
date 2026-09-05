@@ -10,7 +10,8 @@ export default async function handler(req, res) {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'duo4dukq4'
   const apiKey = process.env.CLOUDINARY_API_KEY
   const apiSecret = process.env.CLOUDINARY_API_SECRET
-  const tag = 'zandra60party'
+  const collection = req.query.collection === 'party-live' ? 'party-live' : 'memories'
+  const tag = collection === 'party-live' ? 'zandra60party-live' : 'zandra60party'
 
   if (!apiKey || !apiSecret) {
     return res.status(500).json({ error: 'Missing Cloudinary credentials' })
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
       }
     })
 
-    return res.status(200).json({ photos, total: photos.length })
+    return res.status(200).json({ photos, total: photos.length, collection })
   } catch (err) {
     return res.status(500).json({ error: err.message })
   }

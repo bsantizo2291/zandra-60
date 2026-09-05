@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut, Eye, EyeOff, Search } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 import { isSlideshowVisible, photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
-import { LIVE_PHOTO_REFRESH_MS, livePhotoArrivalMessage } from './livePartyPhotos'
+import { LIVE_PARTY_SCREEN_URL, LIVE_PARTY_TAG, LIVE_PHOTO_REFRESH_MS, livePartyPhotosApiUrl } from './livePartyPhotos'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
@@ -248,7 +248,7 @@ function PhotoGallery() {
     }
     setUploading(false); setProgress('')
     if (ok > 0) {
-      toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente. ${livePhotoArrivalMessage()}`)
+      toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente`)
       fetchPhotos()
     }
   }, [name, fetchPhotos])
@@ -256,36 +256,23 @@ function PhotoGallery() {
   const handleChange = (e) => { handleUpload(e); e.target.value = '' }
 
   return (
-    <div className="space-y-8" aria-live="polite">
-      <div className="gold-card rounded-2xl p-5 md:p-6 relative overflow-hidden" style={{ border: '1px solid rgba(212,160,23,0.48)', background: 'linear-gradient(135deg, rgba(212,160,23,0.16), rgba(5,25,31,0.74))' }}>
-        <div className="absolute -right-5 -top-6 w-28 h-28 rounded-full" style={{ background: 'radial-gradient(circle, rgba(47,173,173,0.36), transparent 70%)' }} />
-        <div className="relative flex items-start gap-4">
-          <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,160,23,0.14)', border: '1px solid rgba(245,215,110,0.55)' }}>
-            <Camera className="w-6 h-6" style={{ color: '#f5d76e' }} />
-          </div>
-          <div>
-            <p className="font-serif text-xs uppercase tracking-[0.22em] mb-1" style={{ color: 'rgba(245,215,110,0.72)' }}>Fotos en Vivo</p>
-            <p className="font-serif text-lg md:text-xl font-bold" style={{ color: '#f5d76e' }}>Sube una foto y comparte la fiesta en pantalla grande.</p>
-            <p className="font-serif text-sm mt-2 leading-relaxed" style={{ color: 'rgba(212,160,23,0.78)' }}>{livePhotoArrivalMessage()}</p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-8">
       <div className="max-w-sm mx-auto">
         <label className="block text-center font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.7)' }}>
-          Tu nombre o mesa (opcional)
+          Tu nombre (opcional)
         </label>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
-          placeholder="Ej. Familia Santizo" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
+          placeholder="Tu nombre" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
       </div>
 
       <label className="block cursor-pointer">
-        <input type="file" accept="image/*" capture="environment" multiple onChange={handleChange} className="hidden" />
+        <input type="file" accept="image/*" multiple onChange={handleChange} className="hidden" />
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
           className="gold-card rounded-2xl p-8 md:p-12 text-center relative overflow-hidden"
           style={{ borderStyle: 'dashed', borderColor: 'rgba(212,160,23,0.4)' }}>
           <Camera className="w-10 h-10 md:w-14 md:h-14 mx-auto mb-4" style={{ color: '#d4a017' }} />
           <p className="font-serif text-lg md:text-xl mb-1" style={{ color: '#d4a017' }}>
-            {uploading ? (progress || 'Procesando...') : 'Tomar o subir fotos de la fiesta'}
+            {uploading ? (progress || 'Procesando...') : 'Comparte un recuerdo con Zandra'}
           </p>
           {uploading ? (
             <div className="mt-4 w-48 h-1 bg-yellow-900 rounded-full mx-auto overflow-hidden">
@@ -293,7 +280,7 @@ function PhotoGallery() {
             </div>
           ) : (
             <p className="font-serif text-xs uppercase tracking-widest mt-2" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              Cámara o galería · JPG · PNG · HEIC · Múltiples fotos
+              JPG · PNG · HEIC · Multiples fotos
             </p>
           )}
         </motion.div>
@@ -304,7 +291,7 @@ function PhotoGallery() {
           className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
           style={{ color: 'rgba(212,160,23,0.6)' }}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Cargando...' : 'Actualizar fotos en vivo'}
+          {loading ? 'Cargando...' : 'Actualizar galeria'}
         </button>
       </div>
 
@@ -331,6 +318,135 @@ function PhotoGallery() {
             Se el primero en compartir un recuerdo
           </p>
         </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Separate Live Party Photos ──────────────────────────────────────────────
+function GatsbyPartyPhotoFrame({ children, className = '' }) {
+  return (
+    <div className={`relative ${className}`} style={{ background: 'linear-gradient(135deg, #070809, #15262b 50%, #070809)' }}>
+      <div className="absolute inset-0 pointer-events-none" style={{ border: '3px solid #d4a017', boxShadow: '0 0 28px rgba(212,160,23,0.28), inset 0 0 28px rgba(0,0,0,0.72)' }} />
+      <div className="absolute inset-3 pointer-events-none" style={{ border: '1px solid rgba(245,215,110,0.78)' }} />
+      {['top-0 left-0', 'top-0 right-0', 'bottom-0 right-0', 'bottom-0 left-0'].map((position, index) => (
+        <div key={position} className={`absolute ${position} w-16 h-16 pointer-events-none`} style={{ transform: `rotate(${index * 90}deg)` }}>
+          <svg viewBox="0 0 64 64" className="w-full h-full" aria-hidden="true">
+            <path d="M5 5 H42 V9 H10 V42 H5 Z" fill="#d4a017" opacity="0.95" />
+            <path d="M12 12 L30 12 L12 30 Z" fill="#f5d76e" opacity="0.58" />
+            <path d="M16 16 Q31 21 36 36" fill="none" stroke="#d4a017" strokeWidth="2" opacity="0.8" />
+          </svg>
+        </div>
+      ))}
+      {children}
+    </div>
+  )
+}
+
+function LivePartyGallery() {
+  const [photos, setPhotos] = useState([])
+  const [uploading, setUploading] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState('')
+  const [name, setName] = useState('')
+
+  const fetchPhotos = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(livePartyPhotosApiUrl())
+      if (res.ok) {
+        const data = await res.json()
+        setPhotos(presentationOrder(data.photos || []))
+      }
+    } catch (_) { toast.error('No se pudieron cargar las fotos en vivo') }
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    fetchPhotos()
+    const id = setInterval(fetchPhotos, LIVE_PHOTO_REFRESH_MS)
+    return () => clearInterval(id)
+  }, [fetchPhotos])
+
+  const handleUpload = useCallback(async (event) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
+    setUploading(true)
+    let ok = 0
+    for (let i = 0; i < files.length; i++) {
+      setProgress(`Subiendo foto ${i + 1} de ${files.length}...`)
+      const formData = new FormData()
+      formData.append('file', files[i])
+      formData.append('upload_preset', UPLOAD_PRESET)
+      formData.append('tags', LIVE_PARTY_TAG)
+      if (name.trim()) formData.append('context', `uploader=${name.trim()}|zv_collection=party-live`)
+      try {
+        const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: formData })
+        const data = await res.json()
+        if (data.public_id) ok++
+        else toast.error(`Error: ${data.error?.message || 'No se pudo subir la foto'}`)
+      } catch (_) { toast.error('Error de conexión al subir la foto') }
+    }
+    setUploading(false)
+    setProgress('')
+    if (ok > 0) {
+      toast.success(`${ok} foto${ok > 1 ? 's' : ''} de la fiesta ${ok > 1 ? 'subidas' : 'subida'}: aparecerán en la pantalla especial en menos de 15 segundos.`)
+      fetchPhotos()
+    }
+  }, [fetchPhotos, name])
+
+  const handleChange = event => { handleUpload(event); event.target.value = '' }
+
+  return (
+    <div className="space-y-7" aria-live="polite">
+      <GatsbyPartyPhotoFrame className="rounded-2xl overflow-hidden p-6 md:p-8">
+        <div className="relative text-center px-4 py-4">
+          <p className="font-serif text-xs uppercase tracking-[0.28em]" style={{ color: 'rgba(245,215,110,0.74)' }}>Colección independiente</p>
+          <h3 className="font-serif text-2xl md:text-3xl font-bold mt-3" style={{ color: '#f5d76e' }}>Fotos en Vivo de la Fiesta</h3>
+          <p className="font-serif text-sm md:text-base leading-relaxed max-w-xl mx-auto mt-3" style={{ color: 'rgba(212,160,23,0.78)' }}>
+            Sube momentos de esta noche. Estas fotos no se mezclan con los recuerdos de Zandra: aparecen solo en la pantalla especial de la fiesta.
+          </p>
+        </div>
+      </GatsbyPartyPhotoFrame>
+
+      <div className="max-w-sm mx-auto">
+        <label className="block text-center font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.72)' }}>Tu nombre o mesa (opcional)</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ej. Mesa 4" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
+      </div>
+
+      <label className="block cursor-pointer">
+        <input type="file" accept="image/*" capture="environment" multiple onChange={handleChange} className="hidden" />
+        <GatsbyPartyPhotoFrame className="rounded-2xl overflow-hidden p-8 md:p-12">
+          <div className="relative text-center">
+            <Camera className="w-11 h-11 md:w-14 md:h-14 mx-auto mb-4" style={{ color: '#f5d76e' }} />
+            <p className="font-serif text-xl md:text-2xl font-bold" style={{ color: '#f5d76e' }}>{uploading ? (progress || 'Procesando...') : 'Tomar o subir fotos de la fiesta'}</p>
+            <p className="font-serif text-xs uppercase tracking-widest mt-3" style={{ color: 'rgba(212,160,23,0.72)' }}>Cámara o galería · JPG · PNG · HEIC · Múltiples fotos</p>
+            <p className="font-serif text-sm mt-4" style={{ color: 'rgba(245,215,110,0.74)' }}>Llegan automáticamente a la pantalla de fiesta en menos de 15 segundos.</p>
+          </div>
+        </GatsbyPartyPhotoFrame>
+      </label>
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+        <button onClick={fetchPhotos} disabled={loading} className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-5 py-3 rounded-full disabled:opacity-50" style={{ border: '1px solid rgba(212,160,23,0.44)', color: '#d4a017' }}>
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> {loading ? 'Actualizando...' : 'Actualizar fotos en vivo'}
+        </button>
+        <a href={LIVE_PARTY_SCREEN_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-5 py-3 rounded-full" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#090909' }}>
+          <MonitorPlay className="w-4 h-4" /> Abrir pantalla de fiesta
+        </a>
+      </div>
+
+      {photos.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {photos.slice(0, 18).map(photo => (
+            <GatsbyPartyPhotoFrame key={photo.public_id} className="rounded-xl overflow-hidden aspect-square p-3">
+              <img src={photo.full_url || photo.url} alt="Foto en vivo de la fiesta" className="relative w-full h-full object-contain" loading="lazy" style={{ ...photoStyle(photo), background: 'rgba(0,0,0,0.36)' }} />
+            </GatsbyPartyPhotoFrame>
+          ))}
+        </div>
+      ) : !uploading && (
+        <GatsbyPartyPhotoFrame className="rounded-2xl overflow-hidden p-10 text-center">
+          <p className="relative font-serif italic" style={{ color: 'rgba(245,215,110,0.72)' }}>Sé de los primeros en compartir un momento de la fiesta.</p>
+        </GatsbyPartyPhotoFrame>
       )}
     </div>
   )
@@ -1154,6 +1270,79 @@ function Slideshow() {
   )
 }
 
+// ─── Dedicated Gatsby-Framed Live Party Screen ────────────────────────────────
+function LivePartyScreen() {
+  const [photos, setPhotos] = useState([])
+  const [current, setCurrent] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const SLIDE_DURATION = 7000
+
+  const fetchPhotos = useCallback(async () => {
+    try {
+      const res = await fetch(livePartyPhotosApiUrl())
+      if (res.ok) {
+        const data = await res.json()
+        const ordered = presentationOrder(data.photos || []).filter(isSlideshowVisible)
+        setPhotos(ordered)
+        setCurrent(index => ordered.length ? Math.min(index, ordered.length - 1) : 0)
+      }
+    } catch (_) {}
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    fetchPhotos()
+    const id = setInterval(fetchPhotos, LIVE_PHOTO_REFRESH_MS)
+    return () => clearInterval(id)
+  }, [fetchPhotos])
+
+  useEffect(() => {
+    if (!photos.length) return
+    const id = setInterval(() => setCurrent(index => (index + 1) % photos.length), SLIDE_DURATION)
+    return () => clearInterval(id)
+  }, [photos.length])
+
+  const activePhoto = photos[current]
+
+  return (
+    <div className="relative w-screen h-screen overflow-hidden flex items-center justify-center" style={{ background: 'radial-gradient(circle at 50% 25%, #183b42 0%, #080b0c 42%, #020303 100%)' }}>
+      <ChampagneBubbles />
+      {activePhoto && <div className="absolute inset-0" style={{ backgroundImage: `url(${activePhoto.full_url || activePhoto.url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(44px) brightness(0.18)', transform: 'scale(1.18)' }} />}
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(circle, transparent 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0.78) 100%)' }} />
+
+      <div className="absolute top-0 left-0 right-0 pt-7 text-center" style={{ zIndex: 10 }}>
+        <p className="font-serif tracking-[0.34em] uppercase" style={{ fontSize: 'clamp(0.72rem, 1.3vw, 1rem)', color: 'rgba(245,215,110,0.76)' }}>Celebración en vivo</p>
+        <p className="font-serif font-bold mt-2" style={{ fontSize: 'clamp(1.4rem, 3vw, 2.6rem)', color: '#f5d76e', letterSpacing: '0.16em' }}>FOTOS DE LA FIESTA</p>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {activePhoto ? (
+          <motion.div key={activePhoto.public_id} initial={{ opacity: 0, scale: 0.965 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.025 }} transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }} className="relative" style={{ width: 'min(84vw, 1220px)', height: 'min(72vh, 790px)', zIndex: 5 }}>
+            <GatsbyPartyPhotoFrame className="w-full h-full rounded-2xl overflow-hidden p-12 md:p-16">
+              <img src={activePhoto.full_url || activePhoto.url} alt="Foto en vivo de la fiesta" className="relative w-full h-full object-contain" style={photoStyle(activePhoto)} />
+            </GatsbyPartyPhotoFrame>
+          </motion.div>
+        ) : (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative text-center px-8" style={{ zIndex: 5, width: 'min(76vw, 800px)' }}>
+            <GatsbyPartyPhotoFrame className="rounded-2xl overflow-hidden p-12 md:p-16">
+              <div className="relative">
+                <Camera className="w-16 h-16 mx-auto mb-6" style={{ color: '#f5d76e' }} />
+                <p className="font-serif text-2xl md:text-4xl font-bold" style={{ color: '#f5d76e' }}>{loading ? 'Cargando fotos en vivo...' : 'La fiesta acaba de empezar'}</p>
+                <p className="font-serif text-base md:text-xl mt-4" style={{ color: 'rgba(212,160,23,0.78)' }}>Las nuevas fotos aparecerán aquí automáticamente.</p>
+              </div>
+            </GatsbyPartyPhotoFrame>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="absolute bottom-0 left-0 right-0 pb-7 text-center" style={{ zIndex: 10 }}>
+        <p className="font-serif uppercase tracking-[0.22em]" style={{ fontSize: 'clamp(0.6rem, 1vw, 0.85rem)', color: 'rgba(212,160,23,0.68)' }}>Zandra Veliz · 60 Años · Club Español</p>
+        <p className="font-serif mt-2" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.88rem)', color: 'rgba(245,215,110,0.56)' }}>Actualización automática cada 15 segundos</p>
+      </div>
+    </div>
+  )
+}
+
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
 function RSVPForm() {
   const [name, setName] = useState('')
@@ -1616,6 +1805,7 @@ export default function App() {
   const [envelopeOpened, setEnvelopeOpened] = useState(false)
   const params = new URLSearchParams(window.location.search)
   if (params.get('slideshow') === '1') return <Slideshow />
+  if (params.get('live-party') === '1') return <LivePartyScreen />
   if (params.get('admin') === '1') return <AdminPanel />
 
   const handleOpen = () => {
@@ -1903,13 +2093,13 @@ export default function App() {
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
             <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              ✦ Fotos en Vivo ✦
+              ✦ Galería de Recuerdos ✦
             </p>
             <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#d4a017' }}>
-              Fotos en Vivo de la Fiesta
+              Recuerdos con Zandra
             </h2>
             <p className="font-serif italic text-base md:text-lg max-w-xl mx-auto" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              Durante la fiesta, toma o sube tus fotos desde tu teléfono. Aparecerán automáticamente en la pantalla grande y siempre se mostrarán completas, sin recortes.
+              Comparte tus recuerdos favoritos con la festejada. Esta galería se mantiene separada de las fotos en vivo de la fiesta.
             </p>
             <GoldDivider />
           </motion.div>
@@ -1925,11 +2115,28 @@ export default function App() {
               className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-8 py-3 rounded-full transition-all hover:scale-105"
               style={{ border: '1px solid rgba(212,160,23,0.5)', color: '#d4a017' }}>
               <Camera className="w-5 h-5" />
-              Modo Pantalla Grande — Fiesta
+              Pantalla de Recuerdos
             </a>
             <p className="font-serif text-xs mt-2 italic" style={{ color: 'rgba(212,160,23,0.4)' }}>
-              Abre este enlace en la pantalla del evento para el slideshow
+              Esta pantalla muestra únicamente la galería de recuerdos.
             </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══ SEPARATE LIVE PARTY PHOTOS ═════════════════════════════════════════ */}
+      <section id="fotos-en-vivo" className="py-20 md:py-28 px-4 noir-section-alt">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(245,215,110,0.6)' }}>✦ En Vivo Esta Noche ✦</p>
+            <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#f5d76e' }}>Fotos en Vivo de la Fiesta</h2>
+            <p className="font-serif italic text-base md:text-lg max-w-2xl mx-auto" style={{ color: 'rgba(212,160,23,0.7)' }}>
+              Esta es una colección totalmente aparte. Sube aquí los momentos de la fiesta y aparecerán solo en la pantalla Gatsby especial.
+            </p>
+            <GoldDivider />
+          </motion.div>
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+            <LivePartyGallery />
           </motion.div>
         </div>
       </section>
