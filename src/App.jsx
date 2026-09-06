@@ -257,34 +257,16 @@ function PhotoGallery() {
 
   return (
     <div className="space-y-8">
-      <div className="max-w-sm mx-auto">
-        <label className="block text-center font-serif text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(212,160,23,0.7)' }}>
-          Tu nombre (opcional)
-        </label>
-        <input type="text" value={name} onChange={e => setName(e.target.value)}
-          placeholder="Tu nombre" className="gatsby-input w-full rounded-xl px-4 py-3 text-center font-serif text-lg" />
-      </div>
-
-      <label className="block cursor-pointer">
-        <input type="file" accept="image/*" multiple onChange={handleChange} className="hidden" />
-        <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-          className="gold-card rounded-2xl p-8 md:p-12 text-center relative overflow-hidden"
-          style={{ borderStyle: 'dashed', borderColor: 'rgba(212,160,23,0.4)' }}>
-          <Camera className="w-10 h-10 md:w-14 md:h-14 mx-auto mb-4" style={{ color: '#d4a017' }} />
-          <p className="font-serif text-lg md:text-xl mb-1" style={{ color: '#d4a017' }}>
-            {uploading ? (progress || 'Procesando...') : 'Comparte un recuerdo con Zandra'}
-          </p>
-          {uploading ? (
-            <div className="mt-4 w-48 h-1 bg-yellow-900 rounded-full mx-auto overflow-hidden">
-              <div className="h-full bg-yellow-500 rounded-full animate-pulse" style={{ width: '60%' }} />
-            </div>
-          ) : (
-            <p className="font-serif text-xs uppercase tracking-widest mt-2" style={{ color: 'rgba(212,160,23,0.5)' }}>
-              JPG · PNG · HEIC · Multiples fotos
-            </p>
-          )}
-        </motion.div>
-      </label>
+      <ArtDecoFrame className="gold-card-light rounded-2xl p-7 md:p-9 text-center">
+        <Camera className="w-10 h-10 mx-auto mb-4" style={{ color: '#d4a017' }} />
+        <p className="font-serif text-lg md:text-xl" style={{ color: '#d4a017' }}>Esta es la galería de recuerdos</p>
+        <p className="font-serif text-sm mt-2 max-w-xl mx-auto" style={{ color: 'rgba(212,160,23,0.66)' }}>
+          Las fotos nuevas de la fiesta se suben únicamente a la colección especial y no aparecerán en este slideshow.
+        </p>
+        <a href="#fotos-en-vivo" className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-5 py-3 rounded-full mt-5" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#090909' }}>
+          <Camera className="w-4 h-4" /> Subir fotos de la fiesta
+        </a>
+      </ArtDecoFrame>
 
       <div className="text-center">
         <button onClick={fetchPhotos} disabled={loading}
