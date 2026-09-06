@@ -2087,6 +2087,23 @@ export default function App() {
         </div>
       </section>
 
+      {/* ══ LIVE PARTY PHOTOS ══════════════════════════════════════════════════ */}
+      <section id="fotos-en-vivo" className="py-20 md:py-28 px-4 noir-section-alt">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
+            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(245,215,110,0.6)' }}>✦ En Vivo Esta Noche ✦</p>
+            <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#f5d76e' }}>Fotos en Vivo de la Fiesta</h2>
+            <p className="font-serif italic text-base md:text-lg max-w-2xl mx-auto" style={{ color: 'rgba(212,160,23,0.7)' }}>
+              Sube aquí los momentos de la fiesta. Estas fotos aparecen solamente en la pantalla Gatsby especial y no se mezclan con los recuerdos de Zandra.
+            </p>
+            <GoldDivider />
+          </motion.div>
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+            <LivePartyGallery />
+          </motion.div>
+        </div>
+      </section>
+
       {/* ══ RSVP ══════════════════════════════════════════════════════════════ */}
       <section className="py-20 md:py-28 px-4 noir-section-alt">
         <div className="max-w-md mx-auto">
