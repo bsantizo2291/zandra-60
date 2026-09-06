@@ -89,7 +89,8 @@ test('memories route returns a preserved read-only fallback if a rate limit happ
     await handler({ method: 'GET', query: { collection: 'memories' } }, result.response)
     assert.equal(result.output.status, 200)
     assert.equal(result.output.body.fallback, true)
-    assert.ok(result.output.body.photos.length >= 1)
+    assert.equal(result.output.body.photos.length, 213)
+    assert.equal(result.output.body.photos[0].public_id, 'fy2vls6eeobdorrmr4uk')
     assert.equal(result.output.headers['X-Gallery-Cache'], 'EMERGENCY')
   } finally {
     global.fetch = originalFetch
