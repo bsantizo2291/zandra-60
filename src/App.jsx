@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut, Eye, EyeOff, Search } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 import { isSlideshowVisible, photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
-import { LIVE_PARTY_SCREEN_URL, LIVE_PARTY_TAG, LIVE_PHOTO_REFRESH_MS, livePartyPhotosApiUrl } from './livePartyPhotos'
+import { LIVE_PARTY_REFRESH_MS, LIVE_PARTY_SCREEN_URL, LIVE_PARTY_TAG, LIVE_PHOTO_REFRESH_MS, livePartyArrivalMessage, livePartyPhotosApiUrl } from './livePartyPhotos'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
@@ -364,7 +364,7 @@ function LivePartyGallery() {
 
   useEffect(() => {
     fetchPhotos()
-    const id = setInterval(fetchPhotos, LIVE_PHOTO_REFRESH_MS)
+    const id = setInterval(fetchPhotos, LIVE_PARTY_REFRESH_MS)
     return () => clearInterval(id)
   }, [fetchPhotos])
 
@@ -372,25 +372,26 @@ function LivePartyGallery() {
     const files = Array.from(event.target.files || [])
     if (!files.length) return
     setUploading(true)
-    let ok = 0
-    for (let i = 0; i < files.length; i++) {
-      setProgress(`Subiendo foto ${i + 1} de ${files.length}...`)
+    setProgress(`Subiendo ${files.length} foto${files.length > 1 ? 's' : ''} directamente a la pantalla de fiesta...`)
+    const results = await Promise.all(files.map(async file => {
       const formData = new FormData()
-      formData.append('file', files[i])
+      formData.append('file', file)
       formData.append('upload_preset', UPLOAD_PRESET)
       formData.append('tags', LIVE_PARTY_TAG)
       if (name.trim()) formData.append('context', `uploader=${name.trim()}|zv_collection=party-live`)
       try {
         const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: formData })
         const data = await res.json()
-        if (data.public_id) ok++
-        else toast.error(`Error: ${data.error?.message || 'No se pudo subir la foto'}`)
+        if (data.public_id) return true
+        toast.error(`Error: ${data.error?.message || 'No se pudo subir la foto'}`)
       } catch (_) { toast.error('Error de conexión al subir la foto') }
-    }
+      return false
+    }))
+    const ok = results.filter(Boolean).length
     setUploading(false)
     setProgress('')
     if (ok > 0) {
-      toast.success(`${ok} foto${ok > 1 ? 's' : ''} de la fiesta ${ok > 1 ? 'subidas' : 'subida'}: aparecerán en la pantalla especial en menos de 15 segundos.`)
+      toast.success(`${ok} foto${ok > 1 ? 's' : ''} de la fiesta ${ok > 1 ? 'subidas' : 'subida'}: ${livePartyArrivalMessage()}`)
       fetchPhotos()
     }
   }, [fetchPhotos, name])
@@ -421,7 +422,7 @@ function LivePartyGallery() {
             <Camera className="w-11 h-11 md:w-14 md:h-14 mx-auto mb-4" style={{ color: '#f5d76e' }} />
             <p className="font-serif text-xl md:text-2xl font-bold" style={{ color: '#f5d76e' }}>{uploading ? (progress || 'Procesando...') : 'Tomar o subir fotos de la fiesta'}</p>
             <p className="font-serif text-xs uppercase tracking-widest mt-3" style={{ color: 'rgba(212,160,23,0.72)' }}>Cámara o galería · JPG · PNG · HEIC · Múltiples fotos</p>
-            <p className="font-serif text-sm mt-4" style={{ color: 'rgba(245,215,110,0.74)' }}>Llegan automáticamente a la pantalla de fiesta en menos de 15 segundos.</p>
+            <p className="font-serif text-sm mt-4" style={{ color: 'rgba(245,215,110,0.74)' }}>{livePartyArrivalMessage()}</p>
           </div>
         </GatsbyPartyPhotoFrame>
       </label>
@@ -1292,7 +1293,7 @@ function LivePartyScreen() {
 
   useEffect(() => {
     fetchPhotos()
-    const id = setInterval(fetchPhotos, LIVE_PHOTO_REFRESH_MS)
+    const id = setInterval(fetchPhotos, LIVE_PARTY_REFRESH_MS)
     return () => clearInterval(id)
   }, [fetchPhotos])
 
@@ -1337,7 +1338,7 @@ function LivePartyScreen() {
 
       <div className="absolute bottom-0 left-0 right-0 pb-7 text-center" style={{ zIndex: 10 }}>
         <p className="font-serif uppercase tracking-[0.22em]" style={{ fontSize: 'clamp(0.6rem, 1vw, 0.85rem)', color: 'rgba(212,160,23,0.68)' }}>Zandra Veliz · 60 Años · Club Español</p>
-        <p className="font-serif mt-2" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.88rem)', color: 'rgba(245,215,110,0.56)' }}>Actualización automática cada 15 segundos</p>
+        <p className="font-serif mt-2" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.88rem)', color: 'rgba(245,215,110,0.56)' }}>Actualización automática cada 5 segundos</p>
       </div>
     </div>
   )
