@@ -7,4 +7,5 @@ test('party photo album uses a standalone page route and is not embedded in the 
   assert.match(source, /function PartyPhotoPage\(\)/)
   assert.match(source, /params\.get\('party-photos'\) === '1'\) return <PartyPhotoPage \/>/)
   assert.doesNotMatch(source, /id="fotos-en-vivo"/)
+  assert.doesNotMatch(source, /Subir fotos de la fiesta/)
 })

@@ -225,17 +225,6 @@ function PhotoGallery() {
 
   return (
     <div className="space-y-8">
-      <ArtDecoFrame className="gold-card-light rounded-2xl p-7 md:p-9 text-center">
-        <Camera className="w-10 h-10 mx-auto mb-4" style={{ color: '#d4a017' }} />
-        <p className="font-serif text-lg md:text-xl" style={{ color: '#d4a017' }}>Esta es la galería de recuerdos</p>
-        <p className="font-serif text-sm mt-2 max-w-xl mx-auto" style={{ color: 'rgba(212,160,23,0.66)' }}>
-          Las fotos nuevas de la fiesta se suben únicamente a la colección especial y no aparecerán en este slideshow.
-        </p>
-        <a href="?party-photos=1" className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-5 py-3 rounded-full mt-5" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#090909' }}>
-          <Camera className="w-4 h-4" /> Subir fotos de la fiesta
-        </a>
-      </ArtDecoFrame>
-
       <div className="text-center">
         <button onClick={fetchPhotos} disabled={loading}
           className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
