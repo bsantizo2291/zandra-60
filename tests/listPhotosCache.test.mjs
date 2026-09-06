@@ -75,3 +75,28 @@ test('gallery route serves its last successful response during a temporary Cloud
     __resetGalleryCacheForTests()
   }
 })
+
+test('memories route returns a preserved read-only fallback if a rate limit happens before cache warmup', async () => {
+  const originalFetch = global.fetch
+  const oldKey = process.env.CLOUDINARY_API_KEY
+  const oldSecret = process.env.CLOUDINARY_API_SECRET
+  process.env.CLOUDINARY_API_KEY = 'test-key'
+  process.env.CLOUDINARY_API_SECRET = 'test-secret'
+  __resetGalleryCacheForTests()
+  global.fetch = async () => ({ ok: false, status: 420, text: async () => 'Rate Limit Exceeded' })
+  try {
+    const result = createResponse()
+    await handler({ method: 'GET', query: { collection: 'memories' } }, result.response)
+    assert.equal(result.output.status, 200)
+    assert.equal(result.output.body.fallback, true)
+    assert.ok(result.output.body.photos.length >= 1)
+    assert.equal(result.output.headers['X-Gallery-Cache'], 'EMERGENCY')
+  } finally {
+    global.fetch = originalFetch
+    if (oldKey === undefined) delete process.env.CLOUDINARY_API_KEY
+    else process.env.CLOUDINARY_API_KEY = oldKey
+    if (oldSecret === undefined) delete process.env.CLOUDINARY_API_SECRET
+    else process.env.CLOUDINARY_API_SECRET = oldSecret
+    __resetGalleryCacheForTests()
+  }
+})

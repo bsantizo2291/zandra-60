@@ -7,6 +7,20 @@ const GALLERY_CACHE_MS = {
   'party-live': 15 * 1000,
 }
 
+// Known original-memory assets, preserved from a successful gallery response.
+// This is used only if the upstream listing is temporarily rate limited before
+// the cache can warm. No image bytes, tags, or original assets are changed.
+const EMERGENCY_MEMORIES = [
+  ['fy2vls6eeobdorrmr4uk', 1788226965000],
+  ['cxjclrwv240hxojrwx5e', 1788226959000],
+  ['ijnhctarq8wkosamcmzl', 1788226967000],
+  ['ekmj509nxeene9eidz9a', 1788227676000, 90],
+  ['e9z83f7tfvcl77izz0dc', 1788226932000],
+  ['jxcx6rm9eept8xcdrych', 1788226957000],
+  ['vveiituzrzzu5f2hw6x9', 1788227675000],
+  ['ynzzlbxjuuhhncpsh9h8', 1788226919000],
+].map(([public_id, order, rotation = 0]) => ({ public_id, order, rotation }))
+
 const galleryCache = new Map()
 const inFlightLoads = new Map()
 
@@ -49,6 +63,19 @@ function toGalleryPayload(data, cloudName, collection) {
   })
 
   return { photos, total: photos.length, collection }
+}
+
+function emergencyMemoriesPayload(cloudName) {
+  const photos = EMERGENCY_MEMORIES.map(({ public_id, order, rotation }) => {
+    const originalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${public_id}`
+    return {
+      public_id,
+      url: originalUrl,
+      full_url: originalUrl,
+      settings: { order, rotation, brightness: 100, zoom: 100, caption: '', visible: true },
+    }
+  })
+  return { photos, total: photos.length, collection: 'memories', fallback: true }
 }
 
 export default async function handler(req, res) {
@@ -105,6 +132,10 @@ export default async function handler(req, res) {
     if (cached?.payload) {
       res.setHeader('X-Gallery-Cache', 'STALE')
       return res.status(200).json({ ...cached.payload, cached: true, stale: true })
+    }
+    if (collection === 'memories' && Number(err.status) === 420) {
+      res.setHeader('X-Gallery-Cache', 'EMERGENCY')
+      return res.status(200).json(emergencyMemoriesPayload(cloudName))
     }
     const status = Number(err.status) || 500
     return res.status(status).json({ error: 'Cloudinary error', details: err.message })
