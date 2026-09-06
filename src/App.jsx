@@ -10,7 +10,6 @@ const CLOUDINARY_CLOUD = 'duo4dukq4'
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`
 const CLOUDINARY_FETCH_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`
 const UPLOAD_PRESET = 'zandra60'
-const GALLERY_TAG = 'zandra60party'
 const ADMIN_PASSWORD = 'zandra60party'
 
 // Photos are uploaded as the original browser-selected files. This preserves the
@@ -209,9 +208,6 @@ function CountdownTimer() {
 function PhotoGallery() {
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState('')
-  const [name, setName] = useState('')
 
   const fetchPhotos = useCallback(async () => {
     setLoading(true)
@@ -227,34 +223,6 @@ function PhotoGallery() {
 
   useEffect(() => { fetchPhotos() }, [fetchPhotos])
 
-  const handleUpload = useCallback(async (e) => {
-    const files = Array.from(e.target.files || [])
-    if (!files.length) return
-    setUploading(true)
-    let ok = 0
-    for (let i = 0; i < files.length; i++) {
-      setProgress(`Preparando foto ${i+1} de ${files.length}...`)
-      setProgress(`Subiendo foto ${i+1} de ${files.length}...`)
-      const fd = new FormData()
-      fd.append('file', files[i]); fd.append('upload_preset', UPLOAD_PRESET)
-      fd.append('tags', GALLERY_TAG)
-      if (name.trim()) fd.append('context', `uploader=${name.trim()}`)
-      try {
-        const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: 'POST', body: fd })
-        const data = await res.json()
-        if (data.public_id) ok++
-        else toast.error(`Error: ${data.error?.message || 'No se pudo subir'}`)
-      } catch (_) { toast.error('Error de conexión') }
-    }
-    setUploading(false); setProgress('')
-    if (ok > 0) {
-      toast.success(`${ok} foto${ok > 1 ? 's' : ''} compartida${ok > 1 ? 's' : ''} exitosamente`)
-      fetchPhotos()
-    }
-  }, [name, fetchPhotos])
-
-  const handleChange = (e) => { handleUpload(e); e.target.value = '' }
-
   return (
     <div className="space-y-8">
       <ArtDecoFrame className="gold-card-light rounded-2xl p-7 md:p-9 text-center">
@@ -263,7 +231,7 @@ function PhotoGallery() {
         <p className="font-serif text-sm mt-2 max-w-xl mx-auto" style={{ color: 'rgba(212,160,23,0.66)' }}>
           Las fotos nuevas de la fiesta se suben únicamente a la colección especial y no aparecerán en este slideshow.
         </p>
-        <a href="#fotos-en-vivo" className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-5 py-3 rounded-full mt-5" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#090909' }}>
+        <a href="?party-photos=1" className="inline-flex items-center gap-2 font-serif text-xs uppercase tracking-widest px-5 py-3 rounded-full mt-5" style={{ background: 'linear-gradient(135deg, #8B6914, #d4a017)', color: '#090909' }}>
           <Camera className="w-4 h-4" /> Subir fotos de la fiesta
         </a>
       </ArtDecoFrame>
@@ -294,7 +262,7 @@ function PhotoGallery() {
             </motion.div>
           ))}
         </div>
-      ) : !uploading && (
+      ) : (
         <div className="text-center py-16">
           <p className="font-serif italic" style={{ color: 'rgba(212,160,23,0.4)' }}>
             Se el primero en compartir un recuerdo
@@ -431,6 +399,28 @@ function LivePartyGallery() {
           <p className="relative font-serif italic" style={{ color: 'rgba(245,215,110,0.72)' }}>Sé de los primeros en compartir un momento de la fiesta.</p>
         </GatsbyPartyPhotoFrame>
       )}
+    </div>
+  )
+}
+
+// ─── Dedicated Guest Party Photo Page ─────────────────────────────────────────
+function PartyPhotoPage() {
+  return (
+    <div className="min-h-screen overflow-x-hidden" style={{ background: 'radial-gradient(circle at 50% 0%, #183b42 0%, #080a0b 42%, #030303 100%)', color: '#d4a017' }}>
+      <Toaster position="top-center" richColors />
+      <ChampagneBubbles />
+      <main className="relative px-4 py-10 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="font-serif text-xs uppercase tracking-[0.34em]" style={{ color: 'rgba(245,215,110,0.72)' }}>Zandra Veliz · 60 Años</p>
+            <h1 className="font-serif font-bold mt-4" style={{ fontSize: 'clamp(2.1rem, 8vw, 4rem)', color: '#f5d76e', letterSpacing: '0.08em' }}>FOTOS DE LA FIESTA</h1>
+            <p className="font-serif text-base md:text-lg max-w-2xl mx-auto mt-4" style={{ color: 'rgba(212,160,23,0.78)' }}>
+              Comparte tus momentos favoritos de esta noche. Este álbum es independiente de los recuerdos de Zandra.
+            </p>
+          </div>
+          <LivePartyGallery />
+        </div>
+      </main>
     </div>
   )
 }
@@ -1787,6 +1777,7 @@ function EnvelopeIntro({ onOpen }) {
 export default function App() {
   const [envelopeOpened, setEnvelopeOpened] = useState(false)
   const params = new URLSearchParams(window.location.search)
+  if (params.get('party-photos') === '1') return <PartyPhotoPage />
   if (params.get('slideshow') === '1') return <Slideshow />
   if (params.get('live-party') === '1') return <LivePartyScreen />
   if (params.get('admin') === '1') return <AdminPanel />
@@ -2103,23 +2094,6 @@ export default function App() {
             <p className="font-serif text-xs mt-2 italic" style={{ color: 'rgba(212,160,23,0.4)' }}>
               Esta pantalla muestra únicamente la galería de recuerdos.
             </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ══ SEPARATE LIVE PARTY PHOTOS ═════════════════════════════════════════ */}
-      <section id="fotos-en-vivo" className="py-20 md:py-28 px-4 noir-section-alt">
-        <div className="max-w-6xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }} className="text-center mb-14">
-            <p className="font-serif text-xs uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(245,215,110,0.6)' }}>✦ En Vivo Esta Noche ✦</p>
-            <h2 className="font-serif font-bold mb-4" style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: '#f5d76e' }}>Fotos en Vivo de la Fiesta</h2>
-            <p className="font-serif italic text-base md:text-lg max-w-2xl mx-auto" style={{ color: 'rgba(212,160,23,0.7)' }}>
-              Esta es una colección totalmente aparte. Sube aquí los momentos de la fiesta y aparecerán solo en la pantalla Gatsby especial.
-            </p>
-            <GoldDivider />
-          </motion.div>
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
-            <LivePartyGallery />
           </motion.div>
         </div>
       </section>
