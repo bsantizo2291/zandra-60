@@ -1,5 +1,7 @@
-export const LIVE_PHOTO_REFRESH_MS = 15_000
-export const LIVE_PARTY_REFRESH_MS = 5_000
+// The dedicated party feed remains near-live, while its server response is
+// shared and cached for 15 seconds to protect the Cloudinary Admin API limit.
+export const LIVE_PHOTO_REFRESH_MS = 5 * 60_000
+export const LIVE_PARTY_REFRESH_MS = 10_000
 export const MEMORIES_COLLECTION = 'memories'
 export const LIVE_PARTY_TAG = 'zandra60party-live'
 export const LIVE_PARTY_COLLECTION = 'party-live'

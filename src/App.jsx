@@ -1098,7 +1098,8 @@ function Slideshow() {
     setLoading(false)
   }
 
-  // Fetch on mount and every 30 seconds for new photos
+  // Memories do not need live polling. A slower refresh keeps the original
+  // slideshow reliable while the party screen handles live uploads separately.
   useEffect(() => {
     fetchPhotos()
     const id = setInterval(fetchPhotos, LIVE_PHOTO_REFRESH_MS)

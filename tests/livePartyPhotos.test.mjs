@@ -12,22 +12,22 @@ import {
   memoriesPhotosApiUrl,
 } from '../src/livePartyPhotos.js'
 
-test('live party photos refresh the big screen on a short interval', () => {
-  assert.equal(LIVE_PHOTO_REFRESH_MS, 15_000)
-  assert.equal(LIVE_PARTY_REFRESH_MS, 5_000)
+test('memories use a low-frequency refresh while the party screen remains near-live', () => {
+  assert.equal(LIVE_PHOTO_REFRESH_MS, 300_000)
+  assert.equal(LIVE_PARTY_REFRESH_MS, 10_000)
 })
 
-test('live party upload confirmation explains the automatic big-screen arrival', () => {
+test('memories upload confirmation reflects its rate-limit-safe refresh', () => {
   assert.equal(
     livePhotoArrivalMessage(),
-    'Tu foto llegará a la pantalla grande automáticamente, normalmente en menos de 15 segundos.'
+    'Tu foto llegará a la pantalla grande automáticamente, normalmente en menos de 300 segundos.'
   )
 })
 
-test('party upload confirmation reflects the accelerated Gatsby-screen refresh', () => {
+test('party upload confirmation reflects the near-live Gatsby-screen refresh', () => {
   assert.equal(
     livePartyArrivalMessage(),
-    'Tu foto llegará a la pantalla Gatsby automáticamente, normalmente en menos de 5 segundos.'
+    'Tu foto llegará a la pantalla Gatsby automáticamente, normalmente en menos de 10 segundos.'
   )
 })
 
