@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, MapPin, Clock, Camera, ChevronDown, Trash2, Lock, LogOut, RefreshCw, Navigation, ArrowLeft, ArrowRight, RotateCcw, Sun, MonitorPlay, ZoomIn, ZoomOut, Eye, EyeOff, Search } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 import { isSlideshowVisible, photoSettings, presentationOrder, photoStyle } from './galleryPresentation'
-import { LIVE_PARTY_REFRESH_MS, LIVE_PARTY_SCREEN_URL, LIVE_PARTY_TAG, LIVE_PHOTO_REFRESH_MS, livePartyArrivalMessage, livePartyPhotosApiUrl } from './livePartyPhotos'
+import { LIVE_PARTY_REFRESH_MS, LIVE_PARTY_SCREEN_URL, LIVE_PARTY_TAG, LIVE_PHOTO_REFRESH_MS, livePartyArrivalMessage, livePartyPhotosApiUrl, memoriesPhotosApiUrl } from './livePartyPhotos'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD = 'duo4dukq4'
@@ -216,7 +216,7 @@ function PhotoGallery() {
   const fetchPhotos = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/list-photos')
+      const res = await fetch(memoriesPhotosApiUrl())
       if (res.ok) {
         const d = await res.json()
         setPhotos(presentationOrder(d.photos || []))
@@ -484,7 +484,7 @@ function AdminPanel() {
   const fetchPhotos = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/list-photos')
+      const res = await fetch(memoriesPhotosApiUrl())
       if (res.ok) {
         const d = await res.json()
         const ordered = presentationOrder(d.photos || [])
@@ -1127,7 +1127,7 @@ function Slideshow() {
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch('/api/list-photos')
+      const res = await fetch(memoriesPhotosApiUrl())
       if (res.ok) {
         const d = await res.json()
         const ordered = presentationOrder(d.photos || []).filter(isSlideshowVisible)
